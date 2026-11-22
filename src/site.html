@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>قانون تاهيرو — بنك أسئلة القانون المغربي</title>
+<meta name="description" content="بنك أسئلة القانون المغربي: __N__ سؤالاً ومسألة ونازلة في ثلاثة عشر فرعاً، لكل جواب مرجعه في القانون والمادة، مع تفكيك الفخ تحت كل خيار، ومراجعة متباعدة، وسؤال يومي، وتحدٍّ مباشر بين الأصدقاء.">
+<meta name="theme-color" content="#0D1A22" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#F6F4EE" media="(prefers-color-scheme: light)">
+<link rel="canonical" href="__SITE__/">
+<meta property="og:type" content="website">
+<meta property="og:locale" content="ar_MA">
+<meta property="og:title" content="قانون تاهيرو — بنك أسئلة القانون المغربي">
+<meta property="og:description" content="__N__ سؤالاً ومسألة ونازلة، لكل جواب مرجعه. سؤال جديد كل يوم للجميع، وتحدٍّ مباشر بين الأصدقاء.">
+<meta property="og:url" content="__SITE__/">
+<meta property="og:image" content="__SITE__/app/icon-512.png">
+<link rel="icon" href="app/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="app/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Reem+Kufi:wght@400..700&family=Markazi+Text:wght@400..700&display=swap" rel="stylesheet">
+<script type="application/ld+json">__LDJSON__</script>
+<style>
+/* «ليل فاس وزليجه» — نظام التصميم نفسه في التطبيق والموقع */
+:root{
+  --ink:#0D1A22; --ink2:#13252F; --ink3:#1B3241; --line:#284656;
+  --brass:#D3A34E; --brass-dim:#8C6A2C; --brass-faint:rgba(211,163,78,.34); --on-brass:#1B1305;
+  --fes:#3E9DB1; --fes-dim:#24606E; --qirmiz:#C4434F;
+  --jibs:#F0E7D6; --muted:#8FA3AE; --txt2:#CBD5DB;
+  --brass-wash:rgba(211,163,78,.13); --fes-wash:rgba(62,157,177,.14); --qirmiz-wash:rgba(196,67,79,.13);
+  --display:"Reem Kufi","Noto Kufi Arabic","Noto Naskh Arabic",system-ui,sans-serif;
+  --body:"Markazi Text","Noto Naskh Arabic","Geeza Pro","Times New Roman",serif;
+}
+@media (prefers-color-scheme: light){:root{
+  --ink:#F6F4EE; --ink2:#FFFFFF; --ink3:#ECE6D9; --line:#D9D0BF;
+  --brass:#94660F; --brass-dim:#C9A865; --brass-faint:rgba(148,102,15,.30); --on-brass:#FFFAF0;
+  --fes:#1F4F8C; --fes-dim:#9DB4D3; --qirmiz:#A92B3D;
+  --jibs:#142232; --muted:#5D6A76; --txt2:#34404D;
+  --brass-wash:rgba(148,102,15,.09); --fes-wash:rgba(31,79,140,.08); --qirmiz-wash:rgba(169,43,61,.07);
+}}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--ink);color:var(--jibs);font-family:var(--body);font-size:18px;line-height:1.75;
+  -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;overflow-x:hidden}
+a{color:var(--fes);text-decoration:none}
+a:hover{text-decoration:underline}
+:focus-visible{outline:2px solid var(--brass);outline-offset:3px;border-radius:6px}
+h1,h2,h3{font-family:var(--display);font-weight:500;line-height:1.35;margin:0}
+.hidden{display:none!important}
+.wrap{width:min(1080px,100% - 32px);margin-inline:auto}
+.bg{position:absolute;inset:0 0 auto 0;height:560px;z-index:-1;pointer-events:none;color:var(--brass);opacity:.11;width:100%;
+  -webkit-mask-image:linear-gradient(#000 15%,transparent 100%);mask-image:linear-gradient(#000 15%,transparent 100%)}
+@media (prefers-color-scheme: light){.bg{color:var(--fes);opacity:.08}}
+
+/* الرأس */
+.top{display:flex;align-items:center;gap:18px;padding:18px 0 6px}
+.brand{display:flex;align-items:center;gap:10px;color:var(--jibs)}
+.brand:hover{text-decoration:none}
+.brand b{font-family:var(--display);font-weight:600;font-size:21px}
+.top nav{display:flex;gap:18px;margin-inline-start:auto;font-family:var(--display);font-size:15.5px}
+.top nav a{color:var(--muted)}
+.btn,.btn2{display:inline-flex;align-items:center;justify-content:center;gap:8px;font-family:var(--display);font-weight:600;
+  border-radius:12px;padding:13px 22px;font-size:16.5px;line-height:1.2;transition:transform .12s;cursor:pointer;border:0}
+.btn{background:var(--brass);color:var(--on-brass)}
+.btn2{background:transparent;color:var(--jibs);border:1px solid var(--line);font-weight:500}
+.btn:hover,.btn2:hover{text-decoration:none;transform:translateY(-1px)}
+.btn.sm{padding:9px 16px;font-size:15px}
+@media (max-width:700px){.top nav{display:none}.top .btn.sm{margin-inline-start:auto}}
+
+/* البطل */
+.hero{display:grid;grid-template-columns:1.15fr .85fr;gap:36px;align-items:center;padding:42px 0 30px}
+.kicker{font-family:var(--display);color:var(--brass);font-size:16px;margin:0 0 10px;letter-spacing:.2px}
+.hero h1{font-size:clamp(34px,5.4vw,54px);font-weight:600;letter-spacing:-.2px}
+.hero h1 em{font-style:normal;color:var(--brass)}
+.lead{font-size:20.5px;color:var(--txt2);margin:18px 0 24px;max-width:36ch}
+.lead b{font-family:var(--display);color:var(--jibs);font-weight:600}
+.cta{display:flex;flex-wrap:wrap;gap:10px}
+.pulse{display:flex;flex-wrap:wrap;gap:8px;margin-top:20px;min-height:32px}
+.chip{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line);border-radius:999px;padding:4px 14px;
+  font-family:var(--display);font-size:14.5px;color:var(--txt2)}
+.chip i{width:8px;height:8px;border-radius:50%;background:var(--fes);animation:beat 2.4s infinite;flex:none}
+.chip b{color:var(--jibs);font-weight:600;font-variant-numeric:tabular-nums}
+@keyframes beat{0%{box-shadow:0 0 0 0 var(--fes-wash)}50%{box-shadow:0 0 0 7px transparent}100%{box-shadow:0 0 0 0 transparent}}
+.hfig{margin:0;text-align:center}
+.hfig figcaption{font-size:15px;color:var(--muted);margin-top:8px}
+.ros{width:min(340px,80vw);height:auto;display:block;margin:0 auto}
+.ros .po{fill:var(--ink2);stroke:var(--brass-faint);stroke-width:1}
+.ros .core{fill:none;stroke:var(--brass);stroke-width:1.6}
+.ros .n{font-family:var(--display);font-weight:600;fill:var(--brass)}
+.ros .l{font-family:var(--display);fill:var(--muted)}
+.ros g.pt:hover .pf{opacity:1}
+.ros .pf{opacity:.88;transition:opacity .2s}
+@media (max-width:820px){.hero{grid-template-columns:1fr;gap:26px;padding-top:26px}.hfig{order:-1}.ros{width:min(250px,70vw)}}
+
+/* الإعلان */
+.annc{display:flex;align-items:flex-start;gap:12px;padding:12px 16px;border:1px solid var(--fes-dim);border-radius:10px;
+  background:var(--fes-wash);font-size:17px;margin-bottom:8px}
+.annc b{font-family:var(--display);font-weight:500;color:var(--fes);flex:none}
+.annc span{flex:1;min-width:0}
+
+/* الأقسام */
+.sec{padding:44px 0 8px}
+.sec>h2{font-size:clamp(24px,3vw,30px)}
+.sub{color:var(--muted);margin:6px 0 20px;font-size:17px;max-width:60ch}
+
+/* سؤال اليوم: وثيقة بإطار مزدوج */
+.decree{background:var(--ink2);border:1px solid var(--brass-dim);border-radius:6px;padding:20px 22px;
+  box-shadow:inset 0 0 0 5px var(--ink2),inset 0 0 0 6px var(--brass-faint)}
+.dh{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 12px;margin-bottom:10px}
+.dh b{font-family:var(--display);font-weight:500;color:var(--brass);font-size:17px}
+.dh span{color:var(--muted);font-size:15.5px}
+.tag{font-family:var(--display);font-size:13.5px;border:1px solid var(--line);border-radius:999px;padding:1px 10px;color:var(--muted)}
+.stem{font-size:21px;line-height:1.85;margin:4px 0 14px}
+.hint{font-size:15.5px;color:var(--muted);margin:0 0 12px}
+.opts{display:grid;gap:8px}
+.opt{display:flex;align-items:flex-start;gap:12px;width:100%;text-align:start;background:transparent;border:1px solid var(--line);
+  border-radius:10px;padding:11px 14px;font:inherit;font-size:18.5px;color:var(--jibs);cursor:pointer;line-height:1.7}
+.opt .lt{flex:none;width:30px;height:30px;display:grid;place-items:center;font-family:var(--display);font-size:15px;color:var(--brass);
+  border:1px solid var(--brass-dim);border-radius:50%;margin-top:2px}
+.opt[aria-pressed="true"]{border-color:var(--brass);background:var(--brass-wash)}
+.opt[aria-pressed="true"] .lt{background:var(--brass);color:var(--on-brass)}
+.opt.ok{border-color:var(--fes);background:var(--fes-wash)}
+.opt.ok .lt{background:var(--fes);color:#fff;border-color:var(--fes)}
+.opt.bad{border-color:var(--qirmiz);background:var(--qirmiz-wash)}
+.opt[disabled]{cursor:default}
+.dfoot{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:14px}
+.verdict{margin-top:16px;padding-top:14px;border-top:1px solid var(--line)}
+.verdict .v{font-family:var(--display);font-size:19px;font-weight:600}
+.verdict .v.ok{color:var(--fes)} .verdict .v.bad{color:var(--qirmiz)} .verdict .v.part{color:var(--brass)}
+.verdict p{margin:8px 0;color:var(--txt2);font-size:17.5px;line-height:1.85}
+.src{font-size:15.5px;color:var(--muted)}
+.src b{color:var(--jibs);font-weight:500}
+.dst{font-family:var(--display);font-size:15px;color:var(--fes)}
+
+/* اللوحة */
+.tabs{display:flex;gap:8px;margin-bottom:12px}
+.tabs button{font:inherit;font-family:var(--display);font-size:15px;border:1px solid var(--line);border-radius:999px;padding:4px 16px;
+  background:transparent;color:var(--muted);cursor:pointer}
+.tabs button[aria-pressed="true"]{border-color:var(--brass);color:var(--brass);background:var(--brass-wash)}
+table{width:100%;border-collapse:collapse;font-size:17px}
+th{color:var(--muted);font-weight:400;font-size:15px;text-align:start;padding:0 8px 9px}
+td{padding:11px 8px;border-top:1px solid var(--line);vertical-align:middle}
+th:last-child,td:last-child{text-align:end}
+td.rk{font-family:var(--display);color:var(--muted);width:44px}
+td.rk.top{color:var(--brass)}
+td.p{font-family:var(--display);color:var(--brass);font-weight:600;font-variant-numeric:tabular-nums}
+.who{display:flex;align-items:center;gap:10px}
+.empty{color:var(--muted);text-align:center;padding:24px 8px;border:1px dashed var(--line);border-radius:10px}
+.note{font-size:14.5px;color:var(--muted);margin-top:10px}
+.hall{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 14px}
+.hall .hl{font-family:var(--display);font-size:14.5px;color:var(--muted)}
+.hall .hm{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--line);border-radius:999px;padding:3px 12px 3px 4px;font-size:16px}
+.medal{width:24px;height:24px;border-radius:50%;display:inline-grid;place-items:center;font-family:var(--display);font-size:13px;font-weight:700;color:#1B1305;flex:none}
+.medal.m1{background:#D9B45A} .medal.m2{background:#B9C2C9} .medal.m3{background:#C38B5F}
+
+/* المزايا: سجلٌّ مرقّم لا بطاقات متماثلة */
+.feat{display:grid;grid-template-columns:1fr 1fr;gap:0 40px;counter-reset:f}
+.fi{padding:16px 0;border-top:1px solid var(--line);display:grid;grid-template-columns:42px 1fr;gap:4px 12px;counter-increment:f}
+.fi::before{content:counter(f, arabic-indic);grid-row:span 2;font-family:var(--display);font-size:26px;color:var(--brass);line-height:1.2}
+.fi h3{font-size:19px}
+.fi p{margin:0;color:var(--txt2);font-size:17px}
+@media (max-width:720px){.feat{grid-template-columns:1fr}}
+
+/* الفروع */
+.br{display:grid;grid-template-columns:1fr 1fr;gap:0 40px}
+.brow{display:flex;align-items:center;gap:12px;padding:9px 0;border-top:1px solid var(--line);font-size:17px}
+.brow .nm{flex:1;min-width:0}
+.brow .bar{flex:0 0 38%;height:6px;border-radius:3px;background:var(--ink3);overflow:hidden}
+.brow .bar i{display:block;height:100%;border-radius:3px}
+.brow .ct{font-family:var(--display);font-size:15px;color:var(--muted);min-width:4ch;text-align:end;font-variant-numeric:tabular-nums}
+@media (max-width:720px){.br{grid-template-columns:1fr}}
+
+/* المستجدات */
+.tl{border-inline-start:2px solid var(--line);padding-inline-start:20px;margin-inline-start:6px}
+.tli{position:relative;padding:0 0 22px}
+.tli::before{content:"";position:absolute;inset-inline-start:-27px;top:9px;width:12px;height:12px;border-radius:50%;
+  background:var(--ink);border:2px solid var(--brass)}
+.tli .d{font-family:var(--display);color:var(--brass);font-size:15.5px}
+.tli h3{font-size:18.5px;margin:2px 0}
+.tli p{margin:0;color:var(--txt2);font-size:16.5px}
+.tli small{color:var(--muted);font-size:14.5px}
+
+/* التذييل */
+footer{padding:46px 0 40px;margin-top:40px;border-top:1px solid var(--line);color:var(--muted);font-size:15.5px;
+  display:flex;flex-wrap:wrap;gap:10px 22px;align-items:center}
+footer .sp{flex:1}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+</style>
+</head>
+<body>
+<svg class="bg" aria-hidden="true"><defs>
+<pattern id="zlj" width="56" height="56" patternUnits="userSpaceOnUse">
+  <path d="M56 28L47.8 36.2L47.8 47.8L36.2 47.8L28 56L19.8 47.8L8.2 47.8L8.2 36.2L0 28L8.2 19.8L8.2 8.2L19.8 8.2L28 0L36.2 8.2L47.8 8.2L47.8 19.8Z" fill="none" stroke="currentColor" stroke-width="1"/>
+  <path d="M40 33L35 35L33 40L28 38L23 40L21 35L16 33L18 28L16 23L21 21L23 16L28 18L33 16L35 21L40 23L38 28Z" fill="none" stroke="currentColor" stroke-width=".8"/>
+</pattern></defs><rect width="100%" height="100%" fill="url(#zlj)"/></svg>
+
+<header class="top wrap">
+  <a class="brand" href="./" aria-label="قانون تاهيرو"><span id="bseal"></span><b>قانون تاهيرو</b></a>
+  <nav aria-label="أقسام الصفحة"><a href="#daily">سؤال اليوم</a><a href="#board">الترتيب</a><a href="#feat">المزايا</a><a href="#upd">المستجدات</a></nav>
+  <a class="btn sm" href="app/">افتح التطبيق</a>
+</header>
+
+<main>
+<section class="hero wrap">
+  <div>
+    <p class="kicker">بنك أسئلة القانون المغربي</p>
+    <h1>تدرّب على النص<br>كما <em>يُمتحن</em> فيه</h1>
+    <p class="lead"><b id="nq">__N__</b> سؤالاً ومسألة ونازلة في ثلاثة عشر فرعاً، من الأسهل إلى الأصعب. لكل جواب مرجعه في القانون والمادة، وتحت كل خيار سبب صحته أو خطئه.</p>
+    <div class="cta"><a class="btn" href="app/">جرّب الآن في المتصفح</a><a class="btn2 hidden" id="play" href="#" rel="noopener">Google Play</a></div>
+    <div class="pulse" aria-live="polite"><span class="chip hidden" id="onl"><i></i><b>0</b> يتدربون الآن</span><span class="chip hidden" id="dchip"></span></div>
+  </div>
+  <figure class="hfig"><div id="ros"></div><figcaption>بتلة لكل فرع بقدر أسئلته</figcaption></figure>
+</section>
+
+<div class="annc wrap hidden" id="annc" role="status"></div>
+
+<section class="sec wrap" id="daily">
+  <h2>سؤال اليوم</h2>
+  <p class="sub">سؤال واحد لكل المستخدمين في اليوم نفسه، يتجدد عند منتصف الليل. جرّبه هنا، ثم أجب عنه في التطبيق لتُحتسب لك النقاط ويدخل في نبض اليوم.</p>
+  <div class="decree" id="dq"></div>
+</section>
+
+<section class="sec wrap" id="board">
+  <h2>لوحة المتنافسين</h2>
+  <p class="sub">الترتيب نفسه لكل المستخدمين، بالنقاط التي جُمعت في التطبيق.</p>
+  <div class="hall hidden" id="hall"></div>
+  <div class="tabs" role="group" aria-label="مدة الترتيب"><button data-v="all" aria-pressed="true">كل الأوقات</button><button data-v="mo" aria-pressed="false">هذا الشهر</button><button data-v="wk" aria-pressed="false">هذا الأسبوع</button></div>
+  <div id="bb"><div class="empty">…</div></div>
+</section>
+
+<section class="sec wrap" id="feat">
+  <h2>ما الذي يقدمه</h2>
+  <p class="sub">صُمّم للطلبة والمترشحين لمباريات الملحقين القضائيين والمحاماة والعدول وكتابة الضبط.</p>
+  <div class="feat">
+    <div class="fi"><h3>تفكيك الفخ تحت كل خيار</h3><p>بعد كل جواب يظهر سبب صحة كل خيار أو خطئه، مع المرجع وشارة تبيّن هل قُرئ في النص الرسمي.</p></div>
+    <div class="fi"><h3>مراجعة متباعدة</h3><p>ما تخطئ فيه يعود غداً، وما تصيبه يعود بعد مدد تتباعد: يوم، ثلاثة، سبعة، ستة عشر، خمسة وثلاثون.</p></div>
+    <div class="fi"><h3>تحدَّ صديقاً مباشرة</h3><p>رمز واحد يولّد الأسئلة نفسها على كل جهاز، وغرفة حية ترى فيها تقدم منافسيك، وترتيب خاص بكل تحدٍّ.</p></div>
+    <div class="fi"><h3>امتحان على مقاسك</h3><p>اختر الفروع والعدد والمدة، فتأتيك نتيجة مفصلة حسب الفرع مع التعليل والمرجع لكل سؤال.</p></div>
+    <div class="fi"><h3>المساعد: ذكاء اصطناعي من نصوص القوانين</h3><p>يجيب عن سؤالك من نصوص القوانين المغربية المضمّنة في التطبيق، فيذكر المادة ويعرض نصها، ويحلّل النازلة التي تعرضها: تكييفاً وقواعد وتطبيقاً وخلاصة. ويشرح لماذا أخطأت في كل خيار، ويولّد سؤالاً توأماً، ويمتحنك شفوياً، ويضع خطة أسبوعك. ولا يذكر مادة لم ترد في النصوص.</p></div>
+    <div class="fi"><h3>اسم مستعار أو حساب Google</h3><p>ادخل باسم مستعار ورمز استرجاع، أو بحساب Google يعيد إليك تقدمك على أي هاتف. ويعمل التطبيق كاملاً دون اتصال.</p></div>
+    <div class="fi"><h3>المكتبة والمستجدات</h3><p>الأسئلة مرتبة حسب القانون والمادة، و<b id="namd">__AMD__</b> تعديلاً منشوراً في الجريدة الرسمية معتبراً في البنك.</p></div>
+  </div>
+</section>
+
+<section class="sec wrap" id="branches">
+  <h2>الفروع الثلاثة عشر</h2>
+  <p class="sub"><b id="nv">__V__</b> سؤالاً منها مُثبَّت المرجع، والباقي يحمل شارة «يحتاج تثبيتاً» حتى يُقرأ في نصه.</p>
+  <div class="br" id="brs"></div>
+</section>
+
+<section class="sec wrap" id="upd">
+  <h2>المستجدات التشريعية</h2>
+  <p class="sub">آخر التعديلات المنشورة في الجريدة الرسمية التي روجعت أسئلة البنك على ضوئها.</p>
+  <div class="tl" id="tl"></div>
+</section>
+</main>
+
+<footer class="wrap">
+  <span>© <span id="yr">2026</span> أحمد البقالي الطاهري · Tahiro</span>
+  <span class="sp"></span>
+  <a href="privacy">سياسة الخصوصية</a>
+  <a href="app/">التطبيق على الويب</a>
+  <span id="ver"></span>
+</footer>
+
+<script>
+const SITE = /*__DATA__*/null;
+(()=>{
+const C = SITE.cloud || {};
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const md = s => esc(s).replace(/\*\*(.+?)\*\*/g,'<b>$1</b>');
+const z2 = n => String(n).padStart(2,'0');
+const today = (d=new Date()) => d.getFullYear()+'-'+z2(d.getMonth()+1)+'-'+z2(d.getDate());
+function weekKey(d=new Date()){
+  const x=new Date(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate())), day=x.getUTCDay()||7;
+  x.setUTCDate(x.getUTCDate()+4-day);
+  const y=x.getUTCFullYear(), w=Math.ceil(((x-Date.UTC(y,0,1))/864e5+1)/7);
+  return y+'-W'+z2(w);
+}
+const hash = s => { let h=0; for(const c of s) h=(h*33+c.charCodeAt(0))>>>0; return h; };
+const LIGHT = matchMedia('(prefers-color-scheme: light)');
+const hue = h => LIGHT.matches ? `hsl(${h} 48% 40%)` : `hsl(${h} 52% 58%)`;
+const MONTHS=['يناير','فبراير','مارس','أبريل','ماي','يونيو','يوليوز','غشت','شتنبر','أكتوبر','نونبر','دجنبر'];
+const fmtDate = s => { const m=String(s||'').match(/^(\d{4})-(\d{2})(?:-(\d{2}))?/); return m ? (m[3]?(+m[3])+' ':'')+MONTHS[+m[2]-1]+' '+m[1] : esc(s); };
+const LTR=['أ','ب','ج','د'];
+const fmtN = n => Number(n||0).toLocaleString('en-US');
+const BR = Object.fromEntries(SITE.branches.map(b=>[b.id,b]));
+const ls = { get(k){ try{ return JSON.parse(localStorage.getItem('qts:'+k)); }catch(e){ return null; } },
+             set(k,v){ try{ localStorage.setItem('qts:'+k, JSON.stringify(v)); }catch(e){} } };
+
+function starPath(cx,cy,R,r,pts,rot){ let d=''; for(let i=0;i<pts*2;i++){ const rad=i%2?r:R, a=rot+i*Math.PI/pts;
+  d+=(i?'L':'M')+(cx+rad*Math.cos(a)).toFixed(1)+' '+(cy+rad*Math.sin(a)).toFixed(1); } return d+'Z'; }
+function seal(seed, size, col){
+  const p=8+(seed%3)*2, c=size/2, R=c*.94, r=R*(.5+(seed%5)*.045);
+  return `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" aria-hidden="true">
+    <path d="${starPath(c,c,R,r,p,0)}" fill="none" stroke="${col}" stroke-width="${size*.032}" stroke-linejoin="round"/>
+    <path d="${starPath(c,c,R*.72,r*.72,p,Math.PI/p)}" fill="none" stroke="${col}" stroke-width="${size*.022}" stroke-linejoin="round" opacity=".62"/>
+    <circle cx="${c}" cy="${c}" r="${R*.3}" fill="none" stroke="${col}" stroke-width="${size*.022}" opacity=".85"/>
+    <circle cx="${c}" cy="${c}" r="${R*.11}" fill="${col}"/></svg>`;
+}
+
+/* وردة البنك: بتلة لكل فرع طولها بقدر أسئلته، ونجمة ثمانية تحمل المجموع */
+function rosette(size){
+  const br=SITE.branches, n=br.length, c=size/2, R=c-2, r0=c*.4, step=2*Math.PI/n, max=Math.max(...br.map(b=>b.n));
+  const P=(r,a)=>(c+r*Math.cos(a)).toFixed(1)+','+(c+r*Math.sin(a)).toFixed(1);
+  const kite=(r1,a0,a1)=>{ const am=(a0+a1)/2, rm=r0+(r1-r0)*.5; return `${P(r0,am)} ${P(rm,a0)} ${P(r1,am)} ${P(rm,a1)}`; };
+  const petals=br.map((b,i)=>{ const a0=-Math.PI/2+i*step+step*.07, a1=a0+step*.86, f=Math.sqrt(b.n/max);
+    return `<g class="pt"><title>${esc(b.ar)}: ${fmtN(b.n)}</title><polygon class="po" points="${kite(R,a0,a1)}"/>
+      <polygon class="pf" style="fill:${hue(b.hue)}" points="${kite(r0+(R-r0)*Math.max(.18,f),a0,a1)}"/></g>`; }).join('');
+  return `<svg class="ros" viewBox="0 0 ${size} ${size}" role="img" aria-label="تركيبة البنك حسب الفروع">${petals}
+    <path class="core" d="${starPath(c,c,r0*.94,r0*.94*.7654,8,-Math.PI/2)}"/>
+    <text class="n" x="${c}" y="${c+6}" text-anchor="middle" font-size="${size*.085}">${SITE.n}</text>
+    <text class="l" x="${c}" y="${c+size*.085}" text-anchor="middle" font-size="${size*.045}">سؤالاً</text></svg>`;
+}
+function paintStatic(){
+  $('#bseal').innerHTML=seal(7,34,'var(--brass)');
+  $('#ros').innerHTML=rosette(340);
+  const max=Math.max(...SITE.branches.map(b=>b.n));
+  $('#brs').innerHTML=SITE.branches.slice().sort((a,b)=>b.n-a.n).map(b=>`<div class="brow"><span class="nm">${esc(b.ar)}</span>
+    <span class="bar"><i style="width:${Math.round(b.n/max*100)}%;background:${hue(b.hue)}"></i></span><span class="ct">${fmtN(b.n)}</span></div>`).join('');
+  $('#tl').innerHTML=SITE.upd.map(a=>`<div class="tli"><span class="d">${fmtDate(a.d)}</span>
+    <h3>${esc(/^\d/.test(a.l)?'القانون '+a.l:a.l)}</h3><p>${esc(a.s)}</p><small>${esc(a.n)}${a.bo?` · ج.ر. عدد ${esc(a.bo)}`:''}</small></div>`).join('');
+  $('#yr').textContent=new Date().getFullYear();
+  $('#ver').textContent='إصدار '+SITE.version;
+  if(C.play){ const p=$('#play'); p.href=C.play; p.classList.remove('hidden'); }
+}
+
+/* سؤال اليوم: الاختيار نفسه في التطبيق (البذرة = التاريخ)، والجواب يُحفظ في هذا المتصفح لليوم */
+function paintDaily(){
+  const el=$('#dq'), d=today(), q=SITE.daily[d];
+  if(!q){ el.innerHTML=`<div class="dh"><b>سؤال اليوم</b><span>${fmtDate(d)}</span></div>
+      <p class="stem">سؤال اليوم ينتظرك في التطبيق.</p><a class="btn" href="app/#daily">افتح سؤال اليوم</a>`; return; }
+  const b=BR[q.b]||{ar:''}, typ={knowledge:'سؤال',case:'نازلة',problem:'مسألة'}[q.t]||'سؤال';
+  const saved=ls.get('daily'), done=saved && saved.d===d && saved.id===q.id ? saved.sel : null;
+  const sel=new Set(done||[]);
+  el.innerHTML=`<div class="dh"><b>سؤال اليوم</b><span>${fmtDate(d)}</span><span class="tag">${esc(b.ar)}</span><span class="tag">${typ}</span></div>
+    <p class="stem">${md(q.stem)}</p>
+    <p class="hint">قد يصح أكثر من جواب، وقد لا يصح أي منها.</p>
+    <div class="opts">${q.o.map((o,i)=>`<button class="opt" data-i="${i}" aria-pressed="false"><span class="lt">${LTR[i]}</span><span>${md(o)}</span></button>`).join('')}</div>
+    <div class="dfoot"><button class="btn" id="dgo">لا شيء منها صحيح</button><span class="dst" id="dst"></span></div>
+    <div id="dv"></div>`;
+  const go=$('#dgo'), opts=[...el.querySelectorAll('.opt')];
+  const refresh=()=>{ go.textContent = sel.size ? 'تأكيد الجواب' : 'لا شيء منها صحيح'; opts.forEach(x=>x.setAttribute('aria-pressed', sel.has(+x.dataset.i))); };
+  const reveal=()=>{
+    const cor=new Set(q.c), hits=[...sel].filter(i=>cor.has(i)).length, fp=sel.size-hits;
+    const exact=hits===cor.size && fp===0, part=!exact && hits>0 && fp===0;
+    opts.forEach(x=>{ const i=+x.dataset.i; x.disabled=true; if(cor.has(i)) x.classList.add('ok'); else if(sel.has(i)) x.classList.add('bad'); });
+    go.remove();
+    $('#dv').innerHTML=`<div class="verdict"><div class="v ${exact?'ok':part?'part':'bad'}">${exact?'إجابة صحيحة':part?'إجابة ناقصة':'إجابة خاطئة'}</div>
+      <p><b>الجواب: ${q.c.length?q.c.map(i=>LTR[i]).join(' + '):'لا شيء منها صحيح'}</b> — ${md(q.x)}</p>
+      <div class="src"><b>${esc(q.law)}</b>، ${esc(q.ref)}</div>
+      <div class="dfoot"><a class="btn" href="app/#daily">أجب في التطبيق لتُحتسب لك</a><a class="btn2" href="app/">تدرّب على المزيد</a></div></div>`;
+  };
+  opts.forEach(x=>x.onclick=()=>{ const i=+x.dataset.i; sel.has(i)?sel.delete(i):sel.add(i); refresh(); });
+  go.onclick=()=>{ ls.set('daily',{ d, id:q.id, sel:[...sel] }); reveal(); };
+  refresh();
+  if(done) reveal();
+  paintPulse();
+}
+
+/* الخدمات الحية: كلها اختيارية، والصفحة كاملة دونها */
+const LIVE={ daily:null, online:0 };
+async function sb(fn, body){
+  const r=await fetch(C.supabase.url+'/rest/v1/rpc/'+fn, { method:'POST',
+    headers:{ 'Content-Type':'application/json', apikey:C.supabase.key, Authorization:'Bearer '+C.supabase.key },
+    body:JSON.stringify(body||{}) });
+  if(!r.ok) throw new Error(fn+' '+r.status);
+  const tx=await r.text(); return tx ? JSON.parse(tx) : null;
+}
+function paintPulse(){
+  const L=LIVE.daily, txt = L && L.day===today() && L.n>0 ? `أجاب ${fmtN(L.n)} اليوم، وأصاب ${Math.round(L.ok/L.n*100)}٪ منهم` : '';
+  const dst=$('#dst'); if(dst) dst.textContent=txt;
+  const ch=$('#dchip'); ch.textContent=txt ? 'سؤال اليوم: '+txt : ''; ch.classList.toggle('hidden', !txt);
+}
+function setDaily(d){
+  if(!d || d.day!==today()) return;
+  const n=Math.max(0,Math.round(+d.n)||0), ok=Math.min(n,Math.max(0,Math.round(+d.ok)||0));
+  if(LIVE.daily && LIVE.daily.day===d.day && n<LIVE.daily.n) return;
+  LIVE.daily={ day:d.day, n, ok }; paintPulse();
+}
+function setAnn(a){
+  if(!a || !a.ar) return;
+  const el=$('#annc');
+  el.innerHTML=`<b>إعلان</b><span>${esc(a.ar)}</span>${/^https:\/\/\S+$/.test(a.url||'')?`<a href="${esc(a.url)}" target="_blank" rel="noopener">التفاصيل</a>`:''}`;
+  el.classList.remove('hidden');
+}
+let boardTok=0; const boardCache={};
+async function paintBoard(v){
+  const my=++boardTok;
+  document.querySelectorAll('.tabs button').forEach(b=>b.setAttribute('aria-pressed', b.dataset.v===v));
+  const el=$('#bb');
+  if(!C.supabase){ el.innerHTML='<div class="empty">اللوحة تظهر في التطبيق.</div>'; return; }
+  let rows=boardCache[v];
+  if(!rows){ try{ rows=boardCache[v]=await sb('qt_board', { p_kind:v==='wk'?'week':v==='mo'?'month':'all', p_week:v==='mo'?today().slice(0,7):weekKey(), p_limit:10 }); }
+    catch(e){ if(my===boardTok) el.innerHTML='<div class="empty">تعذّر جلب اللوحة الآن. افتح التطبيق لترى ترتيبك.</div>'; return; } }
+  if(my!==boardTok) return;
+  rows=(rows||[]).filter(r=>r && r.alias);
+  el.innerHTML = rows.length ? `<table><thead><tr><th>#</th><th>المتنافس</th><th>النقط</th></tr></thead><tbody>${rows.map((r,i)=>{
+      const s=(+r.seed>>>0)||hash(String(r.alias)), val=v==='wk'?r.week_points:v==='mo'?r.month_points:r.points, rk=r.rank||i+1;
+      return `<tr><td class="rk${rk<=3?' top':''}">${rk<=3?`<span class="medal m${rk}">${rk}</span>`:rk}</td><td><span class="who">${seal(s,26,hue(s%360))}<bdi>${esc(String(r.alias).slice(0,24))}</bdi></span></td><td class="p">${fmtN(val)}</td></tr>`; }).join('')}</tbody></table>
+      <p class="note">أعلى عشرة. ترتيبك الكامل في التطبيق.</p>`
+    : `<div class="empty">${v==='wk'?'لم يجمع أحد نقاطاً هذا الأسبوع بعد. كن الأول.':v==='mo'?'لم يجمع أحد نقاطاً هذا الشهر بعد. كن الأول.':'كن أول المتنافسين في اللوحة.'}</div>`;
+}
+// أبطال الأسبوع الماضي والشهر الماضي (الثلاثة الأوائل)
+async function paintHall(){
+  if(!C.supabase) return;
+  const d=new Date(), pm=new Date(d.getFullYear(), d.getMonth()-1, 15);
+  let h; try{ h=await sb('qt_hall', { p_week:weekKey(new Date(Date.now()-7*864e5)), p_month:today(pm).slice(0,7) }); }catch(e){ return; }
+  const part=(lbl,list)=> list && list.length ? `<span class="hl">${lbl}</span>`+list.map((x,i)=>{ const s=(+x.seed>>>0)||hash(String(x.alias));
+    return `<span class="hm"><span class="medal m${i+1}">${i+1}</span>${seal(s,20,hue(s%360))}<bdi>${esc(String(x.alias).slice(0,24))}</bdi></span>`; }).join('') : '';
+  const html=part('أبطال الأسبوع الماضي', h && h.w)+part('أبطال الشهر الماضي', h && h.m);
+  const el=$('#hall'); el.innerHTML=html; el.classList.toggle('hidden', !html);
+}
+async function pnOnline(){
+  if(!C.pubnub || document.hidden) return;
+  try{
+    const id=sessionStorage.getItem('qts:id') || ('qt-site-'+Math.random().toString(36).slice(2,10));
+    try{ sessionStorage.setItem('qts:id', id); }catch(e){}
+    const r=await fetch(`https://ps.pndsn.com/v2/presence/sub-key/${encodeURIComponent(C.pubnub.sub)}/channel/qt-lobby?disable_uuids=1&state=0&uuid=${encodeURIComponent(id)}`);
+    const j=await r.json(); const n=Math.max(0, j && j.occupancy|0);
+    const el=$('#onl'); el.querySelector('b').textContent=fmtN(n); el.classList.toggle('hidden', n<2);
+  }catch(e){}
+}
+function loadScript(src){ return new Promise((ok,no)=>{ const s=document.createElement('script'); s.src=src; s.async=true; s.onload=ok; s.onerror=no; document.head.appendChild(s); }); }
+async function ably(){
+  if(!C.ably || !C.ably.key) return;
+  try{
+    if(!window.Ably) await loadScript('https://cdn.ably.com/lib/ably.min-2.js').catch(()=>loadScript('https://cdn.jsdelivr.net/npm/ably@2/build/ably.min.js'));
+    const ab=new Ably.Realtime({ key:C.ably.key, echoMessages:false });
+    await ab.channels.get(C.ably.channel||'qt:pulse').subscribe(m=>{ if(m.name==='daily') setDaily(m.data); else if(m.name==='announce') setAnn(m.data); });
+    document.addEventListener('visibilitychange', ()=>{ try{ document.hidden ? ab.connection.close() : ab.connection.connect(); }catch(e){} });
+  }catch(e){}
+}
+
+paintStatic(); paintDaily();
+document.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>paintBoard(b.dataset.v));
+LIGHT.addEventListener && LIGHT.addEventListener('change', ()=>{ paintStatic(); paintBoard('all'); });
+if(C.supabase){
+  paintBoard('all'); paintHall();
+  sb('qt_daily_stats', { p_day:today() }).then(r=>setDaily({ day:today(), n:r&&r.n, ok:r&&r.ok })).catch(()=>{});
+  sb('qt_announce_last').then(setAnn).catch(()=>{});
+} else paintBoard('all');
+pnOnline(); setInterval(pnOnline, 30000);
+document.addEventListener('visibilitychange', ()=>{ if(!document.hidden) pnOnline(); });
+('requestIdleCallback' in window ? requestIdleCallback : f=>setTimeout(f,1200))(ably);
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,10 @@
+# إعداد أدنى لـ Supabase CLI: يكفي لـ link و db push و functions deploy.
+project_id = "qanoun-tahiro"
+
+[functions.qt-pulse]
+# الدالة تقبل استدعاء التطبيق والموقع بالمفتاح المنشور (غير JWT)، وتحمي الإعلانات بسر المؤلف.
+verify_jwt = false
+
+[functions.qt-ai]
+# «المستشار»: الدالة تتحقق بنفسها من جلسة المستخدم (auth.getUser) وتحسب حصته، فلا تحقق JWT في البوابة.
+verify_jwt = false

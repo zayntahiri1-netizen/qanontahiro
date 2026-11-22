@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "708185370961",
+    "project_id": "qanon-47831",
+    "storage_bucket": "qanon-47831.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:708185370961:android:efa771e94f66c8a0a16370",
+        "android_client_info": {
+          "package_name": "com.qanontahiro.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAiYDn8kGI4JbhFszfzNe24b3upnOu0C80"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

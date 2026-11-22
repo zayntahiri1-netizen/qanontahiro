@@ -1,0 +1,36 @@
+{
+  "_note": "مفاتيح عامة آمنة للعميل فقط. لا يوضع هنا أبداً مفتاح Ably Root ولا sb_secret ولا service_role: تلك أسرار خادم تُضبط بـ supabase secrets set.",
+  "supabase": {
+    "url": "https://zorbawbrcgmchvzdtekq.supabase.co",
+    "key": "sb_publishable_UO9u0LzSb90jvY-WXrxD_g_C7pgW1AO"
+  },
+  "pubnub": {
+    "pub": "pub-c-377a16a6-2799-4928-a722-09f2a1eed90d",
+    "sub": "sub-c-ffb4c6d3-e9e2-49a5-ab7d-3363239418db"
+  },
+  "ably": {
+    "key": "bjCE2A.ygIqzw:HY87KH-euIM2Wk9Is4Gj140Mg1VCIL4CPiyIm4fUKHc",
+    "channel": "qt:pulse"
+  },
+  "firebase": {
+    "apiKey": "AIzaSyCPXHccfODW8KZlpw9tGYsl8OYsVBsxQZ8",
+    "authDomain": "qanon-47831.firebaseapp.com",
+    "projectId": "qanon-47831",
+    "storageBucket": "qanon-47831.firebasestorage.app",
+    "messagingSenderId": "708185370961",
+    "appId": "1:708185370961:web:5eeea3f835b4bbcca16370",
+    "measurementId": "G-GFL2SEHLZW"
+  },
+  "site": "https://qanon-47831.web.app",
+  "play": "https://play.google.com/store/apps/details?id=com.qanontahiro.app",
+  "admob": {
+    "app": "ca-app-pub-1725525147318224~9300192286",
+    "banner": "ca-app-pub-1725525147318224/1940577012",
+    "interstitial": "ca-app-pub-1725525147318224/9432054223",
+    "rewarded": "ca-app-pub-1725525147318224/8197582346",
+    "rewardedInterstitial": "ca-app-pub-1725525147318224/3427425215",
+    "native": "ca-app-pub-1725525147318224/3144566219",
+    "appOpen": "ca-app-pub-1725525147318224/4221632131",
+    "appAdsTxt": "google.com, pub-1725525147318224, DIRECT, f08c47fec0942fa0"
+  }
+}

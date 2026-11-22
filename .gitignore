@@ -1,0 +1,30 @@
+# مولَّد: يبنيه build.py وCapacitor وGitHub Actions في كل مرة
+/dist/
+/www/
+/android/
+/ios/
+node_modules/
+/.qt-backup/
+
+# مواد العمل: نصوص القوانين المستخرجة ونصوص الجولات تبقى على جهازك ولا تُنشر في المستودع العام
+/txt/
+/round-*-quiz-text.md
+
+# أسرار: لا تُلتزم أبداً (مفاتيح التوقيع والبيئة وأسرار الخادم)
+*.jks
+*.keystore
+*.p12
+*.pem
+.env
+.env.*
+*.secret
+service-account*.json
+
+# أخرى
+__pycache__/
+*.pyc
+*.bak
+*.log
+.DS_Store
+.firebase/
+supabase/.temp/

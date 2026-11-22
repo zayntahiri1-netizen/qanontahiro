@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>لوحة المؤلف — قانون تاهيرو</title>
+<link rel="icon" href="app/icon.svg" type="image/svg+xml">
+<style>
+:root{--ink:#0D1A22;--ink2:#13252F;--line:#284656;--brass:#D3A34E;--on-brass:#1B1305;--fes:#3E9DB1;--qirmiz:#C4434F;--jibs:#F0E7D6;--muted:#8FA3AE}
+*{box-sizing:border-box}
+body{margin:0;background:var(--ink);color:var(--jibs);font-family:"Noto Naskh Arabic","Geeza Pro",system-ui,sans-serif;font-size:17px;line-height:1.7}
+main{width:min(820px,100% - 28px);margin:0 auto;padding:22px 0 60px}
+h1{font-size:24px;margin:4px 0 2px} h2{font-size:19px;color:var(--brass);margin:30px 0 10px}
+p.m{color:var(--muted);font-size:15px;margin:0 0 10px}
+label{display:block;color:var(--muted);font-size:14.5px;margin:10px 0 4px}
+input,textarea{width:100%;background:var(--ink2);border:1px solid var(--line);border-radius:9px;color:var(--jibs);font:inherit;padding:10px 12px}
+textarea{min-height:70px;resize:vertical}
+input:focus,textarea:focus{outline:none;border-color:var(--fes)}
+button{font:inherit;border:0;border-radius:10px;padding:11px 18px;cursor:pointer;background:var(--brass);color:var(--on-brass);font-weight:600;margin-top:12px}
+button.b2{background:transparent;color:var(--jibs);border:1px solid var(--line);font-weight:400}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.out{white-space:pre-wrap;background:var(--ink2);border:1px solid var(--line);border-radius:9px;padding:10px 12px;font-size:14.5px;margin-top:10px;direction:ltr;text-align:left;overflow:auto;max-height:420px}
+.ok{color:var(--fes)} .er{color:var(--qirmiz)}
+table{width:100%;border-collapse:collapse;font-size:15px;margin-top:8px}
+td,th{border-top:1px solid var(--line);padding:8px 6px;text-align:start;vertical-align:top}
+th{color:var(--muted);font-weight:400}
+code{direction:ltr;unicode-bidi:embed}
+</style>
+</head>
+<body>
+<main>
+<h1>لوحة المؤلف</h1>
+<p class="m">تتصل مباشرة بدالة الخادم «qt-pulse» على Supabase. لا يعمل شيء هنا دون سر المؤلف (QT_ADMIN_SECRET)، والسر لا يُحفظ إلا في هذه الجلسة من المتصفح إن طلبت ذلك.</p>
+
+<label for="sec">سر المؤلف</label>
+<input id="sec" type="password" autocomplete="off" dir="ltr">
+<div class="row"><label style="margin:6px 0"><input type="checkbox" id="keep" style="width:auto"> تذكّره في هذه الجلسة فقط</label></div>
+
+<h2>إعلان حي</h2>
+<p class="m">يظهر فوراً في التطبيق وعلى الموقع عند كل من يفتحهما الآن، ويبقى ظاهراً واحداً وعشرين يوماً لمن يفتح لاحقاً.</p>
+<label for="ar">النص العربي (إلزامي)</label><textarea id="ar" maxlength="400"></textarea>
+<label for="fr">Français (اختياري)</label><textarea id="fr" maxlength="400" dir="ltr"></textarea>
+<label for="en">English (اختياري)</label><textarea id="en" maxlength="400" dir="ltr"></textarea>
+<label for="url">رابط https (اختياري)</label><input id="url" dir="ltr" placeholder="https://">
+<button id="send">بث الإعلان</button>
+<div id="o1"></div>
+
+<h2>البلاغات عن الأسئلة</h2>
+<div class="row"><button class="b2" id="rep">جلب آخر البلاغات</button><button class="b2" id="tsv">نسخها جدولاً (TSV)</button></div>
+<div id="o2"></div>
+
+<h2>أرقام عامة والمساعد والإعلانات</h2>
+<button class="b2" id="st">جلب الأرقام</button>
+<div id="o3"></div>
+
+<h2>إخفاء اسم مستعار مخالف</h2>
+<p class="m">يخرج الاسم من اللوحات العامة وأبطال الأسبوع، ويبقى حسابه وتقدمه كما هما. ويمكن إظهاره متى شئت.</p>
+<input id="hal" placeholder="الاسم المستعار">
+<div class="row"><button id="hide">إخفاء</button><button class="b2" id="show">إظهار</button></div>
+<div id="o4"></div>
+</main>
+<script>
+const CLOUD = /*__CLOUD__*/null;
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const FN = CLOUD.supabase.url + '/functions/v1/qt-pulse';
+try{ const v=sessionStorage.getItem('qt-admin'); if(v){ $('#sec').value=v; $('#keep').checked=true; } }catch(e){}
+async function call(body){
+  const sec=$('#sec').value.trim();
+  if(!sec) throw new Error('أدخل سر المؤلف أولاً');
+  try{ $('#keep').checked ? sessionStorage.setItem('qt-admin', sec) : sessionStorage.removeItem('qt-admin'); }catch(e){}
+  const r=await fetch(FN, { method:'POST', headers:{ 'Content-Type':'application/json', 'x-qt-admin':sec,
+    apikey:CLOUD.supabase.key, Authorization:'Bearer '+CLOUD.supabase.key }, body:JSON.stringify(body) });
+  const j=await r.json().catch(()=>({ error:'HTTP '+r.status }));
+  if(!r.ok || j.error) throw new Error(j.error==='forbidden' ? 'السر غير صحيح' : (j.error || 'HTTP '+r.status));
+  return j;
+}
+const show=(id, ok, msg)=>{ $(id).innerHTML=`<p class="${ok?'ok':'er'}">${esc(msg)}</p>`; };
+$('#send').onclick=async()=>{
+  const b={ type:'announce', ar:$('#ar').value.trim(), fr:$('#fr').value.trim(), en:$('#en').value.trim(), url:$('#url').value.trim() };
+  if(!b.ar) return show('#o1', false, 'النص العربي إلزامي');
+  if(b.url && !/^https:\/\/\S+$/.test(b.url)) return show('#o1', false, 'الرابط يجب أن يبدأ بـ https://');
+  try{ const j=await call(b); show('#o1', true, 'بُث الإعلان رقم '+j.id); }catch(e){ show('#o1', false, e.message); }
+};
+let REPORTS=[];
+$('#rep').onclick=async()=>{
+  try{
+    const j=await call({ type:'reports' }); REPORTS=j.reports||[];
+    $('#o2').innerHTML = REPORTS.length ? `<table><tr><th>السؤال</th><th>النوع</th><th>التفاصيل</th><th>التاريخ</th></tr>${REPORTS.map(r=>
+      `<tr><td><code>${esc(r.qid)}</code></td><td>${esc(r.why)}</td><td>${esc(r.note||'')}<br><small style="color:var(--muted)">${esc(r.alias||'')} · ${esc(r.bank||'')}</small></td><td>${esc(String(r.created_at||'').slice(0,10))}</td></tr>`).join('')}</table>`
+      : '<p class="m">لا بلاغات بعد.</p>';
+  }catch(e){ show('#o2', false, e.message); }
+};
+$('#tsv').onclick=async()=>{
+  if(!REPORTS.length) return show('#o2', false, 'اجلب البلاغات أولاً');
+  const txt=REPORTS.map(r=>[r.qid,r.why,(r.note||'').replace(/\s+/g,' '),r.alias,r.bank,r.created_at].join('\t')).join('\n');
+  try{ await navigator.clipboard.writeText(txt); }catch(e){}
+  $('#o2').insertAdjacentHTML('beforeend', `<div class="out">${esc(txt)}</div>`);
+};
+$('#st').onclick=async()=>{
+  try{ const j=await call({ type:'stats' });
+    $('#o3').innerHTML=`<table><tr><td>الأسماء المستعارة المسجلة</td><td>${j.profiles}</td></tr><tr><td>الحسابات المزامَنة</td><td>${j.synced}</td></tr>
+      <tr><td>البلاغات</td><td>${j.reports}</td></tr><tr><td>سؤال اليوم (أجاب / أصاب)</td><td>${j.daily?j.daily.n:0} / ${j.daily?j.daily.ok:0}</td></tr>
+      <tr><td>مفتاح Ably على الخادم</td><td>${j.ably?'مضبوط':'غير مضبوط'}</td></tr>
+      ${j.ai?`<tr><td>المساعد اليوم: استدعاءات / من الذاكرة / فشل</td><td>${j.ai.calls} / ${j.ai.cached} / ${j.ai.failed}</td></tr>
+      <tr><td>مستخدمو المساعد اليوم</td><td>${j.ai.users}</td></tr>
+      <tr><td>الرموز اليوم (دخل / خرج)</td><td>${j.ai.in_tok} / ${j.ai.out_tok}</td></tr>
+      <tr><td>تقدير أعلى للكلفة اليوم (بسعر Sonnet)</td><td>$${(j.ai.in_tok/1e6*2 + j.ai.out_tok/1e6*10).toFixed(2)}</td></tr>
+      <tr><td>أسئلة قاعدة المعرفة</td><td>${j.ai.kb}</td></tr>
+      ${j.ai.laws!=null?`<tr><td>مكتبة القوانين: قوانين / مواد</td><td>${j.ai.laws} / ${j.ai.articles}</td></tr>
+      <tr><td>نوازل حُلّلت اليوم</td><td>${j.ai.cases||0}</td></tr>`:''}`:''}
+      ${j.ads?`<tr><td>مكافآت الإعلانات اليوم (موثّقة من AdMob / بمطالبة التطبيق)</td><td>${j.ads.rewards} (${j.ads.ssv} / ${j.ads.client})</td></tr>
+      <tr><td>من شاهدوا إعلان مكافأة اليوم</td><td>${j.ads.users}</td></tr>`:''}</table>`; }
+  catch(e){ show('#o3', false, e.message); }
+};
+const hide=async hidden=>{
+  const alias=$('#hal').value.trim(); if(!alias) return show('#o4', false, 'اكتب الاسم المستعار');
+  try{ await call({ type:'hide', alias, hidden }); show('#o4', true, (hidden?'أُخفي ':'أُظهر ')+alias); }catch(e){ show('#o4', false, e.message); }
+};
+$('#hide').onclick=()=>hide(true); $('#show').onclick=()=>hide(false);
+</script>
+</body>
+</html>

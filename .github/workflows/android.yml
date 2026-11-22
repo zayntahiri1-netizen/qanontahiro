@@ -1,0 +1,133 @@
+# قانون تاهيرو — بناء تطبيق أندرويد (Capacitor 8) عند كل دفع إلى main، أو يدوياً من تبويب Actions.
+#
+# مجلد android/ لا يُلتزم: يولَّد هنا من قالب Capacitor، ثم يطبّق عليه scripts/qt-android-hook.cjs
+# كل ما يخص التطبيق (رابط Google، الأيقونات، الإحصاءات بموافقة، الإصدار والتوقيع).
+#
+# التوقيع (اختياري، لازم لـ Google Play): أضف في Settings → Secrets and variables → Actions:
+#   ANDROID_KEYSTORE_BASE64   محتوى ملف ‎.jks بترميز base64 (base64 -w0 upload.jks)
+#   ANDROID_KEYSTORE_PASSWORD كلمة سر الملف
+#   ANDROID_KEY_ALIAS         اسم المفتاح داخله
+#   ANDROID_KEY_PASSWORD      كلمة سر المفتاح (إن تُركت فارغة استُعملت كلمة سر الملف)
+# بوجودها: APK موقّع للتثبيت المباشر + AAB لـ Google Play. وبدونها: APK تجريبي (debug) فقط.
+# رقم الإصدار يزيد دائماً (دقائق منذ 1970)؛ ولرفعه فوق إصدار سابق في Play أضف المتغير QT_VERSION_OFFSET.
+# الإعلانات: حقيقية في النسخة الموقَّعة فقط، وتجريبية في النسخة debug (لا نقرات باطلة على حساب AdMob).
+name: Android
+
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - "**.md"
+      - "tests/**"
+      - "supabase/**"
+      - ".github/workflows/bank.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: android-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: APK / AAB
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      HAS_KEYSTORE: ${{ secrets.ANDROID_KEYSTORE_BASE64 != '' }}
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Build the bank and the app shell (build.py)
+        run: python3 build.py
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          package-manager-cache: false
+
+      - name: Install Capacitor 8 and plugins
+        run: npm install --no-audit --no-fund
+
+      - name: Prepare www/ (app + capacitor.js + native bridge)
+        env:
+          # إعلانات حقيقية في النسخة الموقَّعة لـ Google Play وحدها؛ والنسخة التجريبية (debug) بإعلانات Google التجريبية.
+          # ولإجبار وضع بعينه: متغير المستودع QT_ADS_MODE = test أو live
+          QT_ADS: ${{ vars.QT_ADS_MODE || (env.HAS_KEYSTORE == 'true' && 'live' || 'test') }}
+        run: node tools/cap-web.mjs
+
+      - name: Generate the Android project (Capacitor template + qt-android-hook)
+        run: npx cap add android
+
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: gradle
+
+      - name: Version
+        run: |
+          echo "QT_VERSION_CODE=$(( $(date +%s) / 60 + ${{ vars.QT_VERSION_OFFSET || 0 }} ))" >> "$GITHUB_ENV"
+          echo "QT_VERSION_NAME=7.0.${{ github.run_number }}" >> "$GITHUB_ENV"
+
+      - name: Signing key
+        if: env.HAS_KEYSTORE == 'true'
+        env:
+          KS: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+        run: |
+          printf '%s' "$KS" | base64 -di > "$RUNNER_TEMP/qt-upload.jks"
+          test -s "$RUNNER_TEMP/qt-upload.jks"
+          echo "QT_KEYSTORE=$RUNNER_TEMP/qt-upload.jks" >> "$GITHUB_ENV"
+
+      - name: Gradle
+        working-directory: android
+        env:
+          QT_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          QT_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          QT_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          chmod +x gradlew
+          if [ "$HAS_KEYSTORE" = "true" ]; then
+            ./gradlew --no-daemon --stacktrace assembleRelease bundleRelease
+          else
+            ./gradlew --no-daemon --stacktrace assembleDebug
+          fi
+
+      - name: Verify the package
+        run: |
+          set -e
+          APK=$(find android/app/build/outputs/apk -name '*.apk' ! -name '*unsigned*' | sort | head -1)
+          test -n "$APK" || { echo "::error::no APK produced"; exit 1; }
+          echo "APK: $APK"
+          unzip -l "$APK" > "$RUNNER_TEMP/apk-list.txt"
+          for f in assets/public/index.html assets/public/questions.json assets/public/capacitor.js assets/public/native.js assets/capacitor.config.json; do
+            grep -q " $f\$" "$RUNNER_TEMP/apk-list.txt" || { echo "::error::missing $f in APK"; exit 1; }
+          done
+          unzip -p "$APK" assets/public/index.html > "$RUNNER_TEMP/index.html"
+          grep -q '<script src="native.js"></script>' "$RUNNER_TEMP/index.html" || { echo "::error::native.js not injected"; exit 1; }
+          MAN=$(find android/app/build/intermediates -path '*merged_manifest*' -name AndroidManifest.xml | sort | head -1)
+          test -n "$MAN" || { echo "::error::merged manifest not found"; exit 1; }
+          echo "merged manifest: $MAN"
+          grep -q 'android:host="auth-callback"' "$MAN" || { echo "::error::Google sign-in deep link missing"; exit 1; }
+          grep -q 'android:scheme="com.qanontahiro.app"' "$MAN" || { echo "::error::deep link scheme missing"; exit 1; }
+          grep -q 'com.google.android.gms.permission.AD_ID' "$MAN" || { echo "::error::AD_ID permission missing (AdMob needs it)"; exit 1; }
+          APPID=$(python3 -c "import json;print(json.load(open('config/cloud.json'))['admob']['app'])")
+          grep -q "android:value=\"$APPID\"" "$MAN" || { echo "::error::AdMob APPLICATION_ID missing from manifest"; exit 1; }
+          grep -o 'QT_ADS_MODE="[a-z]*"' www/native.js
+          BT=$(ls -d "$ANDROID_HOME"/build-tools/* | sort -V | tail -1)
+          "$BT/aapt2" dump badging "$APK" > "$RUNNER_TEMP/badging.txt" || true
+          grep -E "^package:|^application-label:|targetSdkVersion|^sdkVersion" "$RUNNER_TEMP/badging.txt" || true
+          "$BT/apksigner" verify --print-certs "$APK" > "$RUNNER_TEMP/certs.txt" 2>&1 || true
+          grep -E "Signer #1 certificate (DN|SHA-256)" "$RUNNER_TEMP/certs.txt" || true
+          echo "✓ versionCode $QT_VERSION_CODE · versionName $QT_VERSION_NAME"
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: qanoun-tahiro-${{ env.QT_VERSION_NAME }}
+          path: |
+            android/app/build/outputs/apk/**/*.apk
+            android/app/build/outputs/bundle/**/*.aab
+          if-no-files-found: error
+          retention-days: 30

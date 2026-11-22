@@ -1,0 +1,15 @@
+{
+  "appId": "com.qanontahiro.app",
+  "appName": "قانون تاهيرو",
+  "webDir": "www",
+  "backgroundColor": "#12181F",
+  "android": {
+    "backgroundColor": "#12181F"
+  },
+  "plugins": {
+    "SystemBars": {
+      "style": "DARK",
+      "initialViewportFitValueHint": "cover"
+    }
+  }
+}

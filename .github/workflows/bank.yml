@@ -1,0 +1,73 @@
+# قانون تاهيرو — الاختبارات الدائمة عند كل دفع: البنك والحرّاس، ثم دوال Supabase على Postgres حقيقي.
+name: Bank and cloud tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: tests-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  bank:
+    name: Bank, build, guards
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Audit the bank (build.py --test)
+        run: python3 build.py --test
+
+      - name: Build (standalone + split + site)
+        run: python3 build.py
+
+      - name: Regression tests
+        run: python3 tests/test_bank.py
+
+      - name: Mutation tests (guards of the guards)
+        run: python3 tests/test_guards.py
+
+      - name: Law library behind the Assistant (data/corpus)
+        run: python3 tests/test_corpus.py
+
+  cloud:
+    name: Supabase SQL + qt-pulse + qt-ai (with the law library)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
+    env:
+      PGPASSWORD: postgres
+      QT_PG_HOST: localhost
+      QT_PG_PORT: "5432"
+      QT_SKIP_BROWSER: "1"
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          package-manager-cache: false
+
+      - name: Build (the AI test loads the whole bank into the knowledge base)
+        run: python3 build.py
+
+      - name: SQL behaviour, pulse function, AI function
+        run: bash tests/run-cloud-tests.sh
