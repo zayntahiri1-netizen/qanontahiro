@@ -6,7 +6,7 @@ export const sqlRaw = q => execFileSync('psql', PSQL, { input: q, encoding: 'utf
 const lit = v => v === null || v === undefined ? 'null' : typeof v === 'number' || typeof v === 'boolean' ? String(v)
   : Array.isArray(v) && v.every(x => typeof x === 'string') && v.length ? `array[${v.map(x => `$q$${x}$q$`).join(',')}]::text[]`
   : typeof v === 'object' ? `$j$${JSON.stringify(v)}$j$::jsonb` : `$q$${String(v)}$q$`;
-const TABLE_FNS = new Set(['qt_kb_search', 'qt_law_search', 'qt_law_get']);
+const TABLE_FNS = new Set(['qt_kb_search', 'qt_law_search', 'qt_law_get', 'qt_law_near', 'qt_law_pick', 'qt_law_sample']);
 export const USERS = new Map();      // رمز الجلسة ← { id, is_anonymous }
 function builder(table) {
   const st = { op: 'select', cols: '*', where: [], one: false, row: null };

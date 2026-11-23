@@ -1,12 +1,12 @@
 #!/usr/bin/env node
 // =========================================================================
-// قانون تاهيرو — يجهّز www/ لتطبيق أندرويد (Capacitor) من البناء المقسوم dist/app:
-//   • ينسخ dist/app كما هو (القشرة + البنك + الأيقونات)
+// قانون تاهيرو — يجهّز www/ لتطبيقي أندرويد وiPhone (Capacitor) من البناء المقسوم dist/app:
+//   • ينسخ dist/app كما هو (القشرة + البنك + النصوص القانونية lib/ + الأيقونات)
 //   • يضع capacitor.js (الحزمة الجاهزة من @capacitor/core) وnative.js (الجسر من native/bridge.js)
 //   • وضع الإعلانات من QT_ADS: live للنسخة الموقَّعة لـ Google Play، وغيره إعلانات تجريبية
 //   • يحقنهما في <head> قبل شيفرة التطبيق، فيجد التطبيق window.QT_CAP عند إقلاعه
 //   • يرفض المتابعة إن وجد في www/ أي سر خادم (الفحص نفسه الذي يجريه build.py على الموقع)
-// يُشغَّل بعد python3 build.py وnpm install، وقبل npx cap add/sync android:
+// يُشغَّل بعد python3 build.py وnpm install، وقبل npx cap add/sync android (أو ios):
 //   node tools/cap-web.mjs
 // =========================================================================
 import fs from 'node:fs';
@@ -20,7 +20,7 @@ const CORE = path.join(ROOT, 'node_modules', '@capacitor', 'core', 'dist', 'capa
 const BRIDGE = path.join(ROOT, 'native', 'bridge.js');
 // مطابقة لـ SECRET_MARKERS في build.py
 const SECRET_MARKERS = [/sb_secret_/, /service_role/, /bjCE2A\.7YUitA/, /-----BEGIN [A-Z ]*PRIVATE KEY/,
-  /"type"\s*:\s*"service_account"/, /\bsbp_[0-9a-f]{20,}/];
+  /"type"\s*:\s*"service_account"/, /\bsbp_[0-9a-f]{20,}/, /\bAQ\.[A-Za-z0-9_-]{30,}/];
 
 const die = m => { console.error('✗ ' + m); process.exit(1); };
 if (!fs.existsSync(path.join(SRC, 'index.html')) || !fs.existsSync(path.join(SRC, 'questions.json')))
@@ -50,4 +50,4 @@ for (const f of fs.readdirSync(WWW)) {
 if (leaks.length) die('سر خادم في ملفات التطبيق: ' + leaks.join('، '));
 
 const kb = f => Math.round(fs.statSync(path.join(WWW, f)).size / 1024);
-console.log(`✓ www/ جاهز لأندرويد: index.html ${kb('index.html')} ك.ب، questions.json ${kb('questions.json')} ك.ب، capacitor.js ${kb('capacitor.js')} ك.ب، native.js — الإعلانات: ${ADS === 'live' ? 'حقيقية' : 'تجريبية'}`);
+console.log(`✓ www/ جاهز لتطبيق الهاتف: index.html ${kb('index.html')} ك.ب، questions.json ${kb('questions.json')} ك.ب، capacitor.js ${kb('capacitor.js')} ك.ب، native.js — الإعلانات: ${ADS === 'live' ? 'حقيقية' : 'تجريبية'}`);

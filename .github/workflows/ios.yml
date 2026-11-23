@@ -1,0 +1,191 @@
+# قانون تاهيرو — بناء تطبيق iPhone (Capacitor 8) على حاسوب Mac من GitHub، ورفعه إلى TestFlight. لا يلزمك Mac.
+#
+# مجلد ios/ لا يُلتزم: يولَّد هنا من قالب Capacitor (Swift Package Manager)، ثم يطبّق عليه scripts/qt-ios-hook.cjs
+# كل ما يخص التطبيق (رابط Google، الأذونات، الأيقونة، بيان الخصوصية)، وscripts/qt-ios-project.rb الإصدار والتوقيع.
+#
+# الأسرار (Settings → Secrets and variables → Actions)، ويضعها كلها الأمر: bash scripts/ios-signing.sh secrets
+#   IOS_CERT_P12        شهادة «Apple Distribution» مع مفتاحها (ملف ‎.p12 بترميز base64)
+#   IOS_CERT_PASSWORD   كلمة سر ملف ‎.p12
+#   IOS_PROFILE         ملف التعريف «App Store» للمعرّف com.qanontahiro.app (‎.mobileprovision بترميز base64)
+#   ASC_KEY_ID  ASC_ISSUER_ID  ASC_KEY_P8   مفتاح App Store Connect API (للرفع إلى TestFlight)
+# بوجود الأربعة الأولى: ملف IPA موقَّع؛ وبوجود مفتاح API أيضاً: يُرفع إلى TestFlight. وبدونها: بناء للمحاكي يثبت أن المشروع سليم.
+# الرفع: يدوياً من تبويب Actions ← iOS ← Run workflow؛ وعند كل دفع إلى main إن ضُبط متغير المستودع QT_IOS_AUTO_UPLOAD = true.
+# رقم البناء يزيد دائماً (دقائق منذ 1970)؛ والإصدار الظاهر من package.json.
+# نسخة iPhone بلا إعلانات ولا إحصاءات ولا تتبع (لا تُضمَّن إضافتا AdMob وFirebase فيها).
+name: iOS
+
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - "**.md"
+      - "tests/**"
+      - "supabase/**"
+      - ".github/workflows/bank.yml"
+      - ".github/workflows/android.yml"
+  workflow_dispatch:
+    inputs:
+      upload:
+        description: "ارفع البناء إلى TestFlight (يحتاج أسرار التوقيع ومفتاح API)"
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ios-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: IPA / TestFlight
+    runs-on: macos-26
+    timeout-minutes: 60
+    env:
+      HAS_SIGNING: ${{ secrets.IOS_CERT_P12 != '' && secrets.IOS_PROFILE != '' }}
+      HAS_ASC: ${{ secrets.ASC_KEY_P8 != '' && secrets.ASC_KEY_ID != '' && secrets.ASC_ISSUER_ID != '' }}
+      WANT_UPLOAD: ${{ (github.event_name == 'workflow_dispatch' && inputs.upload) || vars.QT_IOS_AUTO_UPLOAD == 'true' }}
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Build the bank, the app shell and the law texts (build.py)
+        run: python3 build.py
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          package-manager-cache: false
+
+      - name: Install Capacitor 8 (+ iOS platform)
+        run: npm install --no-audit --no-fund
+
+      - name: Prepare www/ (app + capacitor.js + native bridge)
+        run: node tools/cap-web.mjs
+
+      - name: Toolchain
+        run: |
+          xcodebuild -version
+          node -v
+          ruby -v
+
+      - name: Generate the iOS project (Capacitor template + qt-ios-hook)
+        run: |
+          npx cap add ios
+          test -d ios/App/App.xcodeproj || { echo "::error::ios/App/App.xcodeproj not generated"; exit 1; }
+          CAPACITOR_PLATFORM_NAME=ios node scripts/qt-ios-hook.cjs   # مرة ثانية للاطمئنان (لا يتغير شيء إن طُبّق)
+          plutil -lint ios/App/App/Info.plist ios/App/App/PrivacyInfo.xcprivacy
+          /usr/libexec/PlistBuddy -c 'Print :CFBundleURLTypes:0:CFBundleURLSchemes:0' ios/App/App/Info.plist | grep -qx 'com.qanontahiro.app' \
+            || { echo "::error::Google sign-in URL scheme missing"; exit 1; }
+          /usr/libexec/PlistBuddy -c 'Print :NSMicrophoneUsageDescription' ios/App/App/Info.plist >/dev/null
+          test -s ios/App/App/public/index.html && test -s ios/App/App/public/lib/index.json || { echo "::error::web assets missing"; exit 1; }
+          grep -q '<script src="native.js"></script>' ios/App/App/public/index.html || { echo "::error::native.js not injected"; exit 1; }
+          ! grep -qsiE "admob|firebase" ios/App/CapApp-SPM/Package.swift || { echo "::error::ads/analytics plugin leaked into the iOS build"; exit 1; }
+          cat ios/App/CapApp-SPM/Package.swift 2>/dev/null || true
+
+      - name: Version
+        run: |
+          echo "QT_VERSION=$(node -p "require('./package.json').version")" >> "$GITHUB_ENV"
+          echo "QT_BUILD=$(( $(date +%s) / 60 + ${{ vars.QT_IOS_BUILD_OFFSET || 0 }} ))" >> "$GITHUB_ENV"
+
+      - name: Signing (Apple Distribution certificate + App Store profile)
+        if: env.HAS_SIGNING == 'true'
+        env:
+          P12: ${{ secrets.IOS_CERT_P12 }}
+          P12_PASSWORD: ${{ secrets.IOS_CERT_PASSWORD }}
+          PROFILE: ${{ secrets.IOS_PROFILE }}
+        run: |
+          set -euo pipefail
+          KC="$RUNNER_TEMP/qt-signing.keychain-db"; KP="$(openssl rand -hex 16)"
+          printf '%s' "$P12" | base64 --decode > "$RUNNER_TEMP/qt.p12"
+          printf '%s' "$PROFILE" | base64 --decode > "$RUNNER_TEMP/qt.mobileprovision"
+          security create-keychain -p "$KP" "$KC"
+          security set-keychain-settings -lut 21600 "$KC"
+          security unlock-keychain -p "$KP" "$KC"
+          security import "$RUNNER_TEMP/qt.p12" -P "$P12_PASSWORD" -A -t cert -f pkcs12 -k "$KC"
+          security set-key-partition-list -S apple-tool:,apple: -k "$KP" "$KC" >/dev/null
+          security list-keychain -d user -s "$KC" $(security list-keychains -d user | tr -d '"')
+          security find-identity -v -p codesigning "$KC"
+          KIND=$(security find-identity -v -p codesigning "$KC" | grep -oE '"(Apple|iPhone) Distribution' | head -1 | tr -d '"' || true)
+          [ -n "$KIND" ] || { echo "::error::no distribution identity (Apple Distribution) in IOS_CERT_P12"; exit 1; }
+          security cms -D -i "$RUNNER_TEMP/qt.mobileprovision" > "$RUNNER_TEMP/qt-profile.plist"
+          PB=/usr/libexec/PlistBuddy; PL="$RUNNER_TEMP/qt-profile.plist"
+          UUID=$($PB -c 'Print :UUID' "$PL"); NAME=$($PB -c 'Print :Name' "$PL"); TEAM=$($PB -c 'Print :TeamIdentifier:0' "$PL")
+          APPID=$($PB -c 'Print :Entitlements:application-identifier' "$PL")
+          [ "$APPID" = "$TEAM.com.qanontahiro.app" ] || { echo "::error::profile is for $APPID, expected $TEAM.com.qanontahiro.app"; exit 1; }
+          if $PB -c 'Print :ProvisionedDevices' "$PL" >/dev/null 2>&1; then echo "::error::this is not an App Store profile (it lists devices)"; exit 1; fi
+          for d in "$HOME/Library/MobileDevice/Provisioning Profiles" "$HOME/Library/Developer/Xcode/UserData/Provisioning Profiles"; do
+            mkdir -p "$d"; cp "$RUNNER_TEMP/qt.mobileprovision" "$d/$UUID.mobileprovision"
+          done
+          echo "profile: $NAME ($UUID), team $TEAM, expires $($PB -c 'Print :ExpirationDate' "$PL")"
+          { echo "QT_TEAM=$TEAM"; echo "QT_PROFILE_NAME=$NAME"; echo "QT_KEYCHAIN=$KC"; echo "QT_SIGN_IDENTITY=$KIND"; } >> "$GITHUB_ENV"
+
+      - name: Configure the Xcode project (version, iPhone only, signing of the App target, privacy manifest)
+        run: |
+          gem install xcodeproj --no-document --user-install
+          export GEM_HOME="$(ruby -e 'print Gem.user_dir')"; export PATH="$GEM_HOME/bin:$PATH"
+          ruby scripts/qt-ios-project.rb
+
+      - name: Archive and export a signed IPA
+        if: env.HAS_SIGNING == 'true'
+        run: |
+          set -euo pipefail
+          if [ -d ios/App/App.xcworkspace ]; then PRJ=(-workspace ios/App/App.xcworkspace); else PRJ=(-project ios/App/App.xcodeproj); fi
+          xcodebuild "${PRJ[@]}" -scheme App -configuration Release -destination 'generic/platform=iOS' \
+            -archivePath "$RUNNER_TEMP/App.xcarchive" OTHER_CODE_SIGN_FLAGS="--keychain $QT_KEYCHAIN" archive | tail -40
+          cat > "$RUNNER_TEMP/ExportOptions.plist" <<PLIST
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0"><dict>
+            <key>method</key><string>app-store-connect</string>
+            <key>destination</key><string>export</string>
+            <key>teamID</key><string>${QT_TEAM}</string>
+            <key>signingStyle</key><string>manual</string>
+            <key>signingCertificate</key><string>${QT_SIGN_IDENTITY}</string>
+            <key>provisioningProfiles</key><dict><key>com.qanontahiro.app</key><string>${QT_PROFILE_NAME}</string></dict>
+            <key>uploadSymbols</key><true/>
+          </dict></plist>
+          PLIST
+          plutil -lint "$RUNNER_TEMP/ExportOptions.plist"
+          xcodebuild -exportArchive -archivePath "$RUNNER_TEMP/App.xcarchive" -exportOptionsPlist "$RUNNER_TEMP/ExportOptions.plist" \
+            -exportPath "$RUNNER_TEMP/export" | tail -20
+          IPA=$(ls "$RUNNER_TEMP"/export/*.ipa | head -1); test -s "$IPA"
+          mkdir -p out && cp "$IPA" "out/qanoun-tahiro-$QT_VERSION-$QT_BUILD.ipa"
+          unzip -l "$IPA" | grep -E "Payload/App.app/(public/index.html|PrivacyInfo.xcprivacy|Info.plist)$"
+          echo "✓ IPA: out/qanoun-tahiro-$QT_VERSION-$QT_BUILD.ipa"
+
+      - name: Simulator build (no signing secrets yet)
+        if: env.HAS_SIGNING != 'true'
+        run: |
+          set -euo pipefail
+          if [ -d ios/App/App.xcworkspace ]; then PRJ=(-workspace ios/App/App.xcworkspace); else PRJ=(-project ios/App/App.xcodeproj); fi
+          xcodebuild "${PRJ[@]}" -scheme App -configuration Debug -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' \
+            -derivedDataPath "$RUNNER_TEMP/dd" CODE_SIGNING_ALLOWED=NO build | tail -30
+          APP=$(find "$RUNNER_TEMP/dd" -name 'App.app' -path '*iphonesimulator*' | head -1); test -n "$APP"
+          mkdir -p out && ( cd "$(dirname "$APP")" && zip -qry "$GITHUB_WORKSPACE/out/qanoun-tahiro-simulator-$QT_VERSION-$QT_BUILD.zip" App.app )
+          echo "::notice::Simulator build OK. Add the signing secrets (bash scripts/ios-signing.sh secrets) to get a signed IPA for TestFlight."
+
+      - name: Upload to TestFlight (App Store Connect)
+        if: env.HAS_SIGNING == 'true' && env.HAS_ASC == 'true' && env.WANT_UPLOAD == 'true'
+        env:
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+          ASC_KEY_P8: ${{ secrets.ASC_KEY_P8 }}
+        run: |
+          set -euo pipefail
+          mkdir -p "$HOME/.appstoreconnect/private_keys"
+          printf '%s\n' "$ASC_KEY_P8" > "$HOME/.appstoreconnect/private_keys/AuthKey_$ASC_KEY_ID.p8"
+          IPA=$(ls out/*.ipa | head -1)
+          xcrun altool --upload-app -f "$IPA" -t ios --apiKey "$ASC_KEY_ID" --apiIssuer "$ASC_ISSUER_ID" --output-format normal
+          echo "::notice::Uploaded $QT_VERSION ($QT_BUILD) to App Store Connect. It appears in TestFlight after Apple finishes processing (5–30 min)."
+
+      - name: Clean up the keychain
+        if: always() && env.QT_KEYCHAIN != ''
+        run: security delete-keychain "$QT_KEYCHAIN" || true
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: qanoun-tahiro-ios-${{ env.QT_VERSION }}-${{ env.QT_BUILD }}
+          path: out/*
+          if-no-files-found: error
+          retention-days: 30

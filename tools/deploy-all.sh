@@ -4,13 +4,13 @@
 #   1) الخادم: Supabase — الهجرات، الدخول المجهول وGoogle، الأسرار، الدوال الثلاث (النبض و«المساعد» والتحقق من مكافآت AdMob)،
 #      قاعدة المعرفة، ومكتبة القوانين (نصوص المواد التي يجيب منها المساعد)، وفحوص حية
 #   2) الموقع ونسخة الويب من التطبيق: Firebase Hosting ← https://qanon-47831.web.app (ومعه app-ads.txt لـ AdMob)
-#   3) المستودع: GitHub ← يبني Actions تطبيق أندرويد (APK/AAB) ويشغّل الاختبارات
+#   3) المستودع: GitHub ← يبني Actions تطبيقي أندرويد (APK/AAB) وiPhone (TestFlight متى وُجدت أسراره) ويشغّل الاختبارات
 # كل خطوة تتوقف عند أول خطأ وتقول سببه. ولتخطي خطوة: QT_SKIP=cloud أو hosting أو github (أو أكثر، بفواصل).
 # =========================================================================
 set -euo pipefail
 cd "$(dirname "$0")/.."
 SKIP=",${QT_SKIP:-},"
-command -v node >/dev/null || { echo "✗ يلزم Node.js:  pkg install nodejs-lts"; exit 1; }
+command -v node >/dev/null || { echo "✗ يلزم Node.js:  pkg install nodejs"; exit 1; }
 [ -f dist/site/index.html ] && [ -f dist/app/index.html ] || {
   command -v python3 >/dev/null && python3 build.py || { echo "✗ dist/ غير موجود: شغّل python3 build.py (pkg install python)"; exit 1; }; }
 

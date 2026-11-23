@@ -78,6 +78,37 @@ async function run(live) {
       ok(/09.08/.test(await page.textContent('main')), 'سياسة الخصوصية تحيل على القانون 09.08');
       ok(!/@gmail\.com/.test(await page.content()), 'لا بريد شخصي منشور في الصفحات العامة');
       await page.screenshot({ path: `${OUT}/site-privacy.png`, fullPage: false });
+      // الصفحات القانونية (v8.1): الخصوصية والبنود وحذف البيانات بأربع لغات، كل لغة وحدها بخطها واتجاهها
+      const EXP = {
+        privacy: { ar: /09\.08/, en: /09-08/, fr: /09-08/, es: /09-08/ },
+        terms: { ar: /لا يتحمل التطبيق ولا مطوّره أي مسؤولية[\s\S]*ليس مستشاراً|ليس مستشاراً[\s\S]*لا يتحمل التطبيق ولا مطوّره أي مسؤولية/,
+                 en: /Neither the app nor its developer accepts any liability for any legal advice/, fr: /Ni l’application ni son développeur n’assument de responsabilité pour un conseil juridique/,
+                 es: /Ni la app ni su desarrollador asumen responsabilidad alguna por cualquier asesoramiento jurídico/ },
+        'delete-data': { ar: /حذف بياناتي من السحابة[\s\S]*30 يوماً/, en: /Delete my cloud data[\s\S]*30 days/, fr: /Supprimer mes données du cloud[\s\S]*30 jours/, es: /Delete my cloud data[\s\S]*30 días/ },
+      };
+      for (const [pg, ex] of Object.entries(EXP)) {
+        const res = [];
+        for (const l of ['ar', 'en', 'fr', 'es']) {
+          await page.goto(`${SITE_URL}/${pg}.html?lang=${l}`); await page.waitForSelector(`article.L[lang="${l}"] h1`);
+          const st = await page.evaluate(l => ({ lang: document.documentElement.lang, dir: document.documentElement.dir, title: document.title,
+            vis: [...document.querySelectorAll('article.L')].filter(a => a.offsetParent !== null).map(a => a.lang).join(),
+            cur: (document.querySelector('.langs a[aria-current="true"]') || {}).hreflang, sw: document.documentElement.scrollWidth <= innerWidth + 1,
+            txt: document.querySelector(`article.L[lang="${l}"]`).innerText }), l);
+          res.push(st.lang === l && st.dir === (l === 'ar' ? 'rtl' : 'ltr') && st.vis === l && st.cur === l && ex[l].test(st.txt) && st.sw && /Tahiro|تاهيرو/.test(st.title));
+        }
+        ok(res.every(Boolean), `${pg}: أربع لغات (العربية والإنجليزية والفرنسية والإسبانية)، كل لغة وحدها بعنوانها واتجاهها ومضمونها، دون تمرير أفقي (${res.map(x => x ? '✓' : '✗').join('')})`);
+        ok(!/@gmail\.com/.test(await page.content()), `${pg}: لا بريد شخصي منشور`);
+      }
+      await page.goto(`${SITE_URL}/terms.html?lang=es`); await page.waitForSelector('article.L[lang="es"] h1');
+      await page.screenshot({ path: `${OUT}/site-terms-es.png`, fullPage: false });
+      await page.goto(`${SITE_URL}/delete-data.html`); await page.waitForSelector('article.L[lang="es"] h1');
+      ok(await page.evaluate(() => document.documentElement.lang === 'es'), 'اللغة المختارة تُحفظ وتنتقل إلى الصفحات الأخرى');
+      await page.goto(`${SITE_URL}/terms.html?lang=ar`); await page.waitForSelector('article.L[lang="ar"] h1');
+      await page.screenshot({ path: `${OUT}/site-terms-ar.png`, fullPage: false });
+      const sm = await (await fetch(`${SITE_URL}/sitemap.xml`)).text();
+      ok(/\/terms</.test(sm) && /\/delete-data</.test(sm) && /\/privacy</.test(sm), 'خريطة الموقع فيها الصفحات الثلاث');
+      await page.goto(SITE_URL + '/'); await page.waitForSelector('footer');
+      ok(await page.$$eval('footer a', as => ['terms', 'privacy', 'delete-data'].every(h => as.some(a => a.getAttribute('href') === h))), 'تذييل الموقع: البنود والخصوصية وحذف البيانات');
       await page.goto(SITE_URL + '/admin.html'); await page.waitForSelector('#send');
       ok(/noindex/.test(await page.content()), 'لوحة المؤلف خارج الفهرسة');
     }

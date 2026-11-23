@@ -122,6 +122,9 @@ async function device(browser, name, native, launchUrl) {
 const calls = (page, p, m) => page.evaluate(([p, m]) => window.__calls.filter(c => c[0] === p && (!m || c[1] === m)), [p, m]);
 const fire = (page, key, data) => page.evaluate(([k, d]) => (window.__listeners[k] || []).forEach(cb => cb(d)), [key, data]);
 const skipOnb = async page => { const b = await page.waitForSelector('#onbs', { timeout: 3000 }).catch(() => null); if (b) await b.click(); };
+// البنود والشروط (v8.1): تظهر بعد التسجيل وقبل الردهة؛ يقبلها الاختبار حيث يُنتظر ظهورها
+const acceptTerms = async (page, ms = 15000) => { const c = await page.waitForSelector('#tgate #tgC', { timeout: ms }).catch(() => null);
+  if (!c) return false; await c.check(); await page.click('#tgY'); await page.waitForSelector('#tgate', { state: 'detached', timeout: 4000 }).catch(() => null); return true; };
 
 (async () => {
   const browser = await chromium.launch();
@@ -166,6 +169,14 @@ const skipOnb = async page => { const b = await page.waitForSelector('#onbs', { 
   ok(await A.evaluate(() => window.__exchanges) === 1, 'الرمز يُستبدل مرة واحدة ولو وصل الرابط مرتين');
   ok((await calls(A, 'Browser', 'close')).length === 1, 'يُغلق متصفح النظام بعد العودة (ورفضه لا يُسقط شيئاً)');
   // Google وحده يكفي: لا يُطلب من مستخدم Google جديد اسم مستعار، ويظهر في اللوحة اسم يولّده التطبيق لا اسمه في Google
+  // البنود والشروط بعد التسجيل، وأزرار صفحاتها تُفتح في متصفح النظام (Browser.open) بلغة الواجهة
+  await A.waitForSelector('#tgate #tgC', { timeout: 12000 });
+  await A.click('#tgate .legal a[data-page="terms"]');
+  await A.waitForFunction(() => window.__calls.filter(c => c[0] === 'Browser' && c[1] === 'open').length === 2, null, { timeout: 5000 }).catch(() => null);
+  const lo = await calls(A, 'Browser', 'open');
+  ok(lo.length === 2 && /^https:\/\/[^/]+\/terms\?lang=ar$/.test(lo[1][2].url) && A.url() === url0 && !!(await A.$('#tgate')),
+     'أندرويد: «البنود والشروط» تُفتح في متصفح النظام (Browser.open)، والتطبيق باقٍ على شاشة الموافقة');
+  await acceptTerms(A);
   await A.waitForFunction(() => window.S && S.user && !document.getElementById('lobby').classList.contains('hidden'), null, { timeout: 12000 }).catch(() => null);
   const gAlias = await A.evaluate(() => S.user && S.user.alias);
   ok(/^طالب \d{4}$/.test(gAlias || '') && await A.isHidden('#login'), `حساب Google جديد: يدخل مباشرة دون أن يُطلب منه اسم مستعار («${gAlias}»)`);
@@ -193,6 +204,7 @@ const skipOnb = async page => { const b = await page.waitForSelector('#onbs', { 
   const code2 = newCode({ email: 'amine@gmail.com', name: 'Amine Idrissi' });
   const B = await device(browser, 'B', true, CB + '?code=' + code2);
   await B.goto(URL0);
+  await acceptTerms(B);
   await B.waitForFunction(a => window.S && S.user && S.user.alias === a, gAlias, { timeout: 15000 }).catch(() => null);
   ok(await B.evaluate(a => S.user && S.user.alias === a && CS.google, gAlias), 'إقلاع بارد من الرابط على هاتف آخر: يدخل بحسابه واسمه نفسه مباشرة');
   await fire(B, 'App:appUrlOpen', { url: CB + '?code=' + code2 });       // وصول متأخر للرابط نفسه

@@ -157,8 +157,11 @@ const ad = (page, m) => page.evaluate(m => window.__calls.filter(c => c[0] === '
 const idx = (list, m) => list.findIndex(c => c[1] === m);
 const adh = page => page.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue('--adh').trim());
 const fire = (page, key, data) => page.evaluate(([k, d]) => (window.__listeners[k] || []).forEach(cb => cb(d)), [key, data]);
+// البنود والشروط (v8.1): تظهر بعد التسجيل وقبل الردهة؛ يقبلها الاختبار حيث يُنتظر ظهورها
+const acceptTerms = async (page, ms = 15000) => { const c = await page.waitForSelector('#tgate #tgC', { timeout: ms }).catch(() => null);
+  if (!c) return false; await c.check(); await page.click('#tgY'); await page.waitForSelector('#tgate', { state: 'detached', timeout: 4000 }).catch(() => null); return true; };
 async function enter(page, alias, { cloud = true } = {}) {
-  await page.fill('#alias', alias); await page.click('#enter');
+  await page.fill('#alias', alias); await page.click('#enter'); await acceptTerms(page);
   const b = await page.waitForSelector('#onbs', { timeout: 3000 }).catch(() => null); if (b) await b.click();
   if (!cloud) return sleep(400);
   await page.waitForFunction(() => window.CS && CS.auth && CS.uid, null, { timeout: 12000 }).catch(() => null);
@@ -189,6 +192,14 @@ const until = (page, fn, arg, ms = 6000) => page.waitForFunction(fn, arg, { time
   ok(await adh(N) === '62px' && await N.evaluate(() => getComputedStyle(document.getElementById('lobby')).paddingBottom) === '62px', 'مكان الشريط محجوز أسفل الردهة فلا يغطي محتوى');
   ok((await ad(N, 'prepareInterstitial'))[0][2].adId === DEMO.interstitial && (await ad(N, 'loadAppOpen'))[0][2].adId === DEMO.appOpen, 'البيني وشاشة الفتح يُحضَّران بوحدات تجريبية');
   await N.screenshot({ path: OUT + '/ads-lobby.png' });
+  // أزرار الصفحات القانونية (v8.1) أسفل الردهة: فوق مكان الشريط المحجوز، فلا يغطيها في أي نهاية للتمرير
+  await N.evaluate(() => { const l = document.getElementById('lobby'); l.scrollTop = l.scrollHeight; });
+  await sleep(250);
+  const lg = await N.evaluate(() => { const h = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--adh')) || 0, H = window.innerHeight;
+    return [...document.querySelectorAll('#lbLegal a')].map(a => { const r = a.getBoundingClientRect(); return { b: r.bottom, t: r.top, lim: H - h, w: r.width }; }); });
+  ok(lg.length === 3 && lg.every(x => x.w > 0 && x.t >= 0 && x.b <= x.lim), `أزرار البنود والخصوصية وحذف البيانات أسفل الردهة فوق الشريط الإعلاني (${lg.map(x => Math.round(x.b) + '≤' + Math.round(x.lim)).join('، ')})`);
+  await N.screenshot({ path: OUT + '/ads-lobby-legal.png' });
+  await N.evaluate(() => { document.getElementById('lobby').scrollTop = 0; });
 
   // النوافذ والجلسات: الشريط يختفي والمكان يبقى محجوزاً (لا اهتزاز)
   await N.click('#openMore'); await until(N, () => window.__ad.banner === 'hidden');
@@ -229,6 +240,7 @@ const until = (page, fn, arg, ms = 6000) => page.waitForFunction(fn, arg, { time
   // المكافأة: +3 طلبات لـ«المساعد» — أولاً بمطالبة التطبيق (قبل ضبط التحقق في AdMob)
   const uidN = await N.evaluate(() => CS.uid);
   sql(`insert into qt_ai_usage(day, uid, n) values (current_date, '${uidN}', 12) on conflict (day, uid) do update set n = 12`);
+  await N.evaluate(() => { S.cfg.age18 = true; });     // تأكيد السن (v8) مُختبَر في e2e_v5؛ هنا المكافأة وحدها
   await N.evaluate(() => openAI('ask'));
   await N.waitForSelector('#aiq [data-aiad]', { timeout: 6000 }).catch(() => null);
   ok(await N.isVisible('#aiq [data-aiad]') && /0/.test(await N.textContent('#aiq')), 'نفد الرصيد: يظهر «شاهد إعلاناً: +3 طلبات»');

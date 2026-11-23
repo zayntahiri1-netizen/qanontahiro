@@ -4,76 +4,108 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>سياسة الخصوصية — قانون تاهيرو</title>
-<meta name="description" content="سياسة الخصوصية لتطبيق قانون تاهيرو: ما يُجمع، ولماذا، وأين يُحفظ، وكيف تحذفه.">
+<meta name="description" content="سياسة الخصوصية لتطبيق قانون تاهيرو بأربع لغات: ما يُجمع، ولماذا، وأين يُحفظ، وكيف تحذفه. Privacy policy · Politique de confidentialité · Política de privacidad.">
 <link rel="canonical" href="__SITE__/privacy">
+<link rel="alternate" hreflang="ar" href="__SITE__/privacy?lang=ar">
+<link rel="alternate" hreflang="en" href="__SITE__/privacy?lang=en">
+<link rel="alternate" hreflang="fr" href="__SITE__/privacy?lang=fr">
+<link rel="alternate" hreflang="es" href="__SITE__/privacy?lang=es">
+<link rel="alternate" hreflang="x-default" href="__SITE__/privacy">
 <link rel="icon" href="app/icon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Reem+Kufi:wght@400..700&family=Markazi+Text:wght@400..700&display=swap" rel="stylesheet">
+<script>
+/* اللغة: ?lang= ثم الاختيار المحفوظ ثم لغة المتصفح (والإنجليزية لغيرها). دون JavaScript تظهر اللغات الأربع متتابعة. */
+(function(){var L=['ar','en','fr','es'],m=location.search.match(/[?&]lang=(ar|en|fr|es)(?:&|$)/),l=m&&m[1];
+if(!l){try{l=localStorage.getItem('qt-lang')}catch(e){}}
+if(L.indexOf(l)<0){l='en';var n=navigator.languages||[navigator.language||''];for(var i=0;i<n.length;i++){var c=String(n[i]).slice(0,2).toLowerCase();if(L.indexOf(c)>=0){l=c;break}}}
+if(m){try{localStorage.setItem('qt-lang',l)}catch(e){}}
+var d=document.documentElement;d.setAttribute('data-l',l);d.lang=l;d.dir=l==='ar'?'rtl':'ltr';})();
+</script>
 <style>
 :root{--ink:#0D1A22;--ink2:#13252F;--line:#284656;--brass:#D3A34E;--fes:#3E9DB1;--jibs:#F0E7D6;--muted:#8FA3AE;--txt2:#CBD5DB;
   --display:"Reem Kufi","Noto Kufi Arabic",system-ui,sans-serif;--body:"Markazi Text","Noto Naskh Arabic","Times New Roman",serif}
 @media (prefers-color-scheme: light){:root{--ink:#F6F4EE;--ink2:#FFFFFF;--line:#D9D0BF;--brass:#94660F;--fes:#1F4F8C;--jibs:#142232;--muted:#5D6A76;--txt2:#34404D}}
 *{box-sizing:border-box}
-body{margin:0;background:var(--ink);color:var(--jibs);font-family:var(--body);font-size:18.5px;line-height:1.85}
-main{width:min(760px,100% - 32px);margin:0 auto;padding:28px 0 60px}
+body{margin:0;background:var(--ink);color:var(--jibs);font-family:var(--body);font-size:18.5px;line-height:1.85;overflow-wrap:anywhere}
+main{width:min(760px,100% - 32px);margin:0 auto;padding:22px 0 60px}
 a{color:var(--fes)}
 h1,h2{font-family:var(--display);font-weight:500;line-height:1.4}
-h1{font-size:32px;margin:18px 0 4px}
+h1{font-size:32px;margin:14px 0 4px}
 h2{font-size:21px;margin:34px 0 8px;color:var(--brass)}
 p,li{color:var(--txt2)}
-ul{padding-inline-start:22px}
+ul,ol{padding-inline-start:22px}
 li{margin:4px 0}
 .meta{color:var(--muted);font-size:15.5px}
 .box{border:1px solid var(--line);border-radius:10px;padding:14px 18px;background:var(--ink2);margin:18px 0}
 table{width:100%;border-collapse:collapse;font-size:16.5px;margin:10px 0}
 th,td{text-align:start;padding:9px 8px;border-top:1px solid var(--line);vertical-align:top}
 th{color:var(--muted);font-weight:400;font-size:15px}
-[lang="fr"],[lang="en"]{font-family:Georgia,"Times New Roman",serif;font-size:17px}
+.top{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;justify-content:space-between}
 .back{font-family:var(--display);font-size:15.5px}
+.langs{display:flex;flex-wrap:wrap;gap:6px}
+.langs a{font-family:var(--display);font-size:14px;border:1px solid var(--line);border-radius:999px;padding:3px 12px;text-decoration:none;color:var(--muted)}
+.langs a[aria-current="true"]{border-color:var(--brass);color:var(--brass)}
+.foot{margin-top:40px;padding-top:14px;border-top:1px solid var(--line);font-size:15.5px;color:var(--muted)}
+.foot a{margin-inline-end:14px}
+html[data-l] article.L{display:none}
+html[data-l="ar"] article.L[lang="ar"],html[data-l="en"] article.L[lang="en"],html[data-l="fr"] article.L[lang="fr"],html[data-l="es"] article.L[lang="es"]{display:block}
+html:not([data-l]) article.L+article.L{border-top:2px solid var(--line);margin-top:48px}
+article.L[lang="en"],article.L[lang="fr"],article.L[lang="es"]{font-family:Georgia,"Times New Roman",serif;font-size:17.5px;line-height:1.75}
+@media (max-width:560px){table,thead,tbody,tr,th,td{display:block}thead{display:none}td{border-top:0;padding:2px 0}tr{border-top:1px solid var(--line);padding:10px 0}td:first-child{font-weight:600;color:var(--jibs)}}
 </style>
 </head>
 <body>
 <main>
-<a class="back" href="./">← قانون تاهيرو</a>
-<h1>سياسة الخصوصية</h1>
-<p class="meta">تطبيق «قانون تاهيرو» (Android والويب) والموقع المرافق له · آخر تحديث: 22 نونبر 2026</p>
+<div class="top">
+  <a class="back" href="./">قانون تاهيرو · Qanoun Tahiro</a>
+  <nav class="langs" aria-label="Language"><a href="?lang=ar" hreflang="ar" lang="ar">العربية</a><a href="?lang=en" hreflang="en" lang="en">English</a><a href="?lang=fr" hreflang="fr" lang="fr">Français</a><a href="?lang=es" hreflang="es" lang="es">Español</a></nav>
+</div>
 
-<div class="box"><p style="margin:0">الخلاصة: تدخل التطبيق بإحدى طريقتين تختار بينهما: <b>اسم مستعار</b> تختاره أنت، أو <b>حساب Google</b>؛ ولا نطلب اسمك ولا رقم هاتفك. إن اخترت Google وصلنا منه بريدك واسمك لتعريف حسابك فقط، ولا يظهران لأحد: يظهر في اللوحات اسم يولّده التطبيق (مثل «طالب 4821»). و«المساعد» (الذكاء الاصطناعي) لا يعمل إلا حين تطلبه أنت. وفي <b>تطبيق أندرويد إعلانات من Google AdMob</b> تموّل الخدمة المجانية (لا إعلانات على الموقع ولا في نسخة الويب)، ولا تُخصَّص بحسب اهتماماتك إلا بموافقتك حيث يشترطها القانون. لا بيع لأي معطيات. وإحصاءات الاستعمال لا تعمل إلا بموافقتك.</p></div>
+<!-- ======================= العربية ======================= -->
+<article class="L" lang="ar" dir="rtl" data-title="سياسة الخصوصية — قانون تاهيرو">
+<h1>سياسة الخصوصية</h1>
+<p class="meta">تطبيق «قانون تاهيرو» (Android وiPhone والويب) والموقع المرافق له · آخر تحديث: 23 نونبر 2026</p>
+
+<div class="box"><p style="margin:0">الخلاصة: تدخل التطبيق بإحدى طريقتين تختار بينهما: <b>اسم مستعار</b> تختاره أنت، أو <b>حساب Google</b>؛ ولا نطلب اسمك ولا رقم هاتفك. إن اخترت Google وصلنا منه بريدك واسمك لتعريف حسابك فقط، ولا يظهران لأحد: يظهر في اللوحات اسم يولّده التطبيق (مثل «طالب 4821»). و«المساعد» (الذكاء الاصطناعي، بنموذج <b>Gemini من Google</b>) لا يعمل إلا حين تطلبه أنت، وهو لمن بلغ 18 سنة؛ وما ترسله إليه (سؤال، أو صورة سؤال، أو تسجيل جوابك الشفوي) يُعالَج ثم يُنسى، ولا تستعمله Google لتحسين نماذجها. وفي <b>تطبيق أندرويد إعلانات من Google AdMob</b> تموّل الخدمة المجانية (لا إعلانات في نسخة iPhone ولا على الموقع ولا في نسخة الويب)، ولا تُخصَّص بحسب اهتماماتك إلا بموافقتك حيث يشترطها القانون. لا بيع لأي معطيات. وإحصاءات الاستعمال لا تعمل إلا بموافقتك، ولا إحصاءات ولا تتبع في نسخة iPhone.</p></div>
 
 <h2>المسؤول عن المعالجة</h2>
-<p>أحمد البقالي الطاهري (Tahiro)، مطوّر مستقل، تطوان — المغرب. للتواصل بشأن معطياتك: عبر صفحة التطبيق في Google Play (بيانات المطوّر)، أو من داخل التطبيق.</p>
+<p>أحمد البقالي الطاهري (Tahiro)، مطوّر مستقل، تطوان — المغرب. للتواصل بشأن معطياتك: عبر بيانات المطوّر في صفحة التطبيق على Google Play أو App Store، أو من داخل التطبيق.</p>
 
 <h2>ما الذي يُجمع ولماذا</h2>
 <table>
-<tr><th>المعطى</th><th>الغرض</th><th>أين يُحفظ</th></tr>
+<thead><tr><th>المعطى</th><th>الغرض</th><th>أين يُحفظ</th></tr></thead>
+<tbody>
 <tr><td>الاسم المستعار الذي تختاره</td><td>هويتك في اللوحة العالمية وفي التحديات</td><td>جهازك، وSupabase إن بقيت المزامنة مفعّلة</td></tr>
 <tr><td>تقدّمك في التعلم: النقاط والأجوبة وجدول المراجعة والمحفوظات ونتائج الامتحانات</td><td>حفظ تقدمك ونقله بين أجهزتك</td><td>جهازك، وSupabase إن بقيت المزامنة مفعّلة</td></tr>
+<tr><td>موافقتك على البنود والشروط: نسخة البنود وتاريخ موافقتك</td><td>إثبات قبولك للبنود قبل استعمال التطبيق</td><td>جهازك، وSupabase مع تقدمك</td></tr>
 <tr><td>معرّف جلسة مجهول، ورمز استرجاع مُعمّى (لا يُحفظ الرمز نفسه على الخادم)</td><td>ربط اسمك المستعار بجهازك دون كلمة مرور، ونقله إلى جهاز جديد</td><td>Supabase، والرمز الأصلي على جهازك فقط</td></tr>
-<tr><td><b>إن اخترت الدخول بـ Google</b>: بريدك الإلكتروني واسمك ومعرّف حسابك لدى Google، كما يرسلها Google بإذنك</td><td>تسجيل الدخول، وإعادة اسمك المستعار وتقدمك على أي جهاز دون رمز استرجاع. لا يظهر بريدك ولا اسمك في اللوحات ولا لأي مستخدم، ولا يُستعملان لمراسلتك</td><td>Supabase (المصادقة)</td></tr>
+<tr><td>إن اخترت <b>الدخول بـ Google</b>: بريدك الإلكتروني واسمك ومعرّف حسابك لدى Google، كما يرسلها Google بإذنك</td><td>تسجيل الدخول، وإعادة اسمك المستعار وتقدمك على أي جهاز دون رمز استرجاع. لا يظهر بريدك ولا اسمك في اللوحات ولا لأي مستخدم، ولا يُستعملان لمراسلتك</td><td>Supabase (المصادقة)</td></tr>
 <tr><td>جوابك عن سؤال اليوم (أصبت أم لا) ونتيجتك في كل تحدٍّ</td><td>إحصاء سؤال اليوم وترتيب التحدي</td><td>Supabase</td></tr>
-<tr><td>البلاغات التي ترسلها عن خطأ في سؤال، أو عن جواب من «المساعد» (ومعه نص الجواب المبلَّغ عنه)</td><td>تصحيح بنك الأسئلة ومراقبة جودة الأجوبة المولَّدة</td><td>جهازك وSupabase</td></tr>
+<tr><td>البلاغات التي ترسلها عن خطأ في سؤال، أو عن جواب أو تمرين من «المساعد» (ومعه نصه)</td><td>تصحيح بنك الأسئلة ومراقبة جودة المحتوى المولَّد</td><td>جهازك وSupabase</td></tr>
 <tr><td>معرّف جهاز عشوائي، واسمك المستعار وتقدمك داخل غرفة تحدٍّ تدخلها</td><td>عدد من يتدربون الآن، وغرف التحدي المباشرة</td><td>PubNub، لحظياً دون حفظ لتاريخ الرسائل</td></tr>
-<tr><td><b>«المساعد» حين تستعمله</b>: نص سؤالك الحر، أو وقائع النازلة التي تعرضها لتحليلها، أو جوابك المكتوب في الامتحان الشفوي، أو السؤال الذي تطلب شرحه واختيارك فيه، أو ملخص أرقام تقدمك لإعداد «خطتي»؛ ومعها عدد استعمالاتك اليومية</td><td>توليد الجواب أو الشرح أو التنقيط أو الخطة، واحتساب حصتك اليومية</td><td>يمر من خادمنا (Supabase) إلى Anthropic لتوليد الجواب ثم يعود إليك. ويُحفظ على خادمنا: الأجوبة المولَّدة لإعادة استعمالها دون استدعاء جديد، وعدد استعمالاتك، وسجل تقني بلا نصوص (النوع والتوقيت وعدد الرموز). أما <b>وقائع النازلة</b> وتحليلها فلا تُحفظ على خادمنا إطلاقاً: تُرسل للجواب ثم تُنسى</td></tr>
+<tr><td><b>«المساعد» حين تستعمله</b>: نص سؤالك الحر (ومعه آخر ثلاثة أسئلة من المحادثة نفسها)، أو وقائع النازلة التي تعرضها، أو <b>صورة سؤال</b> تلتقطها أو تختارها، أو جوابك في الامتحان الشفوي مكتوباً أو <b>تسجيلاً صوتياً</b>، أو موضوعاً إنشائياً وتحريرك له، أو حلك لنازلة تدريبية، أو مفهومين تقارن بينهما، أو المادة التي تطلب شرحها أو بطاقاتها، أو القانون والمادة ونوع <b>التمارين التي تطلب توليدها</b>، أو السؤال الذي تطلب شرحه واختيارك فيه، أو ملخص أرقام تقدمك لإعداد «خطتي»؛ ومعها عدد استعمالاتك اليومية</td><td>توليد الجواب أو الشرح أو التمارين أو التنقيط أو الخطة، واحتساب حصتك اليومية</td><td>يمر من خادمنا (Supabase) إلى Google Gemini API (بالمستوى المدفوع، وبطلب ألا يُحفظ في سجلات المشروع) لتوليد الجواب ثم يعود إليك. ويُحفظ على خادمنا: الأجوبة المولَّدة العامة لإعادة استعمالها دون استدعاء جديد (الشروح والمقارنات والبطاقات وتصاميم المواضيع)، والنازلة التدريبية المولَّدة وحلها النموذجي ثلاثة أيام، وعدد استعمالاتك، وسجل تقني بلا نصوص (النوع والتوقيت وعدد الرموز). أما وقائع النازلة، والصورة، والتسجيل الصوتي، ونص تحريرك، وحلك للنازلة التدريبية، والتمارين المولَّدة لك، فلا تُحفظ على خادمنا إطلاقاً: تُرسل للجواب ثم تُنسى</td></tr>
 <tr><td><b>إعلانات تطبيق أندرويد</b> (Google AdMob): معرّف الإعلانات في جهازك، وعنوان IP (يُستنتج منه بلد تقريبي)، وتفاعلك مع الإعلانات (الظهور والنقر)، ومعلومات تشخيصية عن أداء الإعلان؛ وفي إعلانات المكافأة معرّف مجهول لحسابك (لا اسمك المستعار ولا بريدك)</td><td>عرض الإعلانات وقياسها ومنع الاحتيال؛ والتحقق من أنك شاهدت إعلان المكافأة قبل أن تُضاف لك طلبات «المساعد». والإعلانات المخصصة لا تُعرض في أوروبا إلا بموافقتك عبر نموذج Google</td><td>Google (AdMob)، وسجل المكافآت على Supabase</td></tr>
-<tr><td>إحصاءات استعمال مجهولة <b>بموافقتك فقط</b>: فرع السؤال وصعوبته وهل أصبت، وإكمال امتحان أو تحدٍّ، والمشاركة؛ مع معرّف تثبيت التطبيق وطراز الجهاز ونظامه ولغته وبلدك التقريبي</td><td>معرفة ما ينفع المتعلمين وما يحتاج تحسيناً</td><td>Google Firebase Analytics</td></tr>
+<tr><td>إحصاءات استعمال مجهولة <b>بموافقتك فقط</b> (أندرويد والويب): فرع السؤال وصعوبته وهل أصبت، وإكمال امتحان أو تحدٍّ، والمشاركة؛ مع معرّف تثبيت التطبيق وطراز الجهاز ونظامه ولغته وبلدك التقريبي</td><td>معرفة ما ينفع المتعلمين وما يحتاج تحسيناً</td><td>Google Firebase Analytics</td></tr>
+</tbody>
 </table>
-<p>لا تتضمن الإحصاءات اسمك المستعار ولا نصوص الأسئلة ولا أجوبتك. ولا يرسل التطبيق عبر Ably أي معطى عنك: يستقبل منها فقط إعلانات المؤلف وإحصاء سؤال اليوم. ولا يُرسل إلى «المساعد» اسمك المستعار ولا بريدك؛ فلا تكتب في سؤالك أو نازلتك أسماء حقيقية ولا معطيات شخصية عنك أو عن غيرك. وأجوبته تعليمية مبنية على نصوص القوانين المضمّنة في التطبيق وعلى بنك الأسئلة، وليست استشارة قانونية.</p>
+<p>لا تتضمن الإحصاءات اسمك المستعار ولا نصوص الأسئلة ولا أجوبتك. ولا يرسل التطبيق عبر Ably أي معطى عنك: يستقبل منها فقط إعلانات المؤلف وإحصاء سؤال اليوم. ولا يُرسل إلى «المساعد» اسمك المستعار ولا بريدك؛ فلا تكتب في سؤالك أو نازلتك أسماء حقيقية ولا معطيات شخصية عنك أو عن غيرك، ولا تصوّر وثيقة فيها معطيات شخصية. وأجوبته وتمارينه تعليمية مبنية على نصوص القوانين المضمّنة في التطبيق وعلى بنك الأسئلة، وليست استشارة قانونية (انظر <a href="terms?lang=ar">البنود والشروط</a>). ولا يستعمل التطبيق الكاميرا إلا حين تضغط «التقط صورة» في أداة «صوّر سؤالاً»، ولا الميكروفون إلا حين تضغط «أجب بصوتك» في الامتحان الشفوي، ويُطلب إذنك قبل ذلك.</p>
 
 <h2>ما لا نجمعه</h2>
 <ul>
-<li>رقم الهاتف، جهات الاتصال، الصور، الموقع الدقيق؛ ولا الاسم الحقيقي ولا البريد الإلكتروني إلا إن اخترت الدخول بـ Google.</li>
+<li>رقم الهاتف، جهات الاتصال، صورك وتسجيلاتك (صورة السؤال وتسجيل الجواب الشفوي يُعالَجان ثم يُنسيان دون حفظ)، الموقع الدقيق؛ ولا الاسم الحقيقي ولا البريد الإلكتروني إلا إن اخترت الدخول بـ Google.</li>
 <li>لا نبيع أي معطى ولا نؤجره، ولا نمرر إلى AdMob اسمك المستعار ولا بريدك ولا شيئاً من تقدمك أو أجوبتك.</li>
 </ul>
 
 <h2>مقدمو الخدمات</h2>
-<p>تُعالج المعطيات المذكورة لدى: <b>Supabase</b> (قاعدة البيانات والجلسات والمصادقة)، و<b>PubNub</b> (الحضور اللحظي)، و<b>Ably</b> (البث اللحظي من الخادم)، و<b>Google</b> (الدخول بحساب Google إن اخترته، وFirebase للإحصاءات واستضافة الموقع، وAdMob للإعلانات في تطبيق أندرويد وفق <a href="https://policies.google.com/technologies/partner-sites">سياسة Google في مواقع الشركاء</a>)، و<b>Anthropic</b> (نموذج Claude الذي يولّد أجوبة «المساعد»؛ ولا يجوز لها بموجب شروطها التجارية تدريب نماذجها على ما يُرسل إليها). قد تقع خوادمهم خارج المغرب، فيكون ذلك نقلاً للمعطيات إلى الخارج في حدود الغرض المذكور فقط.</p>
+<p>تُعالج المعطيات المذكورة لدى: <a href="https://supabase.com/privacy" rel="noopener">Supabase</a> (قاعدة البيانات والجلسات والمصادقة)، و<a href="https://www.pubnub.com/legal/privacy-policy/" rel="noopener">PubNub</a> (الحضور اللحظي)، و<a href="https://ably.com/privacy" rel="noopener">Ably</a> (البث اللحظي من الخادم)، و<a href="https://policies.google.com/privacy" rel="noopener">Google</a> (الدخول بحساب Google إن اخترته، وFirebase للإحصاءات واستضافة الموقع، وAdMob للإعلانات في تطبيق أندرويد وفق <a href="https://policies.google.com/technologies/partner-sites" rel="noopener">سياسة Google في مواقع الشركاء</a>، وGemini API الذي يولّد أجوبة «المساعد» وتمارينه: نستعمل المستوى المدفوع، وبموجب شروطه لا تستعمل Google ما يُرسل إليه ولا أجوبته لتحسين منتجاتها، وإنما تحفظه مدة محدودة لكشف إساءة الاستعمال ولما يوجبه القانون فقط، ونطلب في كل استدعاء ألا يُحفظ في سجلات مشروعنا). قد تقع خوادمهم خارج المغرب، فيكون ذلك نقلاً للمعطيات إلى الخارج في حدود الغرض المذكور فقط.</p>
 
 <h2>مدة الحفظ</h2>
 <ul>
-<li>اسمك المستعار وتقدمك ونتائجك: ما دامت المزامنة مفعّلة، وتُحذف كلها فور طلبك.</li>
+<li>اسمك المستعار وتقدمك ونتائجك وموافقتك على البنود: ما دامت المزامنة مفعّلة، وتُحذف كلها فور طلبك.</li>
 <li>حسابك المرتبط بـ Google (بريدك واسمك): إلى أن تحذف بياناتك من التطبيق، فيُحذف الحساب نفسه مع آخر اسم مستعار له.</li>
-<li>«المساعد»: الأجوبة المولَّدة تُحفظ للاستعمال المتكرر ما دامت نصوص المكتبة وبنك الأسئلة لم تتغير، ووقائع النوازل لا تُحفظ أصلاً، وسجله التقني وخطتك تُحذف مع بياناتك.</li>
+<li>«المساعد»: الأجوبة المولَّدة العامة تُحفظ للاستعمال المتكرر ما دامت نصوص المكتبة وبنك الأسئلة لم تتغير؛ والنازلة التدريبية المولَّدة ثلاثة أيام؛ والتمارين المولَّدة لك لا تُحفظ على خادمنا؛ ووقائع النوازل والصور والتسجيلات ونصوص التحرير لا تُحفظ أصلاً؛ وسجله التقني وخطتك ونوازلك التدريبية تُحذف مع بياناتك. وبطاقات المراجعة ومحفوظاتك من النصوص القانونية جزء من تقدمك.</li>
 <li>الإحصاءات: وفق مدة الاحتفاظ المضبوطة في Firebase (شهران).</li>
 <li>البلاغات عن الأسئلة: إلى أن يُراجع السؤال المعني.</li>
 </ul>
@@ -81,7 +113,7 @@ th{color:var(--muted);font-weight:400;font-size:15px}
 <h2 id="delete">حقوقك وكيف تمارسها</h2>
 <p>لك الحق في الولوج إلى معطياتك وتصحيحها وحذفها والتعرض على معالجتها، وفق القانون رقم 09.08 المتعلق بحماية الأشخاص الذاتيين تجاه معالجة المعطيات ذات الطابع الشخصي.</p>
 <ul>
-<li><b>الحذف من الخادم</b>: في التطبيق ← «المزيد» ← «الحساب والخدمات السحابية» ← «حذف بياناتي من السحابة». يُحذف اسمك المستعار وتقدمك وأجوبة سؤال اليوم ونتائج التحديات وسجل «المساعد» فوراً، ومعها <b>حسابك المرتبط بـ Google</b> (بريدك واسمك) إن لم يبقَ له اسم مستعار آخر. ويمكنك أيضاً طلب الحذف عبر صفحة التطبيق في Google Play.</li>
+<li><b>الحذف من الخادم</b>: في التطبيق ← «المزيد» ← «الحساب والخدمات السحابية» ← «حذف بياناتي من السحابة». يُحذف اسمك المستعار وتقدمك وأجوبة سؤال اليوم ونتائج التحديات وسجل «المساعد» فوراً، ومعها حسابك المرتبط بـ Google (بريدك واسمك) إن لم يبقَ له اسم مستعار آخر. والطريقة دون التطبيق، وما يُحذف وما يبقى، في صفحة <a href="delete-data?lang=ar">حذف البيانات</a>.</li>
 <li><b>إيقاف الإحصاءات</b>: «المزيد» ← «الإعدادات» ← «إحصاءات الاستعمال».</li>
 <li><b>الإعلانات</b>: «المزيد» ← «الإعلانات» ← «خيارات الخصوصية للإعلانات» (حيث يلزم ذلك قانوناً)؛ ويمكنك إعادة ضبط معرّف الإعلانات أو حذفه من إعدادات أندرويد (الخصوصية ← الإعلانات)، و«ساعة دون إعلانات» متاحة في الصفحة نفسها.</li>
 <li><b>نسخة من معطياتك</b>: «المزيد» ← «النسخة الاحتياطية» يصدّر تقدمك كاملاً في ملف.</li>
@@ -91,21 +123,222 @@ th{color:var(--muted);font-weight:400;font-size:15px}
 <h2>الأمان</h2>
 <p>الجداول على الخادم مغلقة أمام القراءة والكتابة المباشرة؛ لا يصل إليها التطبيق إلا عبر دوال تتحقق من أن الاسم المستعار لجهازك أو لحسابك. والدخول بـ Google يتم في متصفح النظام مباشرة مع Google، فلا يرى التطبيق كلمة مرورك أبداً. ويُخزَّن رمز الاسترجاع مُعمّى بخوارزمية bcrypt، وتُقفل محاولات الاسترجاع بعد ثماني محاولات خاطئة في الساعة. والمفاتيح السرية للخدمات تبقى على الخادم ولا تصل إلى التطبيق.</p>
 
-<h2>الأطفال</h2>
-<p>التطبيق موجّه إلى طلبة القانون والمترشحين للمباريات، وليس موجّهاً إلى الأطفال دون الثالثة عشرة.</p>
+<h2>الأطفال والسن</h2>
+<p>التطبيق موجّه إلى طلبة القانون والمترشحين للمباريات، وليس موجّهاً إلى الأطفال. و«المساعد» خاصة لمن بلغ 18 سنة فأكثر (شرط من شروط Gemini API)، ويُطلب تأكيد ذلك قبل أول استعمال له.</p>
 
 <h2>التعديلات</h2>
 <p>يُنشر كل تعديل لهذه السياسة في هذه الصفحة مع تاريخه.</p>
+<p class="foot"><a href="terms?lang=ar">البنود والشروط</a><a href="delete-data?lang=ar">حذف البيانات</a><a href="./">الموقع</a></p>
+</article>
 
-<hr style="border:0;border-top:1px solid var(--line);margin:40px 0 10px">
-<section lang="fr" dir="ltr">
-<h2>Politique de confidentialité — résumé</h2>
-<p>Qanoun Tahiro ne demande ni nom ni téléphone : vous entrez soit avec un pseudonyme de votre choix, soit avec votre compte Google. Si vous choisissez Google, nous recevons votre e-mail et votre nom uniquement pour identifier votre compte (jamais affichés : le classement montre un nom généré par l’application, par ex. « Étudiant 4821 »). L’assistant IA n’est appelé qu’à votre demande : votre texte (question ou faits d’un cas pratique) transite par notre serveur vers Anthropic (Claude), qui ne peut pas l’utiliser pour entraîner ses modèles ; les faits d’un cas pratique ne sont jamais conservés sur notre serveur. N’y mettez ni vrais noms ni données personnelles. Votre progression est stockée sur l’appareil et, si la synchronisation reste active, chez Supabase ; la présence en direct passe par PubNub sans historique ; Ably ne sert qu’à recevoir les annonces. Les statistiques d’usage anonymes (Firebase Analytics) ne fonctionnent qu’avec votre accord. L’application Android affiche des publicités Google AdMob (identifiant publicitaire, adresse IP, interactions avec les publicités) ; la personnalisation n’a lieu en Europe qu’avec votre consentement, modifiable dans Plus → Publicités. Aucune publicité sur le site ni dans la version web, aucune vente de données. Suppression immédiate : Plus → Compte et services cloud → Supprimer mes données du cloud (y compris le compte lié à Google s’il ne lui reste aucun pseudonyme). Responsable : Ahmed Bakkali Tahiri, Tétouan, Maroc ; contact via la fiche Google Play de l’application. Loi marocaine n° 09-08.</p>
-</section>
-<section lang="en" dir="ltr">
-<h2>Privacy policy — summary</h2>
-<p>Qanoun Tahiro never asks for your name or phone number: you sign in either with an alias you choose or with your Google account. If you choose Google, we receive your e-mail and name only to identify your account (never shown to anyone: the leaderboard shows a name generated by the app, e.g. “Student 4821”). The AI assistant runs only when you ask: your text (a question or the facts of a case) passes through our server to Anthropic (Claude), which may not use it to train its models; case facts are never stored on our server. Do not include real names or personal data. Progress is stored on your device and, while sync is on, in Supabase; live presence uses PubNub with no message history; Ably is receive-only (announcements and daily stats). Anonymous usage analytics (Firebase Analytics) run only with your consent. The Android app shows Google AdMob ads (advertising ID, IP address, ad interactions); in Europe they are personalised only with your consent, which you can change under More → Ads. No ads on the website or the web version, no sale of data. Instant deletion: More → Account &amp; cloud services → Delete my cloud data (including the Google-linked account when it has no other alias). Controller: Ahmed Bakkali Tahiri, Tetouan, Morocco; contact via the app’s Google Play listing. Moroccan Law No. 09-08 applies.</p>
-</section>
+<!-- ======================= English ======================= -->
+<article class="L" lang="en" dir="ltr" data-title="Privacy policy — Qanoun Tahiro">
+<h1>Privacy policy</h1>
+<p class="meta">The Qanoun Tahiro app (Android, iPhone and web) and its website · Last updated: 23 November 2026</p>
+
+<div class="box"><p style="margin:0">In short: you enter the app in one of two ways of your choice: an <b>alias</b> you pick, or your <b>Google account</b>; we never ask for your name or phone number. If you choose Google, we receive your email and name only to identify your account, and they are never shown to anyone: leaderboards show a name generated by the app (e.g. “Student 4821”). The Assistant (AI, running on <b>Google’s Gemini model</b>) works only when you ask it to, and is for people aged 18 or over; what you send it (a question, a photo of a question, or a recording of your oral answer) is processed and then forgotten, and Google does not use it to improve its models. The <b>Android app shows Google AdMob ads</b> that fund the free service (no ads in the iPhone app, on the website or in the web version), personalised only with your consent where the law requires it. No data is ever sold. Usage analytics run only with your consent, and the iPhone app has no analytics and no tracking.</p></div>
+
+<h2>Data controller</h2>
+<p>Ahmed Bakkali Tahiri (Tahiro), independent developer, Tetouan — Morocco. To contact us about your data: through the developer details on the app’s Google Play or App Store page, or from within the app.</p>
+
+<h2>What is collected and why</h2>
+<table>
+<thead><tr><th>Data</th><th>Purpose</th><th>Where it is stored</th></tr></thead>
+<tbody>
+<tr><td>The alias you choose</td><td>Your identity on the global leaderboard and in challenges</td><td>Your device, and Supabase while sync is on</td></tr>
+<tr><td>Your learning progress: points, answers, review schedule, saved items and exam results</td><td>Saving your progress and moving it between your devices</td><td>Your device, and Supabase while sync is on</td></tr>
+<tr><td>Your acceptance of the terms of use: the terms version and the date you accepted</td><td>Proof that you accepted the terms before using the app</td><td>Your device, and Supabase with your progress</td></tr>
+<tr><td>An anonymous session ID and a hashed recovery code (the code itself is never stored on the server)</td><td>Linking your alias to your device without a password, and moving it to a new device</td><td>Supabase; the original code stays only on your device</td></tr>
+<tr><td>If you choose <b>Google sign-in</b>: your email address, name and Google account ID, as sent by Google with your permission</td><td>Signing in, and restoring your alias and progress on any device without a recovery code. Your email and name never appear on leaderboards or to any user, and are never used to contact you</td><td>Supabase (authentication)</td></tr>
+<tr><td>Your answer to the daily question (right or wrong) and your result in each challenge</td><td>Daily-question statistics and challenge rankings</td><td>Supabase</td></tr>
+<tr><td>Reports you send about an error in a question, or about an Assistant answer or exercise (with its text)</td><td>Correcting the question bank and monitoring the quality of generated content</td><td>Your device and Supabase</td></tr>
+<tr><td>A random device ID, and your alias and progress inside a challenge room you join</td><td>The “practising now” count and live challenge rooms</td><td>PubNub, in real time, with no message history kept</td></tr>
+<tr><td><b>The Assistant, when you use it</b>: your free-text question (with the last three questions of the same conversation), the facts of a case you submit, a <b>photo of a question</b> you take or pick, your oral-exam answer in writing or as a <b>voice recording</b>, an essay topic and your essay, your answer to a practice case, two concepts to compare, the article you want explained or turned into cards, the law, article and type of <b>exercises you ask to generate</b>, the question you want explained and your choice in it, or a summary of your progress figures to prepare “My plan”; plus your daily usage count</td><td>Generating the answer, explanation, exercises, grade or plan, and counting your daily allowance</td><td>Passes from our server (Supabase) to the Google Gemini API (paid tier, with a request that it not be logged in the project), which generates the answer and returns it to you. Stored on our server: general generated answers, reused without a new call (explanations, comparisons, cards and essay outlines); a generated practice case and its model solution, for three days; your usage count; and a technical log without any text (type, timing, token counts). Case facts, photos, voice recordings, your essay text, your practice-case answers and the exercises generated for you are never stored on our server: they are sent for the answer and then forgotten</td></tr>
+<tr><td><b>Android app ads</b> (Google AdMob): your device’s advertising ID, IP address (from which an approximate country is inferred), your interactions with ads (impressions and clicks) and diagnostic information about ad performance; for rewarded ads, an anonymous ID of your account (not your alias or email)</td><td>Showing and measuring ads and preventing fraud; verifying that you watched a rewarded ad before Assistant requests are added. In Europe, personalised ads are shown only with your consent through Google’s form</td><td>Google (AdMob), and the rewards log on Supabase</td></tr>
+<tr><td>Anonymous usage statistics, <b>only with your consent</b> (Android and web): the question’s branch and difficulty and whether you got it right, completing an exam or challenge, and sharing; with the app installation ID, device model, operating system, language and approximate country</td><td>Understanding what helps learners and what needs improving</td><td>Google Firebase Analytics</td></tr>
+</tbody>
+</table>
+<p>Statistics never include your alias, the text of questions or your answers. The app sends no data about you through Ably: it only receives the author’s announcements and the daily-question statistics from it. Your alias and email are never sent to the Assistant; so do not write real names or personal data about yourself or others in your questions or cases, and do not photograph documents containing personal data. Its answers and exercises are educational, based on the law texts included in the app and on the question bank, and are not legal advice (see the <a href="terms?lang=en">terms of use</a>). The app uses the camera only when you tap “Take a photo” in the Assistant’s “Photo” tool, and the microphone only when you tap “Answer by voice” in the oral exam, and asks for your permission first.</p>
+
+<h2>What we do not collect</h2>
+<ul>
+<li>Your phone number, contacts, photos and recordings (the question photo and the oral-answer recording are processed and then forgotten, never stored), or precise location; nor your real name or email address unless you choose Google sign-in.</li>
+<li>We never sell or rent any data, and we never pass your alias, email, progress or answers to AdMob.</li>
+</ul>
+
+<h2>Service providers</h2>
+<p>The data above is processed by: <a href="https://supabase.com/privacy" rel="noopener">Supabase</a> (database, sessions and authentication), <a href="https://www.pubnub.com/legal/privacy-policy/" rel="noopener">PubNub</a> (live presence), <a href="https://ably.com/privacy" rel="noopener">Ably</a> (live broadcast from the server) and <a href="https://policies.google.com/privacy" rel="noopener">Google</a> (Google sign-in if you choose it; Firebase for analytics and website hosting; AdMob for ads in the Android app, under <a href="https://policies.google.com/technologies/partner-sites" rel="noopener">Google’s policy on partner sites</a>; and the Gemini API, which generates the Assistant’s answers and exercises: we use the paid tier, under whose terms Google does not use what is sent to it or its answers to improve its products, keeping them only for a limited time to detect abuse and as required by law, and every call asks that it not be logged in our project). Their servers may be located outside Morocco, which is a transfer of data abroad, limited to the purposes stated.</p>
+
+<h2>Retention</h2>
+<ul>
+<li>Your alias, progress, results and terms acceptance: for as long as sync is on; all of it is deleted as soon as you ask.</li>
+<li>Your Google-linked account (email and name): until you delete your data from the app, when the account itself is deleted together with its last alias.</li>
+<li>The Assistant: general generated answers are kept for reuse as long as the library texts and question bank are unchanged; a generated practice case, for three days; exercises generated for you are not stored on our server; case facts, photos, recordings and essay texts are never stored; its technical log, your plan and your practice cases are deleted with your data. Review cards and saved law articles are part of your progress.</li>
+<li>Statistics: according to the retention period set in Firebase (two months).</li>
+<li>Reports about questions: until the question concerned has been reviewed.</li>
+</ul>
+
+<h2 id="delete-en">Your rights and how to exercise them</h2>
+<p>You have the right to access, rectify and delete your data and to object to its processing, under Moroccan Law No. 09-08 on the protection of individuals with regard to the processing of personal data.</p>
+<ul>
+<li><b>Deletion from the server</b>: in the app → “More” → “Account &amp; cloud services” → “Delete my cloud data”. Your alias, progress, daily-question answers, challenge results and Assistant log are deleted immediately, together with your Google-linked account (email and name) if it has no other alias. How to do it without the app, and what is deleted or kept, is explained on the <a href="delete-data?lang=en">data deletion</a> page.</li>
+<li><b>Turning off statistics</b>: “More” → “Settings” → “Usage statistics”.</li>
+<li><b>Ads</b>: “More” → “Ads” → “Ad privacy options” (where required by law); you can also reset or delete your advertising ID in Android settings (Privacy → Ads), and “One ad-free hour” is available on the same page.</li>
+<li><b>A copy of your data</b>: “More” → “Backup” exports your full progress to a file.</li>
+<li><b>Deletion from the device</b>: uninstall the app or clear its data.</li>
+</ul>
+
+<h2>Security</h2>
+<p>Server tables are closed to direct reading and writing; the app reaches them only through functions that check that the alias belongs to your device or account. Google sign-in happens directly with Google in the system browser, so the app never sees your password. The recovery code is stored hashed with bcrypt, and recovery attempts are locked after eight wrong attempts per hour. Service secret keys stay on the server and never reach the app.</p>
+
+<h2>Children and age</h2>
+<p>The app is intended for law students and candidates for competitive exams, not for children. The Assistant is reserved for people aged 18 or over (a condition of the Gemini API terms), and you are asked to confirm this before using it for the first time.</p>
+
+<h2>Changes</h2>
+<p>Every change to this policy is published on this page with its date.</p>
+<p class="foot"><a href="terms?lang=en">Terms of use</a><a href="delete-data?lang=en">Delete data</a><a href="./">Website</a></p>
+</article>
+
+<!-- ======================= Français ======================= -->
+<article class="L" lang="fr" dir="ltr" data-title="Politique de confidentialité — Qanoun Tahiro">
+<h1>Politique de confidentialité</h1>
+<p class="meta">Application Qanoun Tahiro (Android, iPhone et web) et son site · Dernière mise à jour : 23 novembre 2026</p>
+
+<div class="box"><p style="margin:0">En bref : vous entrez dans l’application de l’une des deux façons, à votre choix : un <b>pseudonyme</b> que vous choisissez, ou votre <b>compte Google</b> ; nous ne demandons jamais votre nom ni votre numéro de téléphone. Si vous choisissez Google, nous recevons votre e-mail et votre nom uniquement pour identifier votre compte, et ils ne sont jamais affichés : les classements montrent un nom généré par l’application (par ex. « Étudiant 4821 »). L’Assistant (IA, fondée sur le <b>modèle Gemini de Google</b>) ne fonctionne que lorsque vous le sollicitez et est réservé aux 18 ans et plus ; ce que vous lui envoyez (une question, la photo d’une question ou l’enregistrement de votre réponse orale) est traité puis oublié, et Google ne l’utilise pas pour améliorer ses modèles. L’<b>application Android affiche des publicités Google AdMob</b> qui financent le service gratuit (aucune publicité dans l’application iPhone, sur le site ni dans la version web), personnalisées uniquement avec votre consentement lorsque la loi l’exige. Aucune donnée n’est vendue. Les statistiques d’usage ne fonctionnent qu’avec votre accord, et l’application iPhone ne comporte ni statistiques ni pistage.</p></div>
+
+<h2>Responsable du traitement</h2>
+<p>Ahmed Bakkali Tahiri (Tahiro), développeur indépendant, Tétouan — Maroc. Pour toute question sur vos données : via les coordonnées du développeur sur la page de l’application dans Google Play ou l’App Store, ou depuis l’application.</p>
+
+<h2>Données collectées et finalités</h2>
+<table>
+<thead><tr><th>Donnée</th><th>Finalité</th><th>Lieu de conservation</th></tr></thead>
+<tbody>
+<tr><td>Le pseudonyme que vous choisissez</td><td>Votre identité dans le classement général et les défis</td><td>Votre appareil, et Supabase tant que la synchronisation est active</td></tr>
+<tr><td>Votre progression : points, réponses, calendrier de révision, favoris et résultats d’examens</td><td>Conserver votre progression et la transférer entre vos appareils</td><td>Votre appareil, et Supabase tant que la synchronisation est active</td></tr>
+<tr><td>Votre acceptation des conditions d’utilisation : version des conditions et date d’acceptation</td><td>Prouver que vous avez accepté les conditions avant d’utiliser l’application</td><td>Votre appareil, et Supabase avec votre progression</td></tr>
+<tr><td>Un identifiant de session anonyme et un code de récupération haché (le code lui-même n’est jamais stocké sur le serveur)</td><td>Lier votre pseudonyme à votre appareil sans mot de passe, et le transférer vers un nouvel appareil</td><td>Supabase ; le code d’origine reste uniquement sur votre appareil</td></tr>
+<tr><td>Si vous choisissez la <b>connexion Google</b> : votre adresse e-mail, votre nom et l’identifiant de votre compte Google, transmis par Google avec votre autorisation</td><td>Vous connecter, et retrouver votre pseudonyme et votre progression sur n’importe quel appareil sans code de récupération. Votre e-mail et votre nom n’apparaissent jamais dans les classements ni à aucun utilisateur, et ne servent jamais à vous contacter</td><td>Supabase (authentification)</td></tr>
+<tr><td>Votre réponse à la question du jour (juste ou non) et votre résultat à chaque défi</td><td>Statistiques de la question du jour et classement des défis</td><td>Supabase</td></tr>
+<tr><td>Les signalements que vous envoyez sur une erreur dans une question, ou sur une réponse ou un exercice de l’Assistant (avec son texte)</td><td>Corriger la banque de questions et contrôler la qualité du contenu généré</td><td>Votre appareil et Supabase</td></tr>
+<tr><td>Un identifiant d’appareil aléatoire, ainsi que votre pseudonyme et votre progression dans un salon de défi que vous rejoignez</td><td>Le nombre de personnes qui s’entraînent en ce moment et les salons de défi en direct</td><td>PubNub, en temps réel, sans historique des messages</td></tr>
+<tr><td><b>L’Assistant, lorsque vous l’utilisez</b> : le texte libre de votre question (avec les trois dernières questions de la même conversation), les faits d’un cas que vous soumettez, la <b>photo d’une question</b> que vous prenez ou choisissez, votre réponse à l’examen oral par écrit ou en <b>enregistrement vocal</b>, un sujet de dissertation et votre copie, votre solution à un cas pratique d’entraînement, deux notions à comparer, l’article que vous voulez faire expliquer ou transformer en cartes, la loi, l’article et le type d’<b>exercices que vous demandez de générer</b>, la question dont vous voulez l’explication et votre choix, ou un résumé chiffré de votre progression pour préparer « Mon plan » ; ainsi que votre nombre d’utilisations quotidiennes</td><td>Générer la réponse, l’explication, les exercices, la note ou le plan, et décompter votre quota quotidien</td><td>Transite par notre serveur (Supabase) vers l’API Gemini de Google (offre payante, avec demande de non-journalisation dans le projet), qui génère la réponse puis vous la renvoie. Sont conservés sur notre serveur : les réponses générées générales, réutilisées sans nouvel appel (explications, comparaisons, cartes et plans de dissertation) ; un cas pratique généré et son corrigé, pendant trois jours ; votre nombre d’utilisations ; et un journal technique sans aucun texte (type, durée, nombre de jetons). Les faits d’un cas, les photos, les enregistrements, le texte de votre copie, vos solutions aux cas d’entraînement et les exercices générés pour vous ne sont jamais conservés sur notre serveur : ils sont envoyés pour la réponse puis oubliés</td></tr>
+<tr><td><b>Publicités de l’application Android</b> (Google AdMob) : l’identifiant publicitaire de votre appareil, l’adresse IP (dont on déduit un pays approximatif), vos interactions avec les publicités (affichages et clics) et des informations de diagnostic sur leurs performances ; pour les publicités avec récompense, un identifiant anonyme de votre compte (ni votre pseudonyme ni votre e-mail)</td><td>Afficher et mesurer les publicités et prévenir la fraude ; vérifier que vous avez regardé une publicité avec récompense avant d’ajouter des demandes à l’Assistant. En Europe, les publicités personnalisées ne sont affichées qu’avec votre consentement via le formulaire de Google</td><td>Google (AdMob), et le registre des récompenses sur Supabase</td></tr>
+<tr><td>Statistiques d’usage anonymes, <b>uniquement avec votre accord</b> (Android et web) : branche et difficulté de la question et réussite ou non, fin d’un examen ou d’un défi, partages ; avec l’identifiant d’installation de l’application, le modèle, le système et la langue de l’appareil et votre pays approximatif</td><td>Savoir ce qui aide les apprenants et ce qui doit être amélioré</td><td>Google Firebase Analytics</td></tr>
+</tbody>
+</table>
+<p>Les statistiques ne contiennent jamais votre pseudonyme, le texte des questions ni vos réponses. L’application n’envoie aucune donnée vous concernant via Ably : elle n’en reçoit que les annonces de l’auteur et les statistiques de la question du jour. Votre pseudonyme et votre e-mail ne sont jamais envoyés à l’Assistant ; n’écrivez donc ni vrais noms ni données personnelles vous concernant ou concernant autrui dans vos questions ou vos cas, et ne photographiez pas de documents contenant des données personnelles. Ses réponses et exercices sont pédagogiques, fondés sur les textes de loi inclus dans l’application et sur la banque de questions, et ne constituent pas un conseil juridique (voir les <a href="terms?lang=fr">conditions d’utilisation</a>). L’application n’utilise la caméra que lorsque vous appuyez sur « Prendre une photo » dans l’outil « Photo » de l’Assistant, et le micro que lorsque vous appuyez sur « Répondre à voix haute » à l’examen oral, et demande votre autorisation au préalable.</p>
+
+<h2>Ce que nous ne collectons pas</h2>
+<ul>
+<li>Votre numéro de téléphone, vos contacts, vos photos et enregistrements (la photo de la question et l’enregistrement de la réponse orale sont traités puis oubliés, jamais conservés) ni votre position précise ; ni votre vrai nom ni votre adresse e-mail, sauf si vous choisissez la connexion Google.</li>
+<li>Nous ne vendons ni ne louons aucune donnée, et ne transmettons jamais à AdMob votre pseudonyme, votre e-mail, votre progression ni vos réponses.</li>
+</ul>
+
+<h2>Prestataires</h2>
+<p>Les données ci-dessus sont traitées par : <a href="https://supabase.com/privacy" rel="noopener">Supabase</a> (base de données, sessions et authentification), <a href="https://www.pubnub.com/legal/privacy-policy/" rel="noopener">PubNub</a> (présence en direct), <a href="https://ably.com/privacy" rel="noopener">Ably</a> (diffusion en direct depuis le serveur) et <a href="https://policies.google.com/privacy" rel="noopener">Google</a> (connexion Google si vous la choisissez ; Firebase pour les statistiques et l’hébergement du site ; AdMob pour les publicités de l’application Android, selon les <a href="https://policies.google.com/technologies/partner-sites" rel="noopener">règles de Google relatives aux sites partenaires</a> ; et l’API Gemini, qui génère les réponses et exercices de l’Assistant : nous utilisons l’offre payante, dont les conditions prévoient que Google n’utilise ni ce qui lui est envoyé ni ses réponses pour améliorer ses produits, et ne les conserve qu’un temps limité pour détecter les abus et pour satisfaire aux obligations légales ; chaque appel demande en outre qu’ils ne soient pas journalisés dans notre projet). Leurs serveurs peuvent se trouver hors du Maroc, ce qui constitue un transfert de données à l’étranger, limité aux finalités indiquées.</p>
+
+<h2>Durées de conservation</h2>
+<ul>
+<li>Votre pseudonyme, votre progression, vos résultats et votre acceptation des conditions : tant que la synchronisation est active ; tout est supprimé dès votre demande.</li>
+<li>Votre compte lié à Google (e-mail et nom) : jusqu’à ce que vous supprimiez vos données depuis l’application ; le compte lui-même est alors supprimé avec son dernier pseudonyme.</li>
+<li>L’Assistant : les réponses générées générales sont conservées pour être réutilisées tant que les textes de la bibliothèque et la banque de questions ne changent pas ; un cas pratique généré, trois jours ; les exercices générés pour vous ne sont pas conservés sur notre serveur ; les faits des cas, les photos, les enregistrements et les copies ne sont jamais conservés ; son journal technique, votre plan et vos cas d’entraînement sont supprimés avec vos données. Les cartes de révision et les articles de loi enregistrés font partie de votre progression.</li>
+<li>Statistiques : selon la durée de conservation réglée dans Firebase (deux mois).</li>
+<li>Signalements sur les questions : jusqu’à la révision de la question concernée.</li>
+</ul>
+
+<h2 id="delete-fr">Vos droits et comment les exercer</h2>
+<p>Vous disposez d’un droit d’accès, de rectification, de suppression et d’opposition, conformément à la loi marocaine n° 09-08 relative à la protection des personnes physiques à l’égard du traitement des données à caractère personnel.</p>
+<ul>
+<li><b>Suppression sur le serveur</b> : dans l’application → « Plus » → « Compte et services cloud » → « Supprimer mes données du cloud ». Votre pseudonyme, votre progression, vos réponses à la question du jour, vos résultats aux défis et le journal de l’Assistant sont supprimés immédiatement, ainsi que votre compte lié à Google (e-mail et nom) s’il n’a plus d’autre pseudonyme. La marche à suivre sans l’application, et ce qui est supprimé ou conservé, figurent sur la page <a href="delete-data?lang=fr">Suppression des données</a>.</li>
+<li><b>Désactiver les statistiques</b> : « Plus » → « Réglages » → « Statistiques d’usage ».</li>
+<li><b>Publicités</b> : « Plus » → « Publicités » → « Options de confidentialité des publicités » (lorsque la loi l’exige) ; vous pouvez aussi réinitialiser ou supprimer votre identifiant publicitaire dans les paramètres d’Android (Confidentialité → Annonces), et « Une heure sans publicité » est disponible sur la même page.</li>
+<li><b>Copie de vos données</b> : « Plus » → « Sauvegarde » exporte toute votre progression dans un fichier.</li>
+<li><b>Suppression sur l’appareil</b> : désinstallez l’application ou effacez ses données.</li>
+</ul>
+
+<h2>Sécurité</h2>
+<p>Les tables du serveur sont fermées à toute lecture ou écriture directe ; l’application n’y accède que par des fonctions qui vérifient que le pseudonyme appartient à votre appareil ou à votre compte. La connexion Google se fait directement avec Google dans le navigateur du système : l’application ne voit jamais votre mot de passe. Le code de récupération est stocké haché avec bcrypt, et les tentatives de récupération sont bloquées après huit essais erronés par heure. Les clés secrètes des services restent sur le serveur et n’atteignent jamais l’application.</p>
+
+<h2>Enfants et âge</h2>
+<p>L’application s’adresse aux étudiants en droit et aux candidats aux concours, et non aux enfants. L’Assistant est réservé aux personnes de 18 ans et plus (une condition des conditions de l’API Gemini), ce qu’il vous est demandé de confirmer avant sa première utilisation.</p>
+
+<h2>Modifications</h2>
+<p>Toute modification de cette politique est publiée sur cette page avec sa date.</p>
+<p class="foot"><a href="terms?lang=fr">Conditions d’utilisation</a><a href="delete-data?lang=fr">Suppression des données</a><a href="./">Site</a></p>
+</article>
+
+<!-- ======================= Español ======================= -->
+<article class="L" lang="es" dir="ltr" data-title="Política de privacidad — Qanoun Tahiro">
+<h1>Política de privacidad</h1>
+<p class="meta">App Qanoun Tahiro (Android, iPhone y web) y su sitio web · Última actualización: 23 de noviembre de 2026</p>
+
+<div class="box"><p style="margin:0">En resumen: entras en la app de una de dos formas, a tu elección: un <b>seudónimo</b> que tú eliges o tu <b>cuenta de Google</b>; nunca te pedimos tu nombre ni tu número de teléfono. Si eliges Google, recibimos tu correo y tu nombre solo para identificar tu cuenta, y nunca se muestran a nadie: las clasificaciones muestran un nombre generado por la app (p. ej. «Estudiante 4821»). El Asistente (IA basada en el <b>modelo Gemini de Google</b>) solo funciona cuando tú se lo pides y es para mayores de 18 años; lo que le envías (una pregunta, la foto de una pregunta o la grabación de tu respuesta oral) se procesa y después se olvida, y Google no lo usa para mejorar sus modelos. La <b>app de Android muestra anuncios de Google AdMob</b> que financian el servicio gratuito (sin anuncios en la app de iPhone, en el sitio web ni en la versión web), personalizados solo con tu consentimiento cuando la ley lo exige. Nunca se venden datos. Las estadísticas de uso solo funcionan con tu consentimiento, y la app de iPhone no tiene estadísticas ni seguimiento.</p></div>
+
+<h2>Responsable del tratamiento</h2>
+<p>Ahmed Bakkali Tahiri (Tahiro), desarrollador independiente, Tetuán — Marruecos. Para cualquier consulta sobre tus datos: a través de los datos del desarrollador en la página de la app en Google Play o App Store, o desde la propia app.</p>
+
+<h2>Qué datos se recogen y para qué</h2>
+<table>
+<thead><tr><th>Dato</th><th>Finalidad</th><th>Dónde se guarda</th></tr></thead>
+<tbody>
+<tr><td>El seudónimo que eliges</td><td>Tu identidad en la clasificación general y en los desafíos</td><td>Tu dispositivo, y Supabase mientras la sincronización esté activada</td></tr>
+<tr><td>Tu progreso de aprendizaje: puntos, respuestas, calendario de repaso, elementos guardados y resultados de exámenes</td><td>Guardar tu progreso y trasladarlo entre tus dispositivos</td><td>Tu dispositivo, y Supabase mientras la sincronización esté activada</td></tr>
+<tr><td>Tu aceptación de las condiciones de uso: versión de las condiciones y fecha de aceptación</td><td>Demostrar que aceptaste las condiciones antes de usar la app</td><td>Tu dispositivo, y Supabase junto con tu progreso</td></tr>
+<tr><td>Un identificador de sesión anónimo y un código de recuperación cifrado con hash (el código en sí nunca se guarda en el servidor)</td><td>Vincular tu seudónimo a tu dispositivo sin contraseña y trasladarlo a un dispositivo nuevo</td><td>Supabase; el código original solo queda en tu dispositivo</td></tr>
+<tr><td>Si eliges <b>iniciar sesión con Google</b>: tu correo electrónico, tu nombre y el identificador de tu cuenta de Google, tal como los envía Google con tu permiso</td><td>Iniciar sesión y recuperar tu seudónimo y tu progreso en cualquier dispositivo sin código de recuperación. Tu correo y tu nombre nunca aparecen en las clasificaciones ni ante ningún usuario, y nunca se usan para contactarte</td><td>Supabase (autenticación)</td></tr>
+<tr><td>Tu respuesta a la pregunta del día (acierto o no) y tu resultado en cada desafío</td><td>Estadísticas de la pregunta del día y clasificación de los desafíos</td><td>Supabase</td></tr>
+<tr><td>Los avisos que envías sobre un error en una pregunta, o sobre una respuesta o un ejercicio del Asistente (con su texto)</td><td>Corregir el banco de preguntas y vigilar la calidad del contenido generado</td><td>Tu dispositivo y Supabase</td></tr>
+<tr><td>Un identificador aleatorio del dispositivo, y tu seudónimo y tu progreso dentro de una sala de desafío a la que te unes</td><td>El número de personas que practican ahora y las salas de desafío en directo</td><td>PubNub, en tiempo real, sin guardar historial de mensajes</td></tr>
+<tr><td><b>El Asistente, cuando lo usas</b>: el texto libre de tu pregunta (con las tres últimas preguntas de la misma conversación), los hechos de un caso que planteas, la <b>foto de una pregunta</b> que tomas o eliges, tu respuesta del examen oral por escrito o como <b>grabación de voz</b>, un tema de redacción y tu redacción, tu solución a un caso práctico de entrenamiento, dos conceptos que comparar, el artículo que quieres que te explique o convierta en tarjetas, la ley, el artículo y el tipo de <b>ejercicios que pides generar</b>, la pregunta cuya explicación pides y tu elección en ella, o un resumen de las cifras de tu progreso para preparar «Mi plan»; además de tu número de usos diarios</td><td>Generar la respuesta, la explicación, los ejercicios, la nota o el plan, y contar tu cupo diario</td><td>Pasa por nuestro servidor (Supabase) a la API Gemini de Google (nivel de pago, con la petición de que no se registre en el proyecto), que genera la respuesta y te la devuelve. Se guardan en nuestro servidor: las respuestas generadas de carácter general, reutilizadas sin nueva llamada (explicaciones, comparaciones, tarjetas y esquemas de redacción); un caso práctico generado y su solución modelo, durante tres días; tu número de usos; y un registro técnico sin ningún texto (tipo, tiempo, número de tokens). Los hechos de un caso, las fotos, las grabaciones de voz, el texto de tu redacción, tus soluciones a los casos de entrenamiento y los ejercicios generados para ti nunca se guardan en nuestro servidor: se envían para obtener la respuesta y después se olvidan</td></tr>
+<tr><td><b>Anuncios de la app de Android</b> (Google AdMob): el identificador de publicidad de tu dispositivo, la dirección IP (de la que se deduce un país aproximado), tus interacciones con los anuncios (impresiones y clics) e información de diagnóstico sobre su rendimiento; en los anuncios con recompensa, un identificador anónimo de tu cuenta (ni tu seudónimo ni tu correo)</td><td>Mostrar y medir los anuncios y prevenir el fraude; comprobar que viste un anuncio con recompensa antes de añadir solicitudes al Asistente. En Europa, los anuncios personalizados solo se muestran con tu consentimiento mediante el formulario de Google</td><td>Google (AdMob), y el registro de recompensas en Supabase</td></tr>
+<tr><td>Estadísticas de uso anónimas, <b>solo con tu consentimiento</b> (Android y web): rama y dificultad de la pregunta y si acertaste, finalización de un examen o desafío, y compartidos; con el identificador de instalación de la app, el modelo, el sistema y el idioma del dispositivo y tu país aproximado</td><td>Saber qué ayuda a quienes estudian y qué hay que mejorar</td><td>Google Firebase Analytics</td></tr>
+</tbody>
+</table>
+<p>Las estadísticas nunca incluyen tu seudónimo, el texto de las preguntas ni tus respuestas. La app no envía ningún dato sobre ti a través de Ably: solo recibe de ella los anuncios del autor y las estadísticas de la pregunta del día. Tu seudónimo y tu correo nunca se envían al Asistente; por eso, no escribas nombres reales ni datos personales tuyos o de otras personas en tus preguntas o casos, ni fotografíes documentos con datos personales. Sus respuestas y ejercicios son educativos, se basan en los textos legales incluidos en la app y en el banco de preguntas, y no constituyen asesoramiento jurídico (consulta las <a href="terms?lang=es">condiciones de uso</a>). La app solo usa la cámara cuando pulsas «Take a photo» (tomar una foto) en la herramienta «Photo» del Asistente, y el micrófono solo cuando pulsas «Answer by voice» (responder por voz) en el examen oral, y te pide permiso antes.</p>
+
+<h2>Lo que no recogemos</h2>
+<ul>
+<li>Tu número de teléfono, tus contactos, tus fotos y grabaciones (la foto de la pregunta y la grabación de la respuesta oral se procesan y después se olvidan, nunca se guardan) ni tu ubicación precisa; ni tu nombre real ni tu correo electrónico, salvo que elijas iniciar sesión con Google.</li>
+<li>Nunca vendemos ni alquilamos ningún dato, y nunca pasamos a AdMob tu seudónimo, tu correo, tu progreso ni tus respuestas.</li>
+</ul>
+
+<h2>Proveedores de servicios</h2>
+<p>Los datos anteriores los tratan: <a href="https://supabase.com/privacy" rel="noopener">Supabase</a> (base de datos, sesiones y autenticación), <a href="https://www.pubnub.com/legal/privacy-policy/" rel="noopener">PubNub</a> (presencia en directo), <a href="https://ably.com/privacy" rel="noopener">Ably</a> (difusión en directo desde el servidor) y <a href="https://policies.google.com/privacy" rel="noopener">Google</a> (inicio de sesión con Google si lo eliges; Firebase para las estadísticas y el alojamiento del sitio; AdMob para los anuncios de la app de Android, según la <a href="https://policies.google.com/technologies/partner-sites" rel="noopener">política de Google sobre sitios de socios</a>; y la API Gemini, que genera las respuestas y los ejercicios del Asistente: usamos el nivel de pago, cuyas condiciones establecen que Google no usa lo que se le envía ni sus respuestas para mejorar sus productos y solo lo conserva durante un tiempo limitado para detectar abusos y por obligación legal; además, cada llamada pide que no se registre en nuestro proyecto). Sus servidores pueden estar fuera de Marruecos, lo que supone una transferencia de datos al extranjero, limitada a las finalidades indicadas.</p>
+
+<h2>Plazos de conservación</h2>
+<ul>
+<li>Tu seudónimo, tu progreso, tus resultados y tu aceptación de las condiciones: mientras la sincronización esté activada; todo se borra en cuanto lo pides.</li>
+<li>Tu cuenta vinculada a Google (correo y nombre): hasta que borres tus datos desde la app; entonces se borra la propia cuenta junto con su último seudónimo.</li>
+<li>El Asistente: las respuestas generadas de carácter general se guardan para reutilizarlas mientras no cambien los textos de la biblioteca ni el banco de preguntas; un caso práctico generado, tres días; los ejercicios generados para ti no se guardan en nuestro servidor; los hechos de los casos, las fotos, las grabaciones y las redacciones nunca se guardan; su registro técnico, tu plan y tus casos de entrenamiento se borran con tus datos. Las tarjetas de repaso y los artículos legales guardados forman parte de tu progreso.</li>
+<li>Estadísticas: según el plazo de conservación configurado en Firebase (dos meses).</li>
+<li>Avisos sobre preguntas: hasta que se revise la pregunta en cuestión.</li>
+</ul>
+
+<h2 id="delete-es">Tus derechos y cómo ejercerlos</h2>
+<p>Tienes derecho a acceder a tus datos, rectificarlos y suprimirlos, y a oponerte a su tratamiento, conforme a la Ley marroquí n.º 09-08 relativa a la protección de las personas físicas respecto al tratamiento de datos de carácter personal.</p>
+<ul>
+<li><b>Borrado en el servidor</b>: en la app → «More» → «Account &amp; cloud services» → «Delete my cloud data» (la app está en árabe, francés e inglés; en francés: «Plus» → «Compte et services cloud» → «Supprimer mes données du cloud»). Se borran al instante tu seudónimo, tu progreso, tus respuestas a la pregunta del día, tus resultados en los desafíos y el registro del Asistente, junto con tu cuenta vinculada a Google (correo y nombre) si no le queda otro seudónimo. Cómo hacerlo sin la app, y qué se borra o se conserva, se explica en la página de <a href="delete-data?lang=es">borrado de datos</a>.</li>
+<li><b>Desactivar las estadísticas</b>: «More» → «Settings» → «Usage statistics».</li>
+<li><b>Anuncios</b>: «More» → «Ads» → «Ad privacy options» (cuando la ley lo exige); también puedes restablecer o eliminar tu identificador de publicidad en los ajustes de Android (Privacidad → Anuncios), y en la misma página tienes «One ad-free hour» (una hora sin anuncios).</li>
+<li><b>Una copia de tus datos</b>: «More» → «Backup» exporta todo tu progreso a un archivo.</li>
+<li><b>Borrado en el dispositivo</b>: desinstala la app o borra sus datos.</li>
+</ul>
+
+<h2>Seguridad</h2>
+<p>Las tablas del servidor están cerradas a la lectura y escritura directas; la app solo accede a ellas mediante funciones que comprueban que el seudónimo pertenece a tu dispositivo o a tu cuenta. El inicio de sesión con Google se hace directamente con Google en el navegador del sistema, así que la app nunca ve tu contraseña. El código de recuperación se guarda cifrado con bcrypt, y los intentos de recuperación se bloquean tras ocho intentos fallidos por hora. Las claves secretas de los servicios se quedan en el servidor y nunca llegan a la app.</p>
+
+<h2>Menores y edad</h2>
+<p>La app está dirigida a estudiantes de Derecho y a quienes preparan oposiciones y concursos, no a menores. El Asistente está reservado a mayores de 18 años (una condición de los términos de la API Gemini), y se te pide confirmarlo antes de usarlo por primera vez.</p>
+
+<h2>Cambios</h2>
+<p>Cualquier cambio de esta política se publica en esta página con su fecha.</p>
+<p class="foot"><a href="terms?lang=es">Condiciones de uso</a><a href="delete-data?lang=es">Borrar datos</a><a href="./">Sitio web</a></p>
+</article>
 </main>
+<script>
+(function(){var d=document.documentElement,l=d.getAttribute('data-l'),a=document.querySelector('article.L[lang="'+l+'"]');
+if(a&&a.getAttribute('data-title'))document.title=a.getAttribute('data-title');
+var ls=document.querySelectorAll('.langs a');for(var i=0;i<ls.length;i++)ls[i].setAttribute('aria-current',ls[i].getAttribute('hreflang')===l?'true':'false');})();
+</script>
 </body>
 </html>

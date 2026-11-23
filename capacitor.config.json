@@ -6,6 +6,15 @@
   "android": {
     "backgroundColor": "#12181F"
   },
+  "ios": {
+    "backgroundColor": "#12181F",
+    "contentInset": "never",
+    "preferredContentMode": "mobile",
+    "includePlugins": [
+      "@capacitor/app",
+      "@capacitor/browser"
+    ]
+  },
   "plugins": {
     "SystemBars": {
       "style": "DARK",

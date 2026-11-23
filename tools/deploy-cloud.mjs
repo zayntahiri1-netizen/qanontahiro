@@ -4,7 +4,8 @@
 // يعمل بـ Node 18+ وحده عبر واجهة Supabase الإدارية:
 //   1) القاعدة: الهجرات بالترتيب، ولا يُعاد تطبيق ما سُجّل منها (supabase_migrations.schema_migrations، كما يفعل Supabase CLI)
 //   2) المصادقة: الدخول المجهول، والربط اليدوي للهويات، ومزوّد Google، وعناوين العودة للويب ولتطبيق أندرويد
-//   3) أسرار الخادم: ABLY_ROOT_KEY و QT_ADMIN_SECRET و ANTHROPIC_API_KEY وحصص المساعد (لا تُكتب في أي ملف يصل إلى العميل)
+//   3) أسرار الخادم: ABLY_ROOT_KEY و QT_ADMIN_SECRET و GEMINI_API_KEY وحصص المساعد (لا تُكتب في أي ملف يصل إلى العميل)
+//      ويُفحص مفتاح Gemini قبل حفظه بطلب صغير جداً: مفتاح مرفوض يوقف النشر، ورصيد مدفوع فارغ يُنبَّه إليه
 //   4) الدوال: qt-pulse (النبض) و qt-ai (المساعد) و qt-ads (التحقق من مكافآت AdMob من جهة الخادم)
 //   5) قاعدة معرفة المساعد: بنك الأسئلة المبني (dist/app/questions.json) يُحمَّل إلى qt_kb
 //   5ب) مكتبة القوانين: نصوص المواد (data/corpus/) تُحمَّل إلى qt_laws وqt_law_articles، ولا يُعاد التحميل إن لم تتغير
@@ -12,8 +13,9 @@
 //
 //   node tools/deploy-cloud.mjs
 // المتغيرات (اختيارية، وإلا سُئلت عنها بإدخال مخفي؛ و«Enter» فارغاً يُبقي القيمة المحفوظة على الخادم):
-//   SUPABASE_ACCESS_TOKEN  ABLY_ROOT_KEY  ANTHROPIC_API_KEY  GOOGLE_CLIENT_ID  GOOGLE_CLIENT_SECRET  QT_ADMIN_SECRET
-//   QT_AI_CAP_ANON (12)  QT_AI_CAP_GOOGLE (40)  QT_AI_DAILY_BUDGET (3000)
+//   SUPABASE_ACCESS_TOKEN  ABLY_ROOT_KEY  GEMINI_API_KEY  GOOGLE_CLIENT_ID  GOOGLE_CLIENT_SECRET  QT_ADMIN_SECRET
+//   QT_AI_CAP_ANON (12)  QT_AI_CAP_GOOGLE (40)  QT_AI_DAILY_BUDGET (600 طلب في اليوم لكل التطبيق: حماية لرصيد Gemini المدفوع)
+//   QT_AI_FAST (gemini-3.5-flash-lite)  QT_AI_SMART (gemini-3.8-flash) — لتغيير نموذجي Gemini دون تعديل الشيفرة
 // =========================================================================
 import fs from 'node:fs';
 import os from 'node:os';
@@ -30,12 +32,14 @@ const URL0 = (process.env.QT_SUPABASE_URL || CFG.supabase.url).replace(/\/+$/, '
 const API = (process.env.QT_API || 'https://api.supabase.com') + '/v1/projects/' + REF;
 const SECRET_FILE = path.join(os.homedir(), '.qanoun-tahiro-admin');
 const LEAKED_ROOT = 'bjCE2A.7YUitA';          // اسم المفتاح الذي أُرسل نصاً في المحادثة (الاسم وحده، لا السر)
+const GEMINI_API = (process.env.QT_GEMINI_BASE || 'https://generativelanguage.googleapis.com/v1beta').replace(/\/+$/, '');
+const AI_FAST = process.env.QT_AI_FAST || 'gemini-3.5-flash-lite', AI_SMART = process.env.QT_AI_SMART || 'gemini-3.8-flash';
 
 const say = (...a) => console.log(...a);
 const step = (n, t) => say(`\n[${n}] ${t}`);
 const fail = m => { console.error('\n✗ ' + m); if (RL) RL.close(); process.exit(1); };
 if (!REF) fail('تعذّر استخراج معرّف مشروع Supabase من config/cloud.json');
-if (typeof fetch !== 'function' || typeof FormData !== 'function') fail('يلزم Node 18 أو أحدث (pkg install nodejs-lts)');
+if (typeof fetch !== 'function' || typeof FormData !== 'function') fail('يلزم Node 18 أو أحدث (pkg install nodejs)');
 
 // واجهة قراءة واحدة طوال التشغيل: الإدخال المخفي في الطرفية، ونهاية الإدخال تُعاد نصاً فارغاً فتظهر رسالة واضحة لا خروج صامت
 let RL = null;
@@ -107,13 +111,27 @@ const NATIVE_CB = 'com.qanontahiro.app://auth-callback';
     }
   } else if (!have.has('ABLY_ROOT_KEY')) fail('مفتاح Ably الجذر مطلوب في النشر الأول.');
 
-  let claude = process.env.ANTHROPIC_API_KEY || '';
-  if (!claude) {
-    say('\nمفتاح Claude لـ«المساعد»: أنشئه من https://platform.claude.com/settings/keys (يبدأ بـ sk-ant-)'
-      + (have.has('ANTHROPIC_API_KEY') ? '\n(Enter وحده يُبقي المفتاح المحفوظ)' : '\n(Enter وحده يؤجل تفعيل المساعد)'));
-    claude = await ask('ANTHROPIC_API_KEY: ', true);
+  let gem = process.env.GEMINI_API_KEY || '';
+  if (!gem) {
+    say('\nمفتاح Gemini لـ«المساعد»: أنشئه من https://aistudio.google.com/apikey (يبدأ بـ AQ. أو AIza)،'
+      + '\nوفعّل الفوترة المدفوعة (Prepay) للمشروع نفسه في AI Studio: المستوى المجاني لا يصلح لتطبيق ينشر للعموم.'
+      + (have.has('GEMINI_API_KEY') ? '\n(Enter وحده يُبقي المفتاح المحفوظ)' : '\n(Enter وحده يؤجل تفعيل المساعد)'));
+    gem = await ask('GEMINI_API_KEY: ', true);
   }
-  if (claude && !/^sk-ant-[\w-]+$/.test(claude)) fail('مفتاح Claude يجب أن يبدأ بـ sk-ant-');
+  if (gem && !/^(AQ\.|AIza)[\w.-]{20,}$/.test(gem)) fail('مفتاح Gemini يبدأ بـ AQ. أو AIza (انسخه كاملاً من AI Studio ← API keys)');
+  if (gem) {
+    // طلب صغير جداً (رموز معدودة) بالنموذج السريع: يكشف المفتاح المرفوض والرصيد الفارغ والنموذج غير المتاح قبل الحفظ
+    const gc = await probe('POST', `${GEMINI_API}/models/${encodeURIComponent(AI_FAST)}:generateContent`,
+      { json: { contents: [{ role: 'user', parts: [{ text: 'اكتب: نعم' }] }], generationConfig: { maxOutputTokens: 16 }, store: false }, headers: { 'x-goog-api-key': gem } });
+    const gm = String((gc.data && gc.data.error && gc.data.error.message) || (typeof gc.data === 'string' ? gc.data : '')).slice(0, 200);
+    if (gc.ok) say('  ✓ مفتاح Gemini يعمل (' + AI_FAST + ')');
+    else if (gc.status === 400 && /api key|API_KEY/i.test(gm) || gc.status === 401 || gc.status === 403)
+      fail(`مفتاح Gemini مرفوض (${gc.status}): ${gm}\n  تحقق: أنشئ المفتاح من AI Studio ← API keys، وانسخه كاملاً، واتركه «مقيداً بـ Gemini API» (المفاتيح غير المقيدة تُرفض).`);
+    else if (gc.status === 402) say('  ⚠ مفتاح Gemini صحيح لكن رصيد الدفع المسبق فارغ (402): AI Studio ← Billing ← Buy credits (5$ على الأقل). سيُحفظ المفتاح ويعمل المساعد حين يُشحن الرصيد.');
+    else if (gc.status === 404) fail(`النموذج ${AI_FAST} غير متاح لهذا المفتاح (404): ${gm}\n  عيّن نموذجاً متاحاً بالمتغير QT_AI_FAST ثم أعد الأمر.`);
+    else if (gc.status === 429) say('  ⚠ مفتاح Gemini صحيح لكن الحصة مستنفدة الآن (429): تأكد أن الفوترة المدفوعة مفعّلة للمشروع في AI Studio.');
+    else say(`  ⚠ تعذّر فحص مفتاح Gemini الآن (${gc.status || 'الشبكة'}: ${gm || short(gc.data)}) — سيُحفظ ويُفحص المساعد في آخر النشر.`);
+  }
 
   let gid = process.env.GOOGLE_CLIENT_ID || '', gsec = process.env.GOOGLE_CLIENT_SECRET || '';
   if (!gid) {
@@ -179,13 +197,21 @@ const NATIVE_CB = 'com.qanontahiro.app://auth-callback';
   const secrets = [{ name: 'QT_ADMIN_SECRET', value: admin },
     { name: 'QT_AI_CAP_ANON', value: String(process.env.QT_AI_CAP_ANON || 12) },
     { name: 'QT_AI_CAP_GOOGLE', value: String(process.env.QT_AI_CAP_GOOGLE || 40) },
-    { name: 'QT_AI_DAILY_BUDGET', value: String(process.env.QT_AI_DAILY_BUDGET || 3000) }];
+    { name: 'QT_AI_DAILY_BUDGET', value: String(process.env.QT_AI_DAILY_BUDGET || 600) }];
   if (ably) secrets.push({ name: 'ABLY_ROOT_KEY', value: ably });
-  if (claude) secrets.push({ name: 'ANTHROPIC_API_KEY', value: claude });
+  if (gem) secrets.push({ name: 'GEMINI_API_KEY', value: gem });
+  if (process.env.QT_AI_FAST) secrets.push({ name: 'QT_AI_FAST', value: AI_FAST });
+  if (process.env.QT_AI_SMART) secrets.push({ name: 'QT_AI_SMART', value: AI_SMART });
   if (CFG.admob && CFG.admob.rewarded) secrets.push({ name: 'QT_ADS_REWARDED_UNITS', value: CFG.admob.rewarded });
   const se = await call('POST', API + '/secrets', { token, json: secrets });
   if (!se.ok) fail(`تعذّر ضبط الأسرار (${se.status}): ${short(se.data)}`);
   say('  ✓ ' + secrets.map(x => x.name).join('، ') + ' — على الخادم وحده');
+  // مفتاح Claude ونماذجه من الإصدارات السابقة لم تعد مستعملة: تُحذف من الخادم
+  const old = ['ANTHROPIC_API_KEY', 'QT_AI_MODEL_FAST', 'QT_AI_MODEL_SMART'].filter(n => have.has(n));
+  if (old.length) {
+    const rm = await call('DELETE', API + '/secrets', { token, json: old });
+    say(rm.ok ? '  ✓ حُذفت الأسرار القديمة: ' + old.join('، ') : `  ⚠ تعذّر حذف الأسرار القديمة (${rm.status}): احذفها من لوحة Supabase ← Edge Functions ← Secrets: ${old.join('، ')}`);
+  }
 
   // ---------- 4) الدالتان ----------
   step(4, 'نشر الدوال');
@@ -287,7 +313,7 @@ const NATIVE_CB = 'com.qanontahiro.app://auth-callback';
     let qa = null;
     for (let i = 0; i < 6; i++) { qa = await probe('POST', URL0 + '/functions/v1/qt-ai', { json: { kind: 'quota' }, headers: ai }); if (qa.ok) break; await wait(4000); }
     if (!(qa && qa.ok && qa.data && qa.data.ok)) say(`  ✗ دالة المساعد: ${qa && qa.status} ${short(qa && qa.data)}`);
-    else if (!qa.data.ready) say(`  · دالة المساعد تعمل (رصيد ${qa.data.cap} يومياً)، والمساعد ينتظر ANTHROPIC_API_KEY`);
+    else if (!qa.data.ready) say(`  · دالة المساعد تعمل (رصيد ${qa.data.cap} يومياً)، والمساعد ينتظر GEMINI_API_KEY`);
     else {
       const wy = await probe('POST', URL0 + '/functions/v1/qt-ai', { json: { kind: 'ask', q: 'ما هي فترة الاختبار في مدونة الشغل؟' }, headers: ai });
       const arts = (wy.ok && wy.data && wy.data.ok && wy.data.data && wy.data.data.articles) || [];
@@ -295,7 +321,12 @@ const NATIVE_CB = 'com.qanontahiro.app://auth-callback';
                                                           : '  ⚠ المساعد أجاب دون نص من المكتبة: تحقق من تحميل المكتبة (الخطوة 5ب)');
       else {
         const lg = await sqlq(token, "select err from public.qt_ai_log order by id desc limit 1");
-        say(`  ✗ المساعد: ${short(wy.data)} ${lg.ok && Array.isArray(lg.data) && lg.data[0] ? '— ' + lg.data[0].err : ''}`);
+        const err = String((lg.ok && Array.isArray(lg.data) && lg.data[0] && lg.data[0].err) || '');
+        const hint = /^credits:/.test(err) ? 'رصيد Gemini المدفوع فارغ: AI Studio ← Billing ← Buy credits'
+          : /^key:/.test(err) ? 'مفتاح Gemini مرفوض: أنشئ مفتاحاً جديداً من AI Studio وأعد الأمر'
+          : /^model:/.test(err) ? 'النموذج غير متاح: عيّن QT_AI_SMART / QT_AI_FAST بنموذج متاح'
+          : /^busy:/.test(err) ? 'Gemini مزدحم أو الحصة مستنفدة الآن: أعد المحاولة بعد دقائق، وتحقق أن الفوترة مفعّلة' : '';
+        say(`  ✗ المساعد: ${short(wy.data)} ${err ? '— ' + err : ''}${hint ? '\n    ← ' + hint : ''}`);
       }
     }
     if (uid && /^[0-9a-f-]{36}$/.test(uid)) await sqlq(token, `delete from public.qt_ai_usage where uid = '${uid}'; delete from auth.users where id = '${uid}';`);

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # =========================================================================
-# قانون تاهيرو — دفع المشروع إلى GitHub؛ وكل دفع إلى main يبني فيه Actions تطبيق أندرويد ويشغّل الاختبارات.
+# قانون تاهيرو — دفع المشروع إلى GitHub؛ وكل دفع إلى main يبني فيه Actions تطبيقي أندرويد وiPhone ويشغّل الاختبارات.
 #
 #   GH_USER=zayntahiri1-netizen GH_REPO=qanontahiro GH_TOKEN=ghp_… ./scripts/push-to-github.sh ["رسالة الالتزام"]
 #
@@ -16,7 +16,7 @@ GH_USER=${GH_USER:-zayntahiri1-netizen}
 GH_REPO=${GH_REPO:-qanontahiro}
 BRANCH=${GH_BRANCH:-main}
 URL=${GH_URL:-https://github.com/$GH_USER/$GH_REPO.git}
-MSG=${1:-"قانون تاهيرو v7: «المساعد» يجيب من نصوص 27 قانوناً مغربياً (مكتبة القوانين)، ويحلّل النوازل"}
+MSG=${1:-"قانون تاهيرو v8.1: مولّد التمارين من النصوص (أسئلة ومسائل ونوازل وألغاز)، والبنود والخصوصية وحذف البيانات بأربع لغات، والموافقة على البنود قبل الدخول"}
 
 command -v git >/dev/null || { echo "✗ يلزم git:  pkg install git"; exit 1; }
 if [ -z "${GH_TOKEN:-}" ] && [[ "$URL" == https://* ]]; then
@@ -52,8 +52,8 @@ fi
 
 git add -A
 # حارس أخير: لا سر في ما سيُدفع (المفاتيح العامة للعميل مسموحة؛ هذه أنماط أسرار الخادم وملفات التوقيع)
-BAD=$(git diff --cached --name-only --diff-filter=AM | grep -E '\.(jks|keystore|p12|pem)$|(^|/)\.env' || true)
-LEAK=$(git grep --cached -l -E 'sb_secret_[A-Za-z0-9]|sbp_[0-9a-f]{20,}|bjCE2A\.7YUitA:|-----BEGIN [A-Z ]*PRIVATE KEY|"type" *: *"service_account"|sk-ant-(api|admin)[0-9]{2}-[A-Za-z0-9_-]{20,}' -- . ':!scripts/push-to-github.sh' ':!build.py' ':!tools/cap-web.mjs' || true)
+BAD=$(git diff --cached --name-only --diff-filter=AM | grep -E '\.(jks|keystore|p12|pem|p8|cer|mobileprovision|certSigningRequest)$|(^|/)\.env' || true)
+LEAK=$(git grep --cached -l -E 'sb_secret_[A-Za-z0-9]|sbp_[0-9a-f]{20,}|bjCE2A\.7YUitA:|-----BEGIN [A-Z ]*PRIVATE KEY|"type" *: *"service_account"|sk-ant-(api|admin)[0-9]{2}-[A-Za-z0-9_-]{20,}|AQ\.[A-Za-z0-9_-]{30,}' -- . ':!scripts/push-to-github.sh' ':!build.py' ':!tools/cap-web.mjs' ':!scripts/ios-signing.sh' || true)
 if [ -n "$BAD$LEAK" ]; then
   echo "✗ أوقفتُ الدفع: ملفات تبدو أسراراً:"; echo "$BAD"; echo "$LEAK"; git reset -q; exit 1
 fi

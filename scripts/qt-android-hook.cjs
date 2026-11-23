@@ -8,6 +8,8 @@
 //        • رابط العودة من Google: com.qanontahiro.app://auth-callback (VIEW/BROWSABLE على MainActivity)
 //        • الإحصاءات موقوفة افتراضياً حتى موافقة المستخدم، ولا تجمع Firebase Analytics معرّف الإعلانات
 //        • AdMob: معرّف التطبيق (APPLICATION_ID) من config/cloud.json، وإذن AD_ID الذي تحتاجه الإعلانات
+//        • الميكروفون (RECORD_AUDIO وMODIFY_AUDIO_SETTINGS) للجواب الشفوي بالصوت (v8): يُطلب الإذن حين يضغط المستخدم «أجب بصوتك» فقط.
+//          ولا يُعلَن إذن الكاميرا: «التقط صورة» تفتح تطبيق الكاميرا في النظام، فلا يحتاج التطبيق إذناً بها
 //   4) styles.xml: خلفية النافذة وشاشة البدء (أندرويد 12+) بلون التطبيق بدل الأبيض
 //   5) app/build.gradle: رقم الإصدار والتوقيع من متغيرات البيئة (QT_VERSION_CODE…، QT_KEYSTORE…)
 // أي خطوة إلزامية لا تنطبق على القالب تُوقف البناء برسالة صريحة، بدل تطبيق يُنشر ودخول Google فيه معطوب.
@@ -81,6 +83,13 @@ if (!man.includes('com.google.android.gms.permission.AD_ID')) {
   man = man.replace(/<\/manifest>\s*$/, '    <uses-permission android:name="com.google.android.gms.permission.AD_ID" />\n</manifest>\n');
   if (man === before) die('لم أجد </manifest> في AndroidManifest.xml');
 }
+// الميكروفون للشفوي بالصوت: Capacitor يطلب الإذن عند أول getUserMedia إن كان معلَناً هنا
+for (const perm of ['android.permission.RECORD_AUDIO', 'android.permission.MODIFY_AUDIO_SETTINGS']) {
+  if (man.includes(`android:name="${perm}"`)) continue;
+  const before = man;
+  man = man.replace(/<\/manifest>\s*$/, `    <uses-permission android:name="${perm}" />\n</manifest>\n`);
+  if (man === before) die('لم أجد </manifest> في AndroidManifest.xml');
+}
 if (!man.includes(`android:host="${HOST}"`)) {
   const re = /(<activity\b[^>]*android:name="\.MainActivity"[^>]*>)([\s\S]*?)(\n\s*<\/activity>)/;
   if (!re.test(man)) die('لم أجد نشاط MainActivity في AndroidManifest.xml: رابط العودة من Google لن يعمل');
@@ -95,11 +104,12 @@ if (!man.includes(`android:host="${HOST}"`)) {
 }
 // فحص نهائي: كل ما سبق موجود، والملف ما زال XML متوازن الوسوم الأساسية
 for (const must of [`android:host="${HOST}"`, `android:scheme="${SCHEME}"`, 'firebase_analytics_collection_enabled', 'google_analytics_adid_collection_enabled',
-                    `android:value="${ADMOB_APP}"`, '<uses-permission android:name="com.google.android.gms.permission.AD_ID" />'])
+                    `android:value="${ADMOB_APP}"`, '<uses-permission android:name="com.google.android.gms.permission.AD_ID" />',
+                    '<uses-permission android:name="android.permission.RECORD_AUDIO" />'])
   if (!man.includes(must)) die('فحص AndroidManifest.xml فشل: ' + must);
 if ((man.match(/<activity\b/g) || []).length !== (man.match(/<\/activity>/g) || []).length) die('AndroidManifest.xml: وسوم activity غير متوازنة');
 if (/permission\.AD_ID" tools:node="remove"/.test(man)) die('AndroidManifest.xml ما زال يحذف إذن AD_ID');
-if (man !== man0) { fs.writeFileSync(manPath, man); say('✓ AndroidManifest.xml: رابط Google، الإحصاءات بموافقة، معرّف AdMob وإذن AD_ID'); }
+if (man !== man0) { fs.writeFileSync(manPath, man); say('✓ AndroidManifest.xml: رابط Google، الإحصاءات بموافقة، معرّف AdMob وإذن AD_ID، والميكروفون للشفوي'); }
 else say('· AndroidManifest.xml مُعدّ سابقاً');
 
 // 4) styles.xml

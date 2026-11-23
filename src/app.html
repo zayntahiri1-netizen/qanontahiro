@@ -57,7 +57,7 @@ h1,h2,h3,h4{font-family:var(--display);font-weight:500}
 
 /* ---------- الدخول ---------- */
 #login{position:fixed;inset:0;z-index:20;display:flex;flex-direction:column;
-  align-items:center;justify-content:center;gap:20px;padding:28px}
+  align-items:center;justify-content:flex-start;padding:28px 20px calc(6px + env(safe-area-inset-bottom));overflow-y:auto}
 #login .seal{filter:drop-shadow(0 8px 30px rgba(211,163,78,.28))}
 #login h1{font-size:34px;font-weight:600;margin:0;letter-spacing:.3px}
 #login p{margin:4px 0 0;color:var(--muted);font-size:17px;text-align:center;max-width:30ch}
@@ -513,6 +513,87 @@ td.rk .medal{margin:0 auto}
 .aiq .ta{min-height:64px}
 .quota{font-size:13px;color:var(--muted);display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:-6px 0 12px}
 .quota a,.quota button.lk{color:var(--fes);font-size:13px;text-decoration:underline}
+.aitools{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;margin:2px 0}
+.aitool{display:flex;flex-direction:column;align-items:center;gap:4px;padding:9px 2px 7px;border:1px solid var(--line);border-radius:12px;
+  font-size:12.5px;line-height:1.25;color:var(--muted);text-align:center;font-family:var(--display);min-height:58px}
+.aitool svg{width:20px;height:20px;stroke:var(--fes);fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.aitool[aria-pressed="true"]{border-color:var(--brass);color:var(--brass);background:var(--brass-wash)}
+.aitool[aria-pressed="true"] svg{stroke:var(--brass)}
+@media (max-width:380px){.aitools{grid-template-columns:repeat(4,minmax(0,1fr))}}
+/* مولّد التمارين (v8.1): زر عريض أعلى الأدوات */
+.aitool.wide{grid-column:1/-1;flex-direction:row;justify-content:center;gap:8px;min-height:46px;font-size:14.5px;color:var(--brass);border-color:var(--brass-dim)}
+.aitool.wide svg{stroke:var(--brass)}
+.tag.ai{color:var(--brass);border-color:var(--brass-dim)}
+.qhint{font-size:15px;color:var(--brass);margin:-4px 0 12px;line-height:1.7}
+/* الصفحات القانونية (v8.1): أزرار أسفل شاشة الدخول والردهة، فوق المكان المحجوز للشريط الإعلاني فلا يغطيها */
+.legal{display:flex;flex-wrap:wrap;justify-content:center;gap:7px 8px;padding:14px 12px 12px;flex:none;width:100%}
+.legal a{font-family:var(--display);font-size:13.5px;line-height:1.3;color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:7px 13px;text-decoration:none}
+.legal a:active{transform:scale(.97)}
+#login .lbox{display:flex;flex-direction:column;align-items:center;gap:20px;margin:auto 0;width:100%}
+/* البنود والشروط (v8.1): موافقة إلزامية بعد التسجيل وقبل الدخول */
+.tgate{position:fixed;inset:0;z-index:40;background:var(--ink);overflow-y:auto;display:flex;flex-direction:column;align-items:center;
+  padding:calc(22px + env(safe-area-inset-top)) 22px calc(22px + env(safe-area-inset-bottom))}
+.tgate .tbox{width:100%;max-width:520px;margin:auto 0}
+.tgate .seal{display:block;margin:0 auto 4px;width:max-content}
+.tgate h2{font-size:23px;margin:6px 0 6px;text-align:center}
+.tgate ul{margin:12px 0 10px;padding-inline-start:20px}
+.tgate li{margin:8px 0;line-height:1.75;color:var(--jibs)}
+.tgate .chk{display:flex;gap:11px;align-items:flex-start;margin:16px 0 14px;font-size:16px;line-height:1.6;cursor:pointer}
+.tgate .chk input{width:22px;height:22px;flex:none;margin:2px 0 0;accent-color:var(--brass)}
+.tgate .legal{padding:2px 0 0;justify-content:flex-start}
+.aisub{font-size:13.5px;color:var(--muted);margin:0 0 10px;line-height:1.75}
+.inrow{display:flex;gap:8px;align-items:center;margin:0 0 8px}
+.inp,.sel{min-width:0;background:var(--ink2);border:1px solid var(--line);border-radius:10px;padding:9px 11px;color:var(--jibs);font:inherit;font-size:15.5px}
+.sel{flex:1;appearance:auto}
+.inp:focus,.sel:focus{outline:none;border-color:var(--brass)}
+label.btn,label.btn2{display:flex;align-items:center;justify-content:center;cursor:pointer;text-align:center}
+.chat .me{margin:12px 0 4px auto;max-width:86%;width:fit-content;background:var(--brass-wash);border:1px solid var(--line);border-radius:14px;
+  padding:7px 12px;font-size:15.5px;line-height:1.7;color:var(--jibs);white-space:pre-line}
+[dir=rtl] .chat .me{margin:12px auto 4px 0}
+.thumb{display:block;max-width:100%;max-height:170px;border-radius:10px;border:1px solid var(--line);margin:10px 0 0}
+.cmp{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line);border:1px solid var(--line);border-radius:10px;overflow:hidden;margin:8px 0}
+.cmp>div{background:var(--ink);padding:7px 9px;font-size:14.5px;line-height:1.75;color:var(--txt2)}
+.cmp .hd{font-family:var(--display);color:var(--brass);font-size:14px;font-weight:500}
+.cmp .asp{grid-column:1/-1;background:var(--ink2);font-family:var(--display);color:var(--jibs);font-size:13.5px;padding:4px 9px}
+.deck{display:flex;align-items:center;gap:12px;border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+.deck .nm{flex:1;min-width:0;font-size:15px;line-height:1.6} .deck .nm small{color:var(--muted);font-size:13px}
+.fcard{border:1px solid var(--brass);border-radius:14px;padding:14px;margin-top:10px;background:var(--brass-wash);text-align:center}
+.fcard small{color:var(--muted);font-size:12.5px}
+.fcard .f{font-size:calc(18px * var(--fz));line-height:1.8;color:var(--jibs);margin:8px 0;font-weight:500}
+.fcard .b{font-size:calc(16px * var(--fz));line-height:1.85;color:var(--txt2);border-top:1px dashed var(--line);padding-top:10px;margin:10px 0 6px}
+.aiCard details.fc{border-bottom:1px solid var(--line);padding:6px 0}
+.aiCard details.fc>summary{cursor:pointer;color:var(--jibs);font-size:15px}
+.aiCard details.fc p{margin:4px 0}
+.rec{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:0 0 10px}
+.rec audio{height:36px;max-width:100%;flex:1;min-width:160px}
+.dotrec{width:11px;height:11px;border-radius:50%;background:var(--qirmiz);animation:pulse 1s infinite}
+@keyframes pulse{50%{opacity:.25}}
+.txv .txt{white-space:pre-line;font-size:calc(17px * var(--fz));line-height:2.05;color:var(--jibs);margin:10px 0;padding:12px 14px;
+  border:1px solid var(--line);border-radius:12px;background:var(--ink2)}
+.txv .ap{font-size:13px;color:var(--muted);line-height:1.7}
+.txv .an{font-size:13px;color:var(--muted);margin:6px 0}
+.txv .warn{color:var(--qirmiz);font-size:13.5px}
+.txhead{display:flex;align-items:center;gap:10px;justify-content:space-between}
+.txhead h2{margin:0 0 10px}
+.txhead .aib[aria-pressed="true"]{background:var(--fes-wash)}
+.txnav{margin:12px 0}
+.txnav .btn2{flex:1;font-size:14px}
+.txnav .btn2:disabled{opacity:.35}
+.txact{flex-wrap:wrap}
+.txg{border-bottom:1px solid var(--line)}
+.txg>summary{cursor:pointer;list-style:none;display:flex;gap:10px;align-items:center;padding:10px 2px;font-size:15px;color:var(--jibs);line-height:1.55}
+.txg>summary::-webkit-details-marker{display:none}
+.txg>summary span{flex:1;min-width:0} .txg>summary small{display:block;color:var(--muted);font-size:12.5px}
+.txg>summary em{font-style:normal;color:var(--muted);font-size:13px}
+.achips{display:flex;flex-wrap:wrap;gap:6px;padding:4px 0 12px}
+.achips button{border:1px solid var(--line);border-radius:8px;padding:3px 10px;font-size:14px;color:var(--jibs);font-variant-numeric:tabular-nums}
+.achips button.x{color:var(--muted);border-style:dashed}
+.achips small{color:var(--muted)}
+.hit{display:block;width:100%;text-align:start;border-bottom:1px solid var(--line);padding:9px 2px;font-size:14.5px;line-height:1.8;color:var(--txt2)}
+.hit b{color:var(--brass);font-family:var(--display);font-weight:500} .hit small{color:var(--muted)}
+.hit span{display:block;font-size:14px}
+mark{background:var(--brass-wash);color:var(--brass);border-radius:3px;padding:0 1px}
+.txv .disc,.disc{font-size:12.5px;color:var(--muted);border:1px dashed var(--line);border-radius:8px;padding:6px 10px;margin-top:10px;line-height:1.7}
 @media (prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition-duration:.01ms!important}}
 </style>
 </head>
@@ -530,6 +611,7 @@ td.rk .medal{margin:0 auto}
 
 <!-- ===== الدخول ===== -->
 <section id="login">
+  <div class="lbox">
   <div id="lseal" class="seal"></div>
   <div style="text-align:center">
     <h1 id="lTitle">قانون تاهيرو</h1>
@@ -540,6 +622,8 @@ td.rk .medal{margin:0 auto}
   <div class="or hidden" id="gOr"><span>أو</span></div>
   <button class="btn2 gbtn hidden" id="gsign"></button>
   <div class="langrow" id="lLang"></div>
+  </div>
+  <nav class="legal hidden" id="lLegal" aria-label="البنود والخصوصية"></nav>
 </section>
 
 <!-- ===== الردهة ===== -->
@@ -565,6 +649,7 @@ td.rk .medal{margin:0 auto}
   <div id="qres" class="hidden"></div>
   <div class="pick"><h2 id="lbPick">اختر فرعاً</h2><em id="lbSwipe">اسحب للتصفح</em></div>
   <div class="rail"><div class="track" id="track"></div></div>
+  <nav class="legal hidden" id="lbLegal" aria-label="البنود والخصوصية"></nav>
 </main>
 
 <div id="sheets"></div>
@@ -700,7 +785,7 @@ const T = {
     gTaken:'حساب Google هذا مرتبط بحساب آخر في التطبيق. أتدخل به؟ ينتقل اسمك الحالي معك برمز استرجاعه.',
     month:'هذا الشهر', brTab:'الفروع', hallW:'أبطال الأسبوع الماضي', hallM:'أبطال الشهر الماضي', myRank:'ترتيبك', ofN:'من {n}',
     ahead:'تتقدم على {p}٪ من المتنافسين', since:'منذ آخر زيارة', brCol:'صحيحة', brMin:'يدخل ترتيب الفرع من أجاب فيه عن عشرة أسئلة على الأقل.', notRanked:'لم تدخل هذه اللوحة بعد: أجب لتظهر فيها.',
-    aiT:'المساعد', aiSub:'مساعد ذكي يجيب من نصوص القوانين المغربية المضمّنة في التطبيق ومن بنك الأسئلة، فيذكر المادة ويعرض نصها، ولا يذكر مادة لم ترد فيها.', aiWhy:'لماذا أخطأت؟', aiMore:'اشرح أكثر',
+    aiT:'المساعد', aiSub:'مساعد ذكي بنموذج Gemini من Google، يجيب من نصوص القوانين المغربية المضمّنة في التطبيق ومن بنك الأسئلة: يذكر المادة ويعرض نصها، ولا يذكر مادة لم ترد فيها.', aiWhy:'لماذا أخطأت؟', aiMore:'اشرح أكثر',
     aiTwin:'سؤال توأم', aiTwinMore:'توأم آخر', aiAsk:'اسأل', aiAskPh:'اكتب سؤالك القانوني… مثال: متى تسقط الحضانة عن الأم؟', aiSend:'أرسل',
     aiOral:'الشفوي', aiOralNew:'سؤال جديد', aiOralPh:'اكتب جوابك كما تقوله أمام اللجنة: القاعدة، ثم سندها، ثم تطبيقها على الوقائع.', aiGrade:'قيّم جوابي',
     aiPlan:'خطتي', aiPlanGo:'أنشئ خطة أسبوعي', aiPlanNew:'خطة جديدة', aiStart:'ابدأ', aiThink:'المساعد يبحث في النصوص…', aiLeft:'رصيدك اليوم: {l} من {c}',
@@ -709,7 +794,53 @@ const T = {
     aiTwinNote:'تمرين مولَّد على القاعدة نفسها · ليس من البنك', aiRule:'القاعدة', aiHook:'للحفظ', aiCheck:'تحقق من نفسك', aiShow:'أظهر الجواب',
     aiSources:'من البنك:', aiNotCovered:'لا تكفي النصوص المضمّنة في التطبيق للجواب عن هذا السؤال. راجع النص الرسمي.', aiCase:'نازلة', aiCasePh:'اعرض وقائع النازلة بإيجاز: من الأطراف؟ ماذا وقع ومتى؟ وما الذي تريد معرفته؟ (لا تكتب أسماء حقيقية ولا معطيات شخصية)', aiCaseGo:'حلّل النازلة', aiFacts:'التكييف', aiApply:'التطبيق على الوقائع', aiConcl:'الخلاصة', aiMissing:'معطيات تنقص وقد تغيّر الحكم', aiArts:'النصوص التي استند إليها', aiRelated:'أقرب النصوص إلى سؤالك', aiNotes:'حواشي الناشر (ليست من نص المادة)', aiStale:'تنبيه: صدر تعديل لهذا القانون بعد تاريخ النص المعتمد هنا: {l}. تحقق من الصيغة النافذة.', aiNoText:'لا نص لهذه المادة في المكتبة: منسوخة أو فارغة في الصيغة المعتمدة.', aiCaseNote:'تحليل تعليمي من النصوص المضمّنة في التطبيق، وليس استشارة قانونية؛ لقضية حقيقية راجع محامياً. لا يُحفظ نص النازلة.', aiCaseShort:'صِف الوقائع في سطرين على الأقل.', aiLibArt:'نص المادة من المكتبة', aiGuard:'تحقق من المرجع قبل الاعتماد عليه',
     aiScore:'النتيجة', aiC1:'القاعدة', aiC2:'السند', aiC3:'التطبيق', aiStrong:'نقاط القوة', aiGaps:'ما ينقص', aiModel:'الجواب النموذجي', aiSeeQ:'اعرض السؤال بخياراته', aiFlag:'أبلغ عن هذا الجواب', aiFlagT:'الإبلاغ عن جواب المساعد', aiFl1:'خطأ قانوني أو مرجع غير صحيح', aiFl2:'محتوى مسيء أو غير لائق', aiFl3:'لا يجيب عن سؤالي', aiFl4:'مشكلة أخرى', adsT:'الإعلانات', adsIntro:'الإعلانات تموّل التطبيق المجاني و«المساعد»، ولها قواعد ثابتة: لا إعلان يقطع سؤالاً أبداً؛ الشريط في الردهة وحدها؛ والإعلان البيني بعد جلسة مكتملة فقط، مرة كل أربع دقائق على الأكثر؛ ولا إعلانات بينية في يومك الأول.', adFreeT:'ساعة دون إعلانات', adFreeS:'شاهد إعلاناً قصيراً واحداً حتى آخره، فلا يظهر لك أي إعلان آخر ساعة كاملة.', adFreeLeft:'دون إعلانات حتى {t}', adFreeOn:'تمّ: ساعة كاملة دون إعلانات', adAIT:'3 طلبات إضافية للمساعد', adAIS:'شاهد إعلاناً قصيراً حتى آخره، فتُضاف 3 طلبات إلى رصيدك اليوم (الباقي اليوم: {n}).', adAIBtn:'شاهد إعلاناً: +3 طلبات', adAIok:'أُضيفت 3 طلبات إلى رصيدك', adAIlater:'شكراً! سيظهر رصيدك الإضافي خلال لحظات', adAINone:'استنفدت مكافآت اليوم؛ تتجدد غداً', adLoading:'جارٍ تحميل الإعلان…', adNoFill:'لا إعلان متاح الآن؛ حاول بعد قليل', adNoReward:'لم يكتمل الإعلان، فلم تُمنح المكافأة', adPriv:'خيارات الخصوصية للإعلانات', adTest:'نسخة اختبار: الإعلانات هنا تجريبية من Google',
-    aiDay:'اليوم {d}', aiMin:'د', aiS_law:'قانون', aiS_branch:'فرع', aiS_due:'مراجعة اليوم', aiS_wrong:'أخطائي', aiS_exam:'امتحان', aiS_oral:'شفوي', aiS_daily:'سؤال اليوم' },
+    aiDay:'اليوم {d}', aiMin:'د', aiS_law:'قانون', aiS_branch:'فرع', aiS_due:'مراجعة اليوم', aiS_wrong:'أخطائي', aiS_exam:'امتحان', aiS_oral:'شفوي', aiS_daily:'سؤال اليوم',
+    txT:'النصوص القانونية', txSub:'{n} قانوناً و{a} مادة بنصوصها كما في الصيغ المعتمدة، تقرؤها وتبحث فيها حتى دون اتصال.', txLawsH:'القوانين',
+    txSearchPh:'ابحث في كل النصوص… مثال: سقوط الحضانة', txLawPh:'ابحث في هذا القانون، أو اكتب رقم المادة', txSearching:'جارٍ البحث في {n} قانوناً…',
+    txFail:'تعذّر تحميل النصوص. تحقق من الاتصال ثم أعد المحاولة.', txRetry:'أعد المحاولة', txNone:'لا نتيجة. جرّب كلمات أقل أو مرادفاً.', txHits:'{n} نتيجة', txNear:'نتائج قريبة (فيها بعض كلماتك):',
+    txArts:'{n} مادة', txHeld:'آخر تحيين للنص المعتمد: {d}', txFavs:'محفوظاتي', txFav:'احفظ', txUnfav:'محفوظة', txPrev:'السابقة', txNext:'التالية',
+    txExplain:'اشرح المادة', txCards:'بطاقات مراجعة', txBank:'أسئلة البنك ({n})', txAsk:'اسأل عنها', txCopy:'انسخ', txOpen:'افتح في النصوص', txRead:'نص المادة',
+    txEmpty:'لا نص لهذه المادة في الصيغة المعتمدة (منسوخة أو فارغة).', txNoArt:'لم أجد المادة {n} في هذا القانون.', txAskQ:'بخصوص {a} من {l}: ',
+    txDisc:'النصوص مستخرجة آلياً من الصيغ المعتمدة لأغراض التعلم، وقد يقع فيها خطأ استخراج طفيف؛ المرجع الرسمي هو الجريدة الرسمية.',
+    aiScan:'صوّر سؤالاً', aiExplain:'اشرح مادة', aiCompare:'قارن', aiEssay:'الموضوع', aiDrill:'نازلة تدريبية', aiCards:'بطاقات',
+    aiScanSub:'صوّر سؤالاً من امتحان سابق أو كتاب أو ورقة، فيقرؤه المساعد ويحله من نصوص القوانين.', aiScanCam:'التقط صورة', aiScanPick:'من المعرض',
+    aiScanRead:'قرأتُ من الصورة', aiScanNone:'لم أجد في الصورة سؤالاً قانونياً مقروءاً. صوّر السؤال وحده بإضاءة جيدة.',
+    aiScanNote:'الصورة تُرسل لقراءتها ثم تُنسى، ولا تُحفظ في أي مكان.', aiScanBig:'تعذّرت قراءة الصورة. جرّب صورة أوضح بصيغة JPG أو PNG.',
+    aiExplainSub:'اختر قانوناً ورقم مادة، فيشرحها المساعد: معناها، وشروطها، وآثارها، واستثناءاتها، ومثالاً، وفخاخ الامتحان فيها.', aiLaw:'القانون', aiArtNo:'رقم المادة', aiExplainGo:'اشرح',
+    aiSimple:'بعبارة بسيطة', aiElements:'الشروط والأركان', aiEffects:'الأثر والجزاء', aiExceptions:'الاستثناءات', aiExample:'مثال تطبيقي', aiSolution:'الحل', aiTraps:'فخاخ الامتحان', aiRelArts:'مواد مرتبطة',
+    aiCmpSub:'اكتب مفهومين يختلط أمرهما، فيقارن المساعد بينهما من النصوص.', aiCmpA:'المفهوم الأول (مثال: البطلان)', aiCmpB:'المفهوم الثاني (مثال: الإبطال)', aiCmpGo:'قارن بينهما',
+    aiSame:'أوجه التشابه', aiSummary:'الخلاصة', aiTrapMix:'الخلط الشائع',
+    aiEssaySub:'موضوع إنشائي للامتحان أو المباراة: يصمّمه المساعد بالمنهجية المعتمدة، أو يصحّح تحريرك وينقّطه على 20.', aiEssayPh:'عنوان الموضوع… مثال: إنهاء عقد الشغل غير محدد المدة',
+    aiEssayPlan:'صمّم الموضوع', aiEssayGrade:'صحّح تحريري', aiEssayTextPh:'الصق تحريرك هنا (200 حرف على الأقل)…', aiEssayShort:'اكتب عنوان الموضوع أولاً.', aiEssayTextShort:'التحرير قصير جداً (200 حرف على الأقل).',
+    aiIntro:'التقديم', aiProblem:'الإشكالية', aiPart1:'القسم الأول', aiPart2:'القسم الثاني', aiConclusion:'الخاتمة', aiTips:'نصائح منهجية', aiFixes:'كيف ترفع نقطتك', aiBetter:'تصميم مقترح',
+    aiE1:'التقديم', aiE2:'الإشكالية', aiE3:'التصميم', aiE4:'الإسناد', aiE5:'التحليل',
+    aiDrillSub:'نازلة جديدة يولّدها المساعد من مواد حقيقية في القانون الذي تختاره: تحلها، ثم يصحّح حلك على 20 ويعرض الحل النموذجي.', aiAnyLaw:'أي قانون',
+    aiLvlE:'سهلة', aiLvlM:'متوسطة', aiLvlH:'صعبة', aiDrillGo:'ولّد نازلة', aiDrillNew:'نازلة أخرى', aiAsked:'المطلوب', aiDrillPh:'اكتب حلك: القاعدة، ثم سندها، ثم تطبيقها على الوقائع، ثم الخلاصة.',
+    aiDrillGrade:'صحّح حلي', aiDrillShort:'حلك قصير جداً.',
+    aiCardsSub:'بطاقات سؤال وجواب من النصوص، تراجعها بالتكرار المتباعد: ما تعرفه يبتعد، وما تنساه يعود.', aiCardsPh:'موضوع البطاقات… مثال: آجال الطعن بالاستئناف', aiCardsGo:'اصنع بطاقات',
+    aiDeck:'بطاقاتي', aiDeckN:'{n} بطاقة · المستحق اليوم {d}', aiDeckGo:'راجع الآن', aiFlip:'اقلب البطاقة', aiKnew:'عرفتها', aiForgot:'لم أعرفها',
+    aiDeckEmpty:'لا بطاقات بعد: اصنعها من موضوع هنا، أو من مادة في «النصوص القانونية».', aiDeckDone:'أنهيت بطاقات اليوم. أحسنت!', aiCardsAdded:'أُضيفت {n} بطاقات إلى بطاقاتي',
+    aiVoice:'أجب بصوتك', aiStop:'أوقف', aiRecAgain:'أعد التسجيل', aiSendVoice:'قيّم تسجيلي', aiRecMax:'دقيقتان على الأكثر', aiTranscript:'ما سمعته منك',
+    aiMicNo:'تعذّر الوصول إلى الميكروفون: اسمح للتطبيق باستعماله.', aiVoiceNote:'التسجيل يُرسل لتقييمه ثم يُنسى، ولا يُحفظ في أي مكان.',
+    aiNewChat:'محادثة جديدة', aiChatOn:'المساعد يتابع سياق محادثتك (آخر ثلاثة أسئلة).',
+    ageT:'قبل استعمال المساعد', ageS:'«المساعد» يعمل بنموذج Gemini من Google، وشروط استعماله تقصره على من بلغ 18 سنة. اكتب أسئلة ووقائع مجردة، دون أسماء حقيقية ولا معطيات شخصية.',
+    ageOk:'عمري 18 سنة فأكثر', ageNo:'ليس بعد', ageBlock:'المساعد متاح لمن بلغ 18 سنة؛ وباقي التطبيق متاح لك كاملاً.',
+    aiGen:'ولّد تمارين', genSub:'يولّد المساعد تمارين جديدة بصيغة البنك من نصوص القوانين التي في التطبيق: أسئلة ومسائل ونوازل وألغازاً، بأربعة خيارات، وتعليل لكل خيار، ومادته. اختر قانوناً، وإن شئت مادة بعينها.',
+    genArt:'المادة (اختياري)', genAny:'أي قانون (عشوائي)', genKindT:'النوع', genLvlT:'المستوى', genCntT:'العدد',
+    genT_knowledge:'أسئلة', genT_problem:'مسائل', genT_case:'نوازل', genT_riddle:'ألغاز', genT_mix:'مزيج',
+    genGo:'ولّد التمارين', genReady:'{n} تمارين جاهزة', genFrom:'من: {a}', genStart:'ابدأ', genAgain:'ولّد غيرها',
+    genNote:'تمارين يولّدها الذكاء الاصطناعي من نص المادة، فقد تخطئ: راجع النص دائماً، وأبلغ عن أي خطأ. لا تُحتسب في نقاطك ولا في ترتيبك.',
+    genTag:'مولّد', genProv:'مولّد بالمساعد من نص المادة — راجعه', genTitle:'تمارين مولّدة', genEmpty:'هذه المادة بلا نص في المكتبة (منسوخة أو فارغة)؛ اختر مادة أخرى.',
+    genNoArt:'لم أجد هذه المادة في القانون المختار.', genEnd:'انتهت التمارين: {c} من {n} صحيحة', trd:'لغز', hintBtn:'تلميح', txGen:'ولّد تمارين', txGenLaw:'ولّد تمارين من هذا القانون',
+    legT:'البنود والشروط', legPriv:'سياسة الخصوصية', legDel:'حذف البيانات',
+    termsT:'البنود والشروط', termsS:'«قانون تاهيرو» تطبيق للتعلّم والتدريب. هذه أهم بنوده؛ اقرأها، ثم وافق عليها لتدخل:',
+    terms1:'التطبيق تعليمي وتدريبي فقط، وليس مستشاراً قانونياً، ولا يغني عن محامٍ أو مختص في أي قضية حقيقية.',
+    terms2:'لا يتحمل التطبيق ولا مطوّره أي مسؤولية عن أي استشارة قانونية أو رأي أو جواب أو ما شابه داخل التطبيق، ولا عن أي قرار يُتخذ بناءً عليه.',
+    terms3:'أجوبة «المساعد» وتمارينه يولّدها الذكاء الاصطناعي وقد تخطئ؛ والمرجع هو النص الرسمي المنشور في الجريدة الرسمية.',
+    terms4:'«المساعد» لمن بلغ 18 سنة فأكثر، ولا تُدخل فيه أسماء حقيقية ولا معطيات شخصية.',
+    termsChk:'قرأت البنود والشروط وسياسة الخصوصية، وأوافق عليها.', termsOk:'أوافق وأدخل', termsNo:'لا أوافق',
+    termsNeed:'لا يمكن استعمال التطبيق دون الموافقة على البنود والشروط.', termsAt:'وافقت على البنود والشروط في {d}',
+    aiBusy:'المساعد مزدحم الآن. أعد المحاولة بعد دقيقة.', aiBlocked:'تعذّر الجواب عن هذا الطلب. أعد صياغته.', aiInput:'المدخل ناقص أو قصير جداً.', },
   fr:{ dir:'ltr', title:'Qanoun Tahiro', sub:'Banque de QCM du droit marocain',
     ph:'Votre pseudonyme', enter:'Entrer', pts:'points', acc:'précision', stk:'série', ans:'questions',
     pick:'Choisissez une branche', swipe:'Balayez pour parcourir', mixed:'Questions mixtes', all:'Toutes branches',
@@ -789,16 +920,62 @@ const T = {
     gTaken:'Ce compte Google est déjà lié à un autre compte de l’application. Vous y connecter ? Votre pseudonyme actuel vous suit grâce à son code.',
     month:'Ce mois-ci', brTab:'Branches', hallW:'Champions de la semaine passée', hallM:'Champions du mois passé', myRank:'Votre rang', ofN:'sur {n}',
     ahead:'Devant {p} % des joueurs', since:'depuis la dernière visite', brCol:'justes', brMin:'Le classement d’une branche exige au moins dix réponses dans celle-ci.', notRanked:'Vous n’êtes pas encore classé ici : répondez pour apparaître.',
-    aiT:'L’Assistant', aiSub:'Un assistant IA qui répond à partir des textes de lois marocaines intégrés à l’application et de la banque de questions : il cite l’article, en affiche le texte, et n’invoque aucun article absent.', aiWhy:'Pourquoi ai-je eu faux ?', aiMore:'Expliquer davantage',
+    aiT:'L’Assistant', aiSub:'Un assistant IA (modèle Gemini de Google) qui répond à partir des textes de lois marocaines intégrés à l’application et de la banque de questions : il cite l’article, en affiche le texte, et n’invoque aucun article absent.', aiWhy:'Pourquoi ai-je eu faux ?', aiMore:'Expliquer davantage',
     aiTwin:'Question jumelle', aiTwinMore:'Une autre', aiAsk:'Demander', aiAskPh:'Posez votre question juridique… ex. : quand la mère perd-elle la garde ?', aiSend:'Envoyer',
     aiOral:'Oral', aiOralNew:'Nouvelle question', aiOralPh:'Rédigez votre réponse comme devant le jury : la règle, son fondement, puis son application aux faits.', aiGrade:'Évaluer ma réponse',
     aiPlan:'Mon plan', aiPlanGo:'Créer mon plan de la semaine', aiPlanNew:'Nouveau plan', aiStart:'Commencer', aiThink:'L’Assistant cherche dans les textes…', aiLeft:'Crédits du jour : {l} sur {c}',
     aiBoost:'Associez Google pour passer à {c} par jour', aiQuota:'Crédits épuisés pour aujourd’hui ; ils reviennent demain.', aiOff:'L’Assistant nécessite les services cloud.',
-    aiCfg:'L’Assistant n’est pas encore activé sur le serveur.', aiFail:'Réponse impossible pour l’instant. Réessayez.', aiNote:'Généré automatiquement à partir de la banque et de ses références ; pour apprendre, pas un avis juridique.',
+    aiCfg:'L’Assistant n’est pas encore activé sur le serveur.', aiFail:'Réponse impossible pour l’instant. Réessayez.', aiNote:'Généré automatiquement à partir des textes de loi intégrés et de la banque de questions ; pour apprendre, pas un avis juridique.',
     aiTwinNote:'Exercice généré sur la même règle · hors banque', aiRule:'La règle', aiHook:'À retenir', aiCheck:'Vérifiez-vous', aiShow:'Afficher la réponse',
     aiSources:'Dans la banque :', aiNotCovered:'Les textes intégrés à l’application ne suffisent pas pour répondre à cette question. Consultez le texte officiel.', aiCase:'Cas pratique', aiCasePh:'Exposez brièvement les faits : qui sont les parties ? que s’est-il passé et quand ? que voulez-vous savoir ? (sans vrais noms ni données personnelles)', aiCaseGo:'Analyser le cas', aiFacts:'Qualification', aiApply:'Application aux faits', aiConcl:'Conclusion', aiMissing:'Informations manquantes qui peuvent changer la solution', aiArts:'Textes sur lesquels repose la réponse', aiRelated:'Textes les plus proches de votre question', aiNotes:'Notes de l’éditeur (hors texte de l’article)', aiStale:'Attention : une modification de cette loi est parue après la date du texte retenu ici : {l}. Vérifiez la version en vigueur.', aiNoText:'Pas de texte pour cet article dans la bibliothèque : abrogé ou vide dans la version retenue.', aiCaseNote:'Analyse pédagogique tirée des textes intégrés à l’application, et non une consultation juridique ; pour une affaire réelle, consultez un avocat. Le texte du cas n’est pas conservé.', aiCaseShort:'Décrivez les faits en deux lignes au moins.', aiLibArt:'Texte de l’article (bibliothèque)', aiGuard:'Vérifiez la référence avant de vous y fier',
     aiScore:'Score', aiC1:'Règle', aiC2:'Fondement', aiC3:'Application', aiStrong:'Points forts', aiGaps:'À compléter', aiModel:'Réponse modèle', aiSeeQ:'Voir la question et ses options', aiFlag:'Signaler cette réponse', aiFlagT:'Signaler une réponse de l’Assistant', aiFl1:'Erreur juridique ou référence inexacte', aiFl2:'Contenu offensant ou inapproprié', aiFl3:'Ne répond pas à ma question', aiFl4:'Autre problème', adsT:'Publicités', adsIntro:'Les publicités financent l’application gratuite et l’Assistant, avec des règles fixes : aucune publicité n’interrompt une question ; la bannière reste dans l’accueil ; l’interstitiel n’apparaît qu’après une session terminée, au plus une fois toutes les quatre minutes ; et aucun interstitiel le premier jour.', adFreeT:'Une heure sans publicité', adFreeS:'Regardez une courte publicité jusqu’au bout : plus aucune publicité pendant une heure.', adFreeLeft:'Sans publicité jusqu’à {t}', adFreeOn:'C’est fait : une heure sans publicité', adAIT:'3 requêtes de plus pour l’Assistant', adAIS:'Regardez une courte publicité jusqu’au bout : 3 requêtes s’ajoutent à votre crédit du jour (restant aujourd’hui : {n}).', adAIBtn:'Regarder une pub : +3 requêtes', adAIok:'3 requêtes ajoutées à votre crédit', adAIlater:'Merci ! Vos requêtes supplémentaires arrivent dans un instant', adAINone:'Récompenses du jour épuisées ; elles reviennent demain', adLoading:'Chargement de la publicité…', adNoFill:'Aucune publicité disponible pour l’instant ; réessayez bientôt', adNoReward:'Publicité non terminée : pas de récompense', adPriv:'Options de confidentialité des publicités', adTest:'Version de test : publicités de démonstration Google',
-    aiDay:'Jour {d}', aiMin:'min', aiS_law:'Loi', aiS_branch:'Branche', aiS_due:'Révision du jour', aiS_wrong:'Mes erreurs', aiS_exam:'Examen', aiS_oral:'Oral', aiS_daily:'Question du jour' },
+    aiDay:'Jour {d}', aiMin:'min', aiS_law:'Loi', aiS_branch:'Branche', aiS_due:'Révision du jour', aiS_wrong:'Mes erreurs', aiS_exam:'Examen', aiS_oral:'Oral', aiS_daily:'Question du jour',
+    txT:'Textes de loi', txSub:'{n} lois et {a} articles, dans leur version retenue, à lire et à chercher même hors ligne.', txLawsH:'Les lois',
+    txSearchPh:'Rechercher dans tous les textes… ex. : déchéance de la garde', txLawPh:'Rechercher dans cette loi, ou taper un numéro d’article', txSearching:'Recherche dans {n} lois…',
+    txFail:'Impossible de charger les textes. Vérifiez la connexion puis réessayez.', txRetry:'Réessayer', txNone:'Aucun résultat. Essayez moins de mots ou un synonyme.', txHits:'{n} résultats', txNear:'Résultats proches (une partie de vos mots) :',
+    txArts:'{n} articles', txHeld:'Dernière mise à jour du texte retenu : {d}', txFavs:'Mes favoris', txFav:'Garder', txUnfav:'Gardé', txPrev:'Précédent', txNext:'Suivant',
+    txExplain:'Expliquer l’article', txCards:'Fiches de révision', txBank:'Questions de la banque ({n})', txAsk:'Poser une question', txCopy:'Copier', txOpen:'Ouvrir dans les textes', txRead:'Texte de l’article',
+    txEmpty:'Pas de texte pour cet article dans la version retenue (abrogé ou vide).', txNoArt:'Article {n} introuvable dans cette loi.', txAskQ:'À propos de {a} de {l} : ',
+    txDisc:'Textes extraits automatiquement des versions retenues, à des fins d’apprentissage ; une petite erreur d’extraction reste possible. La référence officielle est le Bulletin officiel.',
+    aiScan:'Photo', aiExplain:'Expliquer', aiCompare:'Comparer', aiEssay:'Dissertation', aiDrill:'Cas pratique', aiCards:'Fiches',
+    aiScanSub:'Photographiez une question d’examen, de livre ou de copie : l’Assistant la lit et la résout à partir des textes.', aiScanCam:'Prendre une photo', aiScanPick:'Galerie',
+    aiScanRead:'Lu sur la photo', aiScanNone:'Aucune question juridique lisible sur la photo. Cadrez la question seule, bien éclairée.',
+    aiScanNote:'La photo est envoyée pour lecture puis oubliée ; elle n’est conservée nulle part.', aiScanBig:'Photo illisible. Essayez une image plus nette en JPG ou PNG.',
+    aiExplainSub:'Choisissez une loi et un article : l’Assistant l’explique — sens, conditions, effets, exceptions, exemple et pièges d’examen.', aiLaw:'Loi', aiArtNo:'Article n°', aiExplainGo:'Expliquer',
+    aiSimple:'En termes simples', aiElements:'Conditions et éléments', aiEffects:'Effets et sanctions', aiExceptions:'Exceptions', aiExample:'Exemple', aiSolution:'Solution', aiTraps:'Pièges d’examen', aiRelArts:'Articles liés',
+    aiCmpSub:'Saisissez deux notions souvent confondues : l’Assistant les compare à partir des textes.', aiCmpA:'Première notion (ex. : nullité absolue)', aiCmpB:'Seconde notion (ex. : nullité relative)', aiCmpGo:'Comparer',
+    aiSame:'Points communs', aiSummary:'En bref', aiTrapMix:'Confusion fréquente',
+    aiEssaySub:'Sujet de dissertation d’examen ou de concours : l’Assistant propose un plan selon la méthode attendue, ou corrige votre copie et la note sur 20.', aiEssayPh:'Intitulé du sujet… ex. : la rupture du contrat de travail à durée indéterminée',
+    aiEssayPlan:'Proposer un plan', aiEssayGrade:'Corriger ma copie', aiEssayTextPh:'Collez votre copie ici (200 caractères au moins)…', aiEssayShort:'Saisissez d’abord l’intitulé du sujet.', aiEssayTextShort:'Copie trop courte (200 caractères au moins).',
+    aiIntro:'Introduction', aiProblem:'Problématique', aiPart1:'Première partie', aiPart2:'Seconde partie', aiConclusion:'Conclusion', aiTips:'Conseils de méthode', aiFixes:'Pour gagner des points', aiBetter:'Plan suggéré',
+    aiE1:'Introduction', aiE2:'Problématique', aiE3:'Plan', aiE4:'Fondements', aiE5:'Analyse',
+    aiDrillSub:'Un cas pratique inédit, construit par l’Assistant à partir de vrais articles de la loi choisie : vous le résolvez, il note votre solution sur 20 et montre le corrigé.', aiAnyLaw:'N’importe quelle loi',
+    aiLvlE:'Facile', aiLvlM:'Moyen', aiLvlH:'Difficile', aiDrillGo:'Générer un cas', aiDrillNew:'Un autre cas', aiAsked:'Questions', aiDrillPh:'Votre solution : la règle, son fondement, son application aux faits, puis la conclusion.',
+    aiDrillGrade:'Corriger ma solution', aiDrillShort:'Solution trop courte.',
+    aiCardsSub:'Des fiches question/réponse tirées des textes, révisées par répétition espacée : ce que vous savez s’espace, ce que vous oubliez revient.', aiCardsPh:'Thème des fiches… ex. : délais d’appel', aiCardsGo:'Créer des fiches',
+    aiDeck:'Mes fiches', aiDeckN:'{n} fiches · à revoir aujourd’hui {d}', aiDeckGo:'Réviser', aiFlip:'Retourner', aiKnew:'Je savais', aiForgot:'Je ne savais pas',
+    aiDeckEmpty:'Aucune fiche : créez-en à partir d’un thème ici, ou d’un article dans « Textes de loi ».', aiDeckDone:'Fiches du jour terminées. Bravo !', aiCardsAdded:'{n} fiches ajoutées à vos fiches',
+    aiVoice:'Répondre à voix haute', aiStop:'Arrêter', aiRecAgain:'Réenregistrer', aiSendVoice:'Évaluer mon enregistrement', aiRecMax:'2 minutes au plus', aiTranscript:'Ce que j’ai entendu',
+    aiMicNo:'Microphone inaccessible : autorisez l’application à l’utiliser.', aiVoiceNote:'L’enregistrement est envoyé pour évaluation puis oublié ; il n’est conservé nulle part.',
+    aiNewChat:'Nouvelle conversation', aiChatOn:'L’Assistant suit le fil de la conversation (trois dernières questions).',
+    ageT:'Avant d’utiliser l’Assistant', ageS:'L’Assistant fonctionne avec le modèle Gemini de Google, dont les conditions le réservent aux personnes de 18 ans ou plus. Écrivez des questions et des faits anonymes, sans vrais noms ni données personnelles.',
+    ageOk:'J’ai 18 ans ou plus', ageNo:'Pas encore', ageBlock:'L’Assistant est réservé aux 18 ans et plus ; le reste de l’application vous est entièrement ouvert.',
+    aiGen:'Générer des exercices', genSub:'L’Assistant génère de nouveaux exercices au format de la banque à partir des textes de loi de l’application : questions, problèmes, cas pratiques et énigmes, avec quatre options, une justification pour chaque option et l’article source. Choisissez une loi et, si vous voulez, un article précis.',
+    genArt:'Article (facultatif)', genAny:'N’importe quelle loi (au hasard)', genKindT:'Type', genLvlT:'Niveau', genCntT:'Nombre',
+    genT_knowledge:'Questions', genT_problem:'Problèmes', genT_case:'Cas pratiques', genT_riddle:'Énigmes', genT_mix:'Mélange',
+    genGo:'Générer', genReady:'{n} exercices prêts', genFrom:'Source : {a}', genStart:'Commencer', genAgain:'En générer d’autres',
+    genNote:'Exercices générés par l’IA à partir du texte de l’article : ils peuvent contenir des erreurs. Vérifiez toujours le texte et signalez toute erreur. Ils ne comptent ni dans vos points ni dans le classement.',
+    genTag:'Généré', genProv:'Généré par l’Assistant à partir du texte — à vérifier', genTitle:'Exercices générés', genEmpty:'Cet article n’a pas de texte dans la bibliothèque (abrogé ou vide) ; choisissez-en un autre.',
+    genNoArt:'Article introuvable dans la loi choisie.', genEnd:'Exercices terminés : {c} sur {n} justes', trd:'Énigme', hintBtn:'Indice', txGen:'Générer des exercices', txGenLaw:'Générer des exercices sur cette loi',
+    legT:'Conditions d’utilisation', legPriv:'Confidentialité', legDel:'Suppression des données',
+    termsT:'Conditions d’utilisation', termsS:'Qanoun Tahiro est une application d’apprentissage et d’entraînement. Voici l’essentiel ; lisez-le, puis acceptez pour entrer :',
+    terms1:'L’application est uniquement éducative et d’entraînement : elle n’est pas un conseiller juridique et ne remplace pas un avocat ou un professionnel pour une affaire réelle.',
+    terms2:'Ni l’application ni son développeur n’assument de responsabilité pour un conseil juridique, un avis, une réponse ou tout contenu similaire dans l’application, ni pour une décision prise sur cette base.',
+    terms3:'Les réponses et exercices de l’Assistant sont générés par l’IA et peuvent être erronés ; seul fait foi le texte officiel publié au Bulletin officiel.',
+    terms4:'L’Assistant est réservé aux 18 ans et plus ; n’y saisissez ni vrais noms ni données personnelles.',
+    termsChk:'J’ai lu les conditions d’utilisation et la politique de confidentialité, et je les accepte.', termsOk:'J’accepte et j’entre', termsNo:'Je refuse',
+    termsNeed:'L’application ne peut pas être utilisée sans accepter les conditions d’utilisation.', termsAt:'Conditions acceptées le {d}',
+    aiBusy:'L’Assistant est saturé. Réessayez dans une minute.', aiBlocked:'Impossible de répondre à cette demande. Reformulez-la.', aiInput:'Saisie incomplète ou trop courte.', },
   en:{ dir:'ltr', title:'Qanoun Tahiro', sub:'Moroccan law MCQ bank',
     ph:'Your alias', enter:'Enter', pts:'points', acc:'accuracy', stk:'streak', ans:'answered',
     pick:'Pick a branch', swipe:'Swipe to browse', mixed:'Mixed questions', all:'All branches',
@@ -878,16 +1055,62 @@ const T = {
     gTaken:'This Google account is already linked to another account in the app. Sign in with it? Your current alias moves with you through its recovery code.',
     month:'This month', brTab:'Branches', hallW:'Last week’s champions', hallM:'Last month’s champions', myRank:'Your rank', ofN:'of {n}',
     ahead:'Ahead of {p}% of players', since:'since your last visit', brCol:'correct', brMin:'A branch ranking needs at least ten answers in that branch.', notRanked:'You are not on this board yet: answer to appear.',
-    aiT:'The Assistant', aiSub:'An AI assistant that answers from the Moroccan law texts built into the app and from the question bank: it cites the article, shows its text, and never invokes an article not found there.', aiWhy:'Why was I wrong?', aiMore:'Explain more',
+    aiT:'The Assistant', aiSub:'An AI assistant (Google’s Gemini model) that answers from the Moroccan law texts built into the app and from the question bank: it cites the article, shows its text, and never invokes an article not found there.', aiWhy:'Why was I wrong?', aiMore:'Explain more',
     aiTwin:'Twin question', aiTwinMore:'Another one', aiAsk:'Ask', aiAskPh:'Type your legal question… e.g. when does the mother lose custody?', aiSend:'Send',
     aiOral:'Oral', aiOralNew:'New question', aiOralPh:'Write your answer as you would before the jury: the rule, its basis, then its application to the facts.', aiGrade:'Grade my answer',
     aiPlan:'My plan', aiPlanGo:'Build my week plan', aiPlanNew:'New plan', aiStart:'Start', aiThink:'The Assistant is searching the texts…', aiLeft:'Today: {l} of {c} left',
     aiBoost:'Link Google to get {c} a day', aiQuota:'Out of credits for today; they renew tomorrow.', aiOff:'The Assistant needs the cloud services.',
-    aiCfg:'The Assistant is not enabled on the server yet.', aiFail:'No answer right now. Try again shortly.', aiNote:'Generated from the question bank and its references; for learning, not legal advice.',
+    aiCfg:'The Assistant is not enabled on the server yet.', aiFail:'No answer right now. Try again shortly.', aiNote:'Generated from the law texts built into the app and the question bank; for learning, not legal advice.',
     aiTwinNote:'Generated drill on the same rule · not from the bank', aiRule:'The rule', aiHook:'Remember', aiCheck:'Check yourself', aiShow:'Show answer',
     aiSources:'From the bank:', aiNotCovered:'The law texts built into the app are not enough to answer this question. Check the official text.', aiCase:'Case', aiCasePh:'Briefly set out the facts: who are the parties? what happened and when? what do you want to know? (no real names or personal data)', aiCaseGo:'Analyse the case', aiFacts:'Characterisation', aiApply:'Application to the facts', aiConcl:'Conclusion', aiMissing:'Missing facts that may change the outcome', aiArts:'Texts the answer relies on', aiRelated:'Texts closest to your question', aiNotes:'Publisher’s notes (not part of the article)', aiStale:'Note: an amendment to this law was published after the date of the text used here: {l}. Check the version in force.', aiNoText:'No text for this article in the library: repealed or empty in the version used.', aiCaseNote:'A learning analysis drawn from the texts built into the app, not legal advice; for a real case, see a lawyer. The case text is not stored.', aiCaseShort:'Describe the facts in at least two lines.', aiLibArt:'Article text (library)', aiGuard:'Verify the reference before relying on it',
     aiScore:'Score', aiC1:'Rule', aiC2:'Basis', aiC3:'Application', aiStrong:'Strengths', aiGaps:'Gaps', aiModel:'Model answer', aiSeeQ:'See the question with options', aiFlag:'Report this answer', aiFlagT:'Report an Assistant answer', aiFl1:'Legal error or wrong reference', aiFl2:'Offensive or inappropriate content', aiFl3:'Does not answer my question', aiFl4:'Other problem', adsT:'Ads', adsIntro:'Ads fund the free app and the Assistant, under fixed rules: no ad ever interrupts a question; the banner stays in the lobby; an interstitial only follows a finished session, at most once every four minutes; and none on your first day.', adFreeT:'One ad-free hour', adFreeS:'Watch one short ad to the end and see no other ad for a full hour.', adFreeLeft:'Ad-free until {t}', adFreeOn:'Done: a full hour without ads', adAIT:'3 more Assistant requests', adAIS:'Watch a short ad to the end and 3 requests are added to today’s credit (left today: {n}).', adAIBtn:'Watch an ad: +3 requests', adAIok:'3 requests added to your credit', adAIlater:'Thanks! Your extra requests will appear shortly', adAINone:'Today’s rewards are used up; they renew tomorrow', adLoading:'Loading the ad…', adNoFill:'No ad available right now; try again soon', adNoReward:'The ad wasn’t finished, so no reward', adPriv:'Ad privacy options', adTest:'Test build: Google demo ads',
-    aiDay:'Day {d}', aiMin:'min', aiS_law:'Law', aiS_branch:'Branch', aiS_due:'Today’s review', aiS_wrong:'My mistakes', aiS_exam:'Exam', aiS_oral:'Oral', aiS_daily:'Daily question' }
+    aiDay:'Day {d}', aiMin:'min', aiS_law:'Law', aiS_branch:'Branch', aiS_due:'Today’s review', aiS_wrong:'My mistakes', aiS_exam:'Exam', aiS_oral:'Oral', aiS_daily:'Daily question',
+    txT:'Law texts', txSub:'{n} laws and {a} articles in their adopted versions, to read and search even offline.', txLawsH:'Laws',
+    txSearchPh:'Search all texts… e.g. loss of custody', txLawPh:'Search this law, or type an article number', txSearching:'Searching {n} laws…',
+    txFail:'Could not load the texts. Check your connection and try again.', txRetry:'Try again', txNone:'No results. Try fewer words or a synonym.', txHits:'{n} results', txNear:'Close matches (some of your words):',
+    txArts:'{n} articles', txHeld:'Adopted text last updated: {d}', txFavs:'Saved', txFav:'Save', txUnfav:'Saved', txPrev:'Previous', txNext:'Next',
+    txExplain:'Explain this article', txCards:'Review cards', txBank:'Bank questions ({n})', txAsk:'Ask about it', txCopy:'Copy', txOpen:'Open in law texts', txRead:'Article text',
+    txEmpty:'No text for this article in the adopted version (repealed or empty).', txNoArt:'Article {n} not found in this law.', txAskQ:'About {a} of {l}: ',
+    txDisc:'Texts are extracted automatically from the adopted versions for learning; a minor extraction error is possible. The official reference is the Official Bulletin.',
+    aiScan:'Photo', aiExplain:'Explain', aiCompare:'Compare', aiEssay:'Essay', aiDrill:'Practice case', aiCards:'Cards',
+    aiScanSub:'Take a photo of a question from a past exam, book or sheet: the Assistant reads it and solves it from the law texts.', aiScanCam:'Take a photo', aiScanPick:'Gallery',
+    aiScanRead:'Read from the photo', aiScanNone:'No readable legal question in the photo. Frame the question alone, in good light.',
+    aiScanNote:'The photo is sent to be read, then forgotten; it is not stored anywhere.', aiScanBig:'Could not read the photo. Try a sharper JPG or PNG.',
+    aiExplainSub:'Pick a law and an article number: the Assistant explains it — meaning, conditions, effects, exceptions, an example and exam traps.', aiLaw:'Law', aiArtNo:'Article no.', aiExplainGo:'Explain',
+    aiSimple:'In plain words', aiElements:'Conditions and elements', aiEffects:'Effects and sanctions', aiExceptions:'Exceptions', aiExample:'Worked example', aiSolution:'Solution', aiTraps:'Exam traps', aiRelArts:'Related articles',
+    aiCmpSub:'Type two concepts that are easily confused: the Assistant compares them from the texts.', aiCmpA:'First concept (e.g. absolute nullity)', aiCmpB:'Second concept (e.g. relative nullity)', aiCmpGo:'Compare them',
+    aiSame:'What they share', aiSummary:'In short', aiTrapMix:'Common confusion',
+    aiEssaySub:'An exam or competition essay topic: the Assistant drafts a plan in the expected method, or grades your essay out of 20.', aiEssayPh:'Essay title… e.g. termination of an open-ended employment contract',
+    aiEssayPlan:'Draft a plan', aiEssayGrade:'Grade my essay', aiEssayTextPh:'Paste your essay here (at least 200 characters)…', aiEssayShort:'Type the essay title first.', aiEssayTextShort:'Essay too short (at least 200 characters).',
+    aiIntro:'Introduction', aiProblem:'Central question', aiPart1:'Part one', aiPart2:'Part two', aiConclusion:'Conclusion', aiTips:'Method tips', aiFixes:'How to score higher', aiBetter:'Suggested plan',
+    aiE1:'Introduction', aiE2:'Question', aiE3:'Structure', aiE4:'Legal basis', aiE5:'Analysis',
+    aiDrillSub:'A brand-new case built by the Assistant from real articles of the law you choose: solve it, and it grades your answer out of 20 and shows the model solution.', aiAnyLaw:'Any law',
+    aiLvlE:'Easy', aiLvlM:'Medium', aiLvlH:'Hard', aiDrillGo:'Generate a case', aiDrillNew:'Another case', aiAsked:'Questions', aiDrillPh:'Your answer: the rule, its basis, its application to the facts, then the conclusion.',
+    aiDrillGrade:'Grade my answer', aiDrillShort:'Your answer is too short.',
+    aiCardsSub:'Question/answer cards drawn from the texts, reviewed with spaced repetition: what you know spreads out, what you forget comes back.', aiCardsPh:'Card topic… e.g. appeal deadlines', aiCardsGo:'Make cards',
+    aiDeck:'My cards', aiDeckN:'{n} cards · due today {d}', aiDeckGo:'Review now', aiFlip:'Flip', aiKnew:'I knew it', aiForgot:'I didn’t',
+    aiDeckEmpty:'No cards yet: make some from a topic here, or from an article in “Law texts”.', aiDeckDone:'Today’s cards are done. Well done!', aiCardsAdded:'{n} cards added to My cards',
+    aiVoice:'Answer by voice', aiStop:'Stop', aiRecAgain:'Record again', aiSendVoice:'Grade my recording', aiRecMax:'2 minutes at most', aiTranscript:'What I heard',
+    aiMicNo:'Microphone unavailable: allow the app to use it.', aiVoiceNote:'The recording is sent to be graded, then forgotten; it is not stored anywhere.',
+    aiNewChat:'New chat', aiChatOn:'The Assistant follows your conversation (last three questions).',
+    ageT:'Before using the Assistant', ageS:'The Assistant runs on Google’s Gemini model, whose terms limit it to people aged 18 or over. Write abstract questions and facts, without real names or personal data.',
+    ageOk:'I am 18 or older', ageNo:'Not yet', ageBlock:'The Assistant is for people aged 18 or over; the rest of the app is fully open to you.',
+    aiGen:'Generate exercises', genSub:'The Assistant generates new bank-style exercises from the law texts in the app: questions, problems, cases and riddles, with four options, a reason for every option and the source article. Pick a law and, if you like, a specific article.',
+    genArt:'Article (optional)', genAny:'Any law (random)', genKindT:'Type', genLvlT:'Level', genCntT:'Count',
+    genT_knowledge:'Questions', genT_problem:'Problems', genT_case:'Cases', genT_riddle:'Riddles', genT_mix:'Mix',
+    genGo:'Generate', genReady:'{n} exercises ready', genFrom:'Source: {a}', genStart:'Start', genAgain:'Generate more',
+    genNote:'AI-generated exercises based on the article text; they may contain mistakes. Always check the text and report any error. They don’t count toward your points or ranking.',
+    genTag:'Generated', genProv:'Generated by the Assistant from the text — check it', genTitle:'Generated exercises', genEmpty:'This article has no text in the library (repealed or empty); pick another one.',
+    genNoArt:'Article not found in the chosen law.', genEnd:'Exercises done: {c} of {n} correct', trd:'Riddle', hintBtn:'Hint', txGen:'Generate exercises', txGenLaw:'Generate exercises from this law',
+    legT:'Terms of use', legPriv:'Privacy', legDel:'Delete data',
+    termsT:'Terms of use', termsS:'Qanoun Tahiro is a learning and practice app. These are its key terms; read them, then accept to enter:',
+    terms1:'The app is for education and practice only: it is not a legal adviser and does not replace a lawyer or professional for any real matter.',
+    terms2:'Neither the app nor its developer accepts any liability for legal advice, opinions, answers or similar content in the app, or for any decision taken on that basis.',
+    terms3:'The Assistant’s answers and exercises are AI-generated and may be wrong; only the official text published in the Official Bulletin is authoritative.',
+    terms4:'The Assistant is for people aged 18 or over; never enter real names or personal data.',
+    termsChk:'I have read the terms of use and the privacy policy, and I accept them.', termsOk:'Accept and enter', termsNo:'I decline',
+    termsNeed:'The app cannot be used without accepting the terms of use.', termsAt:'Terms accepted on {d}',
+    aiBusy:'The Assistant is busy right now. Try again in a minute.', aiBlocked:'Could not answer this request. Please rephrase it.', aiInput:'Input missing or too short.', }
 };
 const LEVELS = {
   ar:['مبتدئ','طالب','متمرّن','باحث','مستشار','فقيه'],
@@ -937,7 +1160,7 @@ function blank(){
   return { points:0, answered:0, correct:0, streak:0, best:0, hard:0, mixed:0,
            byBranch:{}, seen:{}, wrong:{}, ach:[], chal:{ day:'', d1:0, d2:0, d3:0 },
            srs:{}, bm:{}, days:{}, byDiff:{}, byType:{}, byLaw:{}, exams:[], wk:{ k:'', p:0 },
-           daily:{ day:'', ok:null }, rev:0, duels:0, mo:{ k:'', p:0 } };
+           daily:{ day:'', ok:null }, rev:0, duels:0, mo:{ k:'', p:0 }, cards:{}, txFav:{} };
 }
 // ترقية ملف محفوظ قبل الميزات الجديدة دون المساس بما فيه
 function upgrade(p){ const b=blank(); for(const k in b) if(p[k]==null) p[k]=b[k]; return p; }
@@ -990,6 +1213,16 @@ const ICO = {
   flag:'<svg viewBox="0 0 24 24"><path d="M5 21V4M5 4.5h11l-2 4 2 4H5"/></svg>',
   help:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.2a2.6 2.6 0 1 1 3.7 2.4c-.8.4-1.2 1-1.2 1.9v.5M12 17.2v.1"/></svg>',
   ai:'<svg viewBox="0 0 24 24"><path d="M12 3.2l1.9 4.6 4.6 1.9-4.6 1.9L12 16.2l-1.9-4.6-4.6-1.9 4.6-1.9Z"/><path d="M18.5 15.5l.8 1.9 1.9.8-1.9.8-.8 1.9-.8-1.9-1.9-.8 1.9-.8Z"/></svg>',
+  chat:'<svg viewBox="0 0 24 24"><path d="M4 5.5h16v10.5H10l-6 4.5z"/><path d="M8 9.5h8M8 12.5h5"/></svg>',
+  cam:'<svg viewBox="0 0 24 24"><path d="M3.5 8h4l1.6-2.5h5.8L16.5 8h4v11.5h-17z"/><circle cx="12" cy="13.4" r="3.5"/></svg>',
+  scale:'<svg viewBox="0 0 24 24"><path d="M12 4v15.5M8 19.5h8M4.5 7.5h15"/><path d="M4.5 7.5 2 13.5a2.7 2.7 0 0 0 5 0zM19.5 7.5 17 13.5a2.7 2.7 0 0 0 5 0z"/></svg>',
+  book:'<svg viewBox="0 0 24 24"><path d="M12 6.5C10 5 7.2 4.5 4 5v13.5c3.2-.5 6 0 8 1.5 2-1.5 4.8-2 8-1.5V5c-3.2-.5-6 0-8 1.5zM12 6.5V20"/></svg>',
+  cmp:'<svg viewBox="0 0 24 24"><path d="M4 8.5h14l-3.5-3.5M20 15.5H6l3.5 3.5"/></svg>',
+  pen:'<svg viewBox="0 0 24 24"><path d="M4.5 19.5l1-4.6L15.6 4.8a2.1 2.1 0 0 1 3 3L8.5 17.9z"/><path d="M13.5 7l3 3M4.5 19.5h15"/></svg>',
+  drill:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.3"/><circle cx="12" cy="12" r="4.4"/><circle cx="12" cy="12" r="1"/></svg>',
+  gen:'<svg viewBox="0 0 24 24"><path d="M6.5 3.5h7.5l4 4v12.5a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5V4a.5.5 0 0 1 .5-.5z"/><path d="M14 3.5V8h4"/><path d="M11.5 10.2l.95 2.25 2.25.95-2.25.95-.95 2.25-.95-2.25-2.25-.95 2.25-.95Z"/></svg>',
+  cards:'<svg viewBox="0 0 24 24"><rect x="3.5" y="7.5" width="12" height="13" rx="2"/><path d="M8 7.5V5.5a2 2 0 0 1 2-2h8.5a2 2 0 0 1 2 2V16a2 2 0 0 1-2 2h-3"/></svg>',
+  mic:'<svg viewBox="0 0 24 24"><rect x="9" y="3.5" width="6" height="11" rx="3"/><path d="M5.5 11.5a6.5 6.5 0 0 0 13 0M12 18v3"/></svg>',
   ad:'<svg viewBox="0 0 24 24"><rect x="3.5" y="5.5" width="17" height="13" rx="2.5"/><path d="M10.5 9.5v5l4.2-2.5Z"/></svg>',
   user:'<svg viewBox="0 0 24 24"><circle cx="12" cy="8.5" r="3.6"/><path d="M4.8 20c.9-3.6 3.7-5.6 7.2-5.6s6.3 2 7.2 5.6"/></svg>',
   cloud:'<svg viewBox="0 0 24 24"><path d="M7 18.5h10.2a4.3 4.3 0 0 0 .6-8.6 6 6 0 0 0-11.5 1.6A3.5 3.5 0 0 0 7 18.5Z"/><path d="M9.5 13.5l2 2 3.5-3.8"/></svg>',
@@ -1119,6 +1352,7 @@ function libIndex(){
 
 /* ---------- تفكيك الفخ: نسبة كل جملة من التعليل إلى الخيار الذي تتكلم عنه ---------- */
 function splitEx(q){
+  if(q.gen) return { key:q.explain||'', body:'', why:q.why||{} };
   const e=q.explain||'', m=e.match(/^\*\*(.+?)\*\*\s*:?\s*/);
   const key = m ? m[1] : '', body = m ? e.slice(m[0].length) : e;
   return { key, body, why: parseWhy(body, q) };
@@ -1171,6 +1405,7 @@ function paintLogin(){
   $('#lLang').querySelectorAll('button').forEach(b=>b.onclick=()=>{S.lang=b.dataset.l;paintLogin();});
   const v=$('#alias').value.trim();
   $('#lseal').innerHTML=seal(v?hash(v):7, 108, v?hue(hash(v)%360):'var(--brass)');
+  paintLegal($('#lLegal'));
 }
 $('#alias').addEventListener('input',e=>{
   $('#enter').disabled = e.target.value.trim().length<2;
@@ -1179,10 +1414,25 @@ $('#alias').addEventListener('input',e=>{
 $('#enter').onclick=start;
 $('#alias').addEventListener('keydown',e=>{ if(e.key==='Enter'&&!$('#enter').disabled) start(); });
 
+let starting=false;
 async function start(){
+  if(starting) return;
   const alias=$('#alias').value.trim();
+  if(alias.length<2) return;
+  starting=true;
+  let p;
+  try{
+    p = upgrade(await Store.get('p:'+alias) || blank());
+    // البنود والشروط (v8.1): بعد التسجيل وقبل الدخول، مرة لكل نسخة منها، وتُحفظ مع التقدم فتنتقل بالمزامنة
+    if(!termsOk(p)){
+      if(!(await termsGate())) return;
+      p.terms={ v:TERMS_V, at:new Date().toISOString() };
+      await Store.set('p:'+alias, p);
+      track('terms_ok', { v:TERMS_V });
+    }
+  } finally { starting=false; }
   S.user={ alias, seed:hash(alias) };
-  S.p = upgrade(await Store.get('p:'+alias) || blank());
+  S.p = p;
   rollChallenges(); rollWeek();
   await Store.set('u:last',{alias,lang:S.lang});
   $('#login').classList.add('hidden');
@@ -1210,6 +1460,7 @@ function paintLobby(){
   $('#q').placeholder=d.search;
   $('#openMore .pip').classList.toggle('hidden', !hasNewUpd());
   if($('#q').value) paintSearch();
+  paintLegal($('#lbLegal'));
 }
 function paintHero(){
   const p=S.p;
@@ -1241,13 +1492,14 @@ function paintTools(){
     {k:'due',    ic:ICO.due,    b:t('dueT'),    dot:due, tc:'var(--fes)'},
     {k:'custom', ic:ICO.custom, b:t('customT')},
     {k:'lib',    ic:ICO.lib,    b:t('libT'),    tc:'var(--fes)'},
+    {k:'texts',  ic:ICO.book,   b:t('txT'),     tc:'var(--brass)'},
     {k:'duel',   ic:ICO.duel,   b:t('duelT'),   tc:'var(--qirmiz)'},
     {k:'bm',     ic:ICO.bm,     b:t('bmT'),     n:bm}
   ];
   if(CLOUD && CLOUD.supabase) tiles.splice(1, 0, {k:'ai', ic:ICO.ai, b:t('aiT'), tc:'var(--fes)'});
   $('#tools').innerHTML = tiles.map(x=>`<button class="tool" data-k="${x.k}"${x.tc?` style="--tc:${x.tc}"`:''}>${x.ic}<span>${esc(x.b)}</span>${x.dot?`<i class="dot">${x.dot>99?'99+':x.dot}</i>`:''}${x.n?`<em>${x.n}</em>`:''}</button>`).join('');
   $('#tools').querySelectorAll('.tool').forEach(el=>el.onclick=()=>({
-    due:openDue, custom:openBuilder, lib:openLibrary, duel:openDuel, bm:openBookmarks, ai:()=>openAI() })[el.dataset.k]());
+    due:openDue, custom:openBuilder, lib:openLibrary, texts:()=>openTexts(), duel:openDuel, bm:openBookmarks, ai:()=>openAI() })[el.dataset.k]());
 }
 
 function cardHTML(b){
@@ -1296,6 +1548,7 @@ const norm = t => (t||'').replace(/[\u064B-\u0652\u0640]/g,'')
 // شارة المصدر: يجب أن يعرف المترشح هل السؤال مقروء في نص رسمي أم مكتوب من الذاكرة.
 // إخفاء هذا الفرق يجعل كل الأسئلة تبدو متساوية الوثوق وهي ليست كذلك.
 function prov(q){
+  if(q.gen) return `<span class="pv m" dir="auto">✦ ${t('genProv')}</span>`;
   if(q.conf==='r') return `<span class="pv r" dir="auto">⚠ ${t('confR')}</span>`;
   if(q.src==='text') return `<span class="pv v" dir="auto">✓ ${t('srcText')}</span>`;
   if(q.src==='bo')   return `<span class="pv v" dir="auto">✓ ${t('srcBo')}</span>`;
@@ -1389,7 +1642,7 @@ function openQuiz(bid){
   startSess({ bid, mode:'practice', queue:q,
               title: bid==='wrong'?t('review'):(bid==='mixed'?t('mixed'):null) });
 }
-function endMsg(s){ return (s.bid==='wrong'||s.bid==='due') ? t('noMist') : (byId(s.bid) ? t('done') : t('sessDone')); }
+function endMsg(s){ if(s.gen) return t('genEnd').replace('{c}', s.answers.filter(a=>a.exact).length).replace('{n}', s.answers.length); return (s.bid==='wrong'||s.bid==='due') ? t('noMist') : (byId(s.bid) ? t('done') : t('sessDone')); }
 
 const HAS_TTS = 'speechSynthesis' in window && 'SpeechSynthesisUtterance' in window;
 function hush(){ try{ if(HAS_TTS) speechSynthesis.cancel(); }catch(e){} }
@@ -1403,7 +1656,7 @@ function serve(){
   }
   if(s.i<0) s.i=0;
   const q=s.queue[s.i], b=byId(q.branch), col=hue(b.hue), lt=lts();
-  const typ = {knowledge:'tk',case:'tc',problem:'tp'}[q.type]||'tk';
+  const typ = {knowledge:'tk',case:'tc',problem:'tp',riddle:'trd'}[q.type]||'tk';
   const isEx=s.mode==='exam', isSt=s.mode==='study';
   const title = s.title || bName(b);
   $('#quiz').style.setProperty('--ch',col);
@@ -1416,13 +1669,14 @@ function serve(){
                : `<div class="pips">${[1,2,3,4,5].map(i=>`<i class="${i<=q.difficulty?'on':''}"></i>`).join('')}</div>`}
       </div>
       <div class="ct">${s.i+1}/${s.queue.length}</div>
-      <button class="x star${S.p.bm[q.id]?' on':''}" id="qbm" aria-label="${t('bmT')}" aria-pressed="${!!S.p.bm[q.id]}">${ICO.star}</button>
+      ${s.gen?'':`<button class="x star${S.p.bm[q.id]?' on':''}" id="qbm" aria-label="${t('bmT')}" aria-pressed="${!!S.p.bm[q.id]}">${ICO.star}</button>`}
     </div>
     ${s.bid==='duel'?'<div class="rivals hidden" id="rivals" aria-live="polite"></div>':''}
-    <div class="qbody" dir="rtl">
-      <div class="qtools"><span class="tag">${t(typ)}</span>${title!==bName(b)?`<span class="tag br">${esc(bName(b))}</span>`:''}<span class="sp"></span>
+    <div class="qbody" dir="${q.gen && S.lang!=='ar' ? 'ltr' : 'rtl'}">
+      <div class="qtools"><span class="tag">${t(typ)}</span>${q.gen?`<span class="tag ai">${t('genTag')}</span>`:''}${title!==bName(b)?`<span class="tag br">${esc(bName(b))}</span>`:''}<span class="sp"></span>
+        ${q.hint?`<button class="aib" id="qhn">${t('hintBtn')}</button>`:''}
         ${HAS_TTS?`<button class="mini" id="qsp" aria-label="${t('listen')}">${ICO.speak}</button>`:''}
-        ${isEx?'':`<button class="mini" id="qsh" aria-label="${t('share')}">${ICO.share}</button>`}</div>
+        ${isEx||s.gen?'':`<button class="mini" id="qsh" aria-label="${t('share')}">${ICO.share}</button>`}</div>
       <p class="stem">${md(q.stem)}</p>
       ${isSt?'':`<p class="hint" dir="auto">${t('multi')}</p>`}
       <div id="opts">${q.options.map((o,i)=>
@@ -1434,7 +1688,8 @@ function serve(){
       ? `<div class="duo"><button class="btn2" id="qprev"${s.i?'':' disabled'}>${t('prev')}</button><button class="btn" id="go">${s.i+1<s.queue.length?t('next'):t('finish')}</button></div>`
       : `<button class="btn" id="go"></button>`}</div>`;
   $('#qx').onclick=closeQuiz;
-  $('#qbm').onclick=()=>toggleBm(q);
+  if($('#qbm')) $('#qbm').onclick=()=>toggleBm(q);
+  if($('#qhn')) $('#qhn').onclick=e=>{ e.currentTarget.remove(); $('#quiz .stem').insertAdjacentHTML('afterend', `<p class="qhint" dir="auto">${md(q.hint)}</p>`); };
   if($('#qsp')) $('#qsp').onclick=()=>speakQ(q);
   if($('#qsh')) $('#qsh').onclick=()=>shareQ(q);
   $('#quiz').classList.remove('hidden');
@@ -1473,6 +1728,17 @@ function serve(){
 
 function bump(o,k,ok){ const x=o[k]||(o[k]={a:0,c:0}); x.a++; if(ok) x.c++; }
 function grade(q, sel){
+  // التمارين المولَّدة (v8.1): تصحيح وتعليل فقط، ولا مساس بالنقاط ولا بالإحصاءات ولا بالترتيب ولا بالمراجعة
+  if(S.sess && S.sess.gen){
+    const s=S.sess, cor=q.correct, hits=sel.filter(i=>cor.includes(i)).length, fp=sel.length-hits;
+    const exact = hits===cor.length && fp===0, partial = !exact && hits>0 && fp===0;
+    s.answers.push({ id:q.id, exact, gain:0 });
+    track('gen_answer', { type:q.type, ok:exact?1:0 });
+    reveal(q, sel, { exact, partial, gain:0 });
+    const go=$('#go'); go.textContent = s.i+1<s.queue.length ? t('next') : t('finish');
+    go.onclick=()=>{ s.i++; serve(); };
+    return;
+  }
   const s=S.sess, cor=q.correct, b=byId(q.branch);
   const hits=sel.filter(i=>cor.includes(i)).length;
   const fp=sel.length-hits;
@@ -1538,13 +1804,14 @@ function reveal(q, sel, res){
   const title = res ? t(res.exact?'right':(res.partial?'partial':'wrong')) : (!cor.length?t('none'):t('study'));
   const head = `<div class="vhead">${stamp(kind, word, !!res)}<div><div class="v" dir="auto">${title}</div>${res&&res.gain?`<div class="gain" dir="auto">+${res.gain} ${t('pts')}${S.sess.bid==='daily'?` <span class="bonus">${t('bonus')}</span>`:''}</div>`:''}</div></div>`;
   const key = ex.key ? `<p class="key">${md(ex.key)}</p>` : '';
-  const body = cover>=2 ? `${key}<details><summary dir="auto">${t('fullEx')}</summary><p>${md(ex.body)}</p></details>` : `${key}<p>${md(ex.body)}</p>`;
+  const body = q.gen ? key : cover>=2 ? `${key}<details><summary dir="auto">${t('fullEx')}</summary><p>${md(ex.body)}</p></details>` : `${key}<p>${md(ex.body)}</p>`;
   $('#verdict').innerHTML=`<div class="verdict ${res?(res.exact?'win':'lose'):'info'}">${head}${body}
       <div class="src"><b>${esc(q.source.law)}</b>، ${esc(q.source.ref)}${prov(q)}</div>
       ${aiRowHTML(q, sel, res)}
-      <button class="linkbtn" id="rep" dir="auto">${t('report')}</button>
+      ${txFor(q)?`<button class="linkbtn" id="txb" dir="auto">${ICO.book.replace('<svg ', '<svg width="15" height="15" style="vertical-align:-3px;stroke:currentColor;fill:none;stroke-width:1.7" ')} ${t('txRead')}</button> · `:''}<button class="linkbtn" id="rep" dir="auto">${t('report')}</button>
     </div>`;
-  $('#rep').onclick=()=>openReport(q);
+  $('#rep').onclick=()=> q.gen ? openAiFlag('gen|'+q.art.slug+':'+q.art.n, $('#quiz .qbody')) : openReport(q);
+  const txb=$('#txb'); if(txb) txb.onclick=()=>{ const r=txFor(q); if(r) openTexts(r.slug, r.n); };
   bindAiRow(q, sel, res);
   if(res) $('#verdict').scrollIntoView({behavior:slow?'auto':'smooth',block:'nearest'});
 }
@@ -1864,6 +2131,46 @@ function openBackup(){
   };
 }
 
+/* ---------- الصفحات القانونية (v8.1): البنود والشروط، والخصوصية، وحذف البيانات ----------
+   صفحات الموقع بأربع لغات (العربية والإنجليزية والفرنسية والإسبانية)، تُفتح في المتصفح بلغة الواجهة:
+   في الهاتف بمتصفح النظام (Custom Tabs في أندرويد، وSafari في iPhone)، وفي الويب في لسان جديد. */
+const PAGES = { terms:'terms', privacy:'privacy', del:'delete-data' };
+const pageUrl = k => { const u=siteUrl(PAGES[k]); return u ? u+'?lang='+S.lang : ''; };
+function openPage(k, e){
+  const url=pageUrl(k); if(!url) return;
+  track('legal', { page:k });
+  const br=window.QT_CAP && window.QT_CAP.Browser;
+  if(isNative() && br){ if(e) e.preventDefault(); br.open({ url }).catch(()=>{ location.href=url; }); }
+}
+const legalHTML = () => siteUrl('privacy') ? [['terms','legT'],['privacy','legPriv'],['del','legDel']]
+  .map(([k,l])=>`<a href="${esc(pageUrl(k))}" target="_blank" rel="noopener" data-page="${k}">${esc(t(l))}</a>`).join('') : '';
+function bindLegal(root){ root.querySelectorAll('[data-page]').forEach(a=>a.onclick=e=>openPage(a.dataset.page, e)); }
+function paintLegal(el){ if(!el) return; el.innerHTML=legalHTML(); el.classList.toggle('hidden', !el.innerHTML); bindLegal(el); }
+
+// البنود والشروط: موافقة صريحة بعد التسجيل وقبل الدخول. تغيير TERMS_V (تاريخ نسختها) يعيد طلبها من الجميع.
+const TERMS_V = '2026-11-23';
+const termsOk = p => !!(p && p.terms && p.terms.v===TERMS_V);
+function termsGate(){
+  return new Promise(res=>{
+    const old=$('#tgate'); if(old) old.remove();
+    const g=document.createElement('section');
+    g.id='tgate'; g.className='tgate'; g.dir=T[S.lang].dir; g.lang=S.lang;
+    g.setAttribute('role','dialog'); g.setAttribute('aria-modal','true'); g.setAttribute('aria-labelledby','tgT');
+    g.innerHTML=`<div class="tbox"><div class="seal">${seal(7, 64, 'var(--brass)')}</div><h2 id="tgT">${esc(t('termsT'))}</h2>
+      <p class="meta" style="font-size:15.5px;line-height:1.8;text-align:center">${esc(t('termsS'))}</p>
+      <ul>${[1,2,3,4].map(i=>`<li>${esc(t('terms'+i))}</li>`).join('')}</ul>
+      ${legalHTML()?`<nav class="legal">${legalHTML()}</nav>`:''}
+      <label class="chk"><input type="checkbox" id="tgC"><span>${esc(t('termsChk'))}</span></label>
+      <div class="duo"><button class="btn" id="tgY" disabled>${esc(t('termsOk'))}</button><button class="btn2" id="tgN">${esc(t('termsNo'))}</button></div></div>`;
+    document.body.appendChild(g); bindLegal(g);
+    const c=g.querySelector('#tgC'), y=g.querySelector('#tgY');
+    c.onchange=()=>{ y.disabled=!c.checked; };
+    const fin=v=>{ g.remove(); if(!v) toast(t('termsNeed')); res(v); };
+    y.onclick=()=>fin(true); g.querySelector('#tgN').onclick=()=>fin(false);
+    setTimeout(()=>{ try{ c.focus({ preventScroll:true }); }catch(e){} }, 60);
+  });
+}
+
 /* ---------- الإعدادات ---------- */
 function openSettings(){
   const w=sheet(`<div id="stv"></div>`);
@@ -1875,9 +2182,11 @@ function openSettings(){
       <p class="stem" dir="rtl" style="margin:12px 0 0">${t('fzSample')}</p>
       <h3>${t('motionT')}</h3><div class="chips">${[['1','on'],['0','off']].map(([v,k])=>`<button class="chip" data-mo="${v}" aria-pressed="${(c.motion?'1':'0')===v}">${t(k)}</button>`).join('')}</div>
       <h3>${t('kbdT')}</h3><p class="meta" style="line-height:2">${t('kbd').replace(/(\d-\d|A-D|Enter|Entrée|←|→|Esc|Échap|\bS\b|\bL\b)/g,'<kbd>$1</kbd>')}</p>
-      ${CLOUD&&CLOUD.firebase?`<h3>${t('anaT')}</h3><div class="chips">${[['1','on'],['0','off']].map(([v,k])=>`<button class="chip" data-an="${v}" aria-pressed="${(c.ana?'1':'0')===v}">${t(k)}</button>`).join('')}</div>
+      ${CLOUD&&CLOUD.firebase&&!noAna()?`<h3>${t('anaT')}</h3><div class="chips">${[['1','on'],['0','off']].map(([v,k])=>`<button class="chip" data-an="${v}" aria-pressed="${(c.ana?'1':'0')===v}">${t(k)}</button>`).join('')}</div>
         <p class="meta" style="margin-top:8px">${t('cRole_fb')}</p>`:''}
-      ${siteUrl('privacy')?`<p class="meta" style="margin-top:18px"><a href="${esc(siteUrl('privacy'))}" target="_blank" rel="noopener">${t('privacy')}</a></p>`:''}`;
+      ${legalHTML()?`<nav class="legal" style="justify-content:flex-start;padding:18px 0 0">${legalHTML()}</nav>`:''}
+      ${S.p && S.p.terms && S.p.terms.at?`<p class="meta" style="margin:6px 0 0">${esc(t('termsAt').replace('{d}', fmtDate(String(S.p.terms.at).slice(0,10))))}</p>`:''}`;
+    bindLegal(w);
     w.querySelectorAll('[data-an]').forEach(el=>el.onclick=()=>{ setAna(el.dataset.an==='1'); paint(); });
     w.querySelectorAll('[data-th]').forEach(el=>el.onclick=()=>{ c.theme=el.dataset.th; done(); });
     w.querySelectorAll('[data-fz]').forEach(el=>el.onclick=()=>{ c.fz=+el.dataset.fz; done(); });
@@ -2308,7 +2617,9 @@ async function cloudPull(){
   if(!CS.mine) return;
   const r = await rpc('qt_pull', { p_alias:S.user.alias });
   if(r && r.data && typeof r.data==='object' && (r.answered|0) > S.p.answered){
-    S.p = upgrade(r.data); rollChallenges(); rollWeek();
+    const keepT=S.p.terms;
+    S.p = upgrade(r.data); if(keepT && !termsOk(S.p)) S.p.terms=keepT;
+    rollChallenges(); rollWeek();
     await Store.set('p:'+S.user.alias, S.p); pushBoard();
     if(!S.sess){ paintLobby(); buildRail(); }
     toast(t('cPulled'));
@@ -2501,8 +2812,10 @@ async function duelBoardRefresh(){
 /* ---------- Firebase: إحصاءات مجهولة بموافقة ---------- */
 // استيراد ديناميكي مؤجَّل التحليل: محرك قديم لا يعرف import() لا يُسقط التطبيق كله
 const dynImport = u => (new Function('u','return import(u)'))(u);
+// نسخة iPhone بلا إحصاءات ولا تتبع إطلاقاً (لا إضافة Firebase فيها، ولا تُحمَّل حزمة الويب)
+const noAna = () => !!(window.QT_CAP && window.QT_CAP.platform==='ios');
 async function faInit(){
-  if(FA || !CLOUD || !CLOUD.firebase) return;
+  if(FA || !CLOUD || !CLOUD.firebase || noAna()) return;
   cs('fb','wait');
   try{
     const cap=window.Capacitor, br=window.QT_CAP;
@@ -2541,7 +2854,7 @@ function track(name, params){ try{ if(FA && S.cfg.ana===true){ const r=FA.log(na
 // طلب الموافقة شريطٌ هادئ في الردهة لا لوحٌ يقطع العمل: يظهر بعد الجولة التعريفية ويبقى حتى يختار المستخدم
 function paintConsent(){
   const el=$('#consent'); if(!el) return;
-  const show = CLOUD && CLOUD.firebase && S.cfg.ana==null && S.cfg.onb;
+  const show = CLOUD && CLOUD.firebase && S.cfg.ana==null && S.cfg.onb && !noAna();
   el.classList.toggle('hidden', !show);
   if(!show){ el.innerHTML=''; return; }
   el.innerHTML=`<span>${esc(t('anaQ'))}</span><span class="cb"><button class="btn" id="anY">${esc(t('anaYes'))}</button><button class="btn2" id="anN">${esc(t('anaNo'))}</button></span>`;
@@ -2609,7 +2922,8 @@ function openCloud(){
       <h3>${t('cSvcT')}</h3>${row('sb','Supabase')}${row('pn','PubNub')}${row('ab','Ably')}${row('fb','Firebase')}
       <div class="duo" style="margin-top:14px"><button class="btn2" id="clx">${t('cRetry')}</button>${S.cfg.noCloud
         ? `<button class="btn2" id="cle">${t('cEnable')}</button>` : (CS.mine ? `<button class="btn2 danger" id="cld">${t('cDel')}</button>` : '')}</div>
-      ${siteUrl('privacy')?`<p class="meta" style="margin-top:16px"><a href="${esc(siteUrl('privacy'))}" target="_blank" rel="noopener">${t('privacy')}</a></p>`:''}`;
+      ${legalHTML()?`<nav class="legal" style="justify-content:flex-start;padding:16px 0 0">${legalHTML()}</nav>`:''}`;
+    bindLegal(w);
     const on=(id,fn)=>{ const b=w.querySelector(id); if(b) b.onclick=fn; };
     on('#cls', async()=>{ if(await cloudPush()) toast(t('cSynced')); paint(); });
     on('#clr', ()=>showRecovery());
@@ -2746,11 +3060,11 @@ function nativeAuthListen(){
 }
 
 /* ---------- «المساعد»: ذكاء اصطناعي مؤسَّس على نصوص القوانين وبنك الأسئلة (دالة qt-ai) ---------- */
-const AI = { left:null, cap:null, capG:null, google:false, hist:[], ads:null };
+const AI = { left:null, cap:null, capG:null, google:false, ads:null, chat:[], drill:null, drillAns:'', drillLaw:'', lvl:'medium' };
 async function aiCall(kind, payload){
   if(!CLOUD || !CLOUD.supabase) throw Object.assign(new Error('off'), { code:'off' });
   await sbClient(); if(!CS.auth) await sbAuth();
-  const r=await within(SB.functions.invoke('qt-ai', { body:Object.assign({ kind, lang:S.lang }, payload||{}) }), 70000, 'ai timeout');
+  const r=await within(SB.functions.invoke('qt-ai', { body:Object.assign({ kind, lang:S.lang }, payload||{}) }), kind==='gen' ? 120000 : 70000, 'ai timeout');
   let d=r.data;
   if(r.error){ try{ d=await r.error.context.json(); }catch(e){ d=null; } }
   if(d && typeof d.left==='number'){ AI.left=d.left; AI.cap=d.cap; AI.google=!!d.google; if(d.capGoogle) AI.capG=d.capGoogle; }
@@ -2758,7 +3072,8 @@ async function aiCall(kind, payload){
   if(!d || !d.ok) throw Object.assign(new Error((d && d.error) || 'ai'), { code:(d && d.error) || 'ai' });
   return d;
 }
-const aiErr = e => t({ quota:'aiQuota', budget:'aiQuota', config:'aiCfg', off:'aiOff', auth:'aiOff' }[e && e.code] || 'aiFail');
+const aiErr = e => t({ quota:'aiQuota', budget:'aiQuota', config:'aiCfg', off:'aiOff', auth:'aiOff', busy:'aiBusy', blocked:'aiBlocked', input:'aiInput',
+                       notfound:'genNoArt', empty:'genEmpty' }[e && e.code] || 'aiFail');
 const quotaText = () => AI.cap!=null ? t('aiLeft').replace('{l}',AI.left).replace('{c}',AI.cap) : '';
 const shimHTML = () => `<div class="aiCard"><span class="lbl">${esc(t('aiThink'))}</span><div class="shim"></div><div class="shim" style="width:82%"></div><div class="shim" style="width:58%"></div></div>`;
 // [LAB-012] سؤال من البنك يُفتح، و[labour:41] مادة من المكتبة تُفتح بطاقتها تحت الجواب
@@ -2770,11 +3085,14 @@ const artsHTML = (arts, title) => !(arts||[]).length ? '' : `<span class="lbl">$
   arts.map(a=>`<details class="art" data-art="${esc(a.key)}"><summary><b>${esc(a.label)}</b><span>${esc(a.title)}</span></summary>
     ${a.path?`<div class="ap">${esc(a.path)}</div>`:''}<div class="at" dir="rtl">${a.text ? esc(a.text) : `<i>${esc(t('aiNoText'))}</i>`}</div>
     ${(a.notes||[]).length?`<div class="an"><b>${esc(t('aiNotes'))}:</b> ${a.notes.map(esc).join(' · ')}</div>`:''}
-    ${(a.stale||[]).length?`<p class="warn">${esc(t('aiStale').replace('{l}', a.stale.map(x=>(x.law||'')+(x.date?' ('+x.date+')':'')).join('، ')))}</p>`:''}</details>`).join('');
+    ${(a.stale||[]).length?`<p class="warn">${esc(t('aiStale').replace('{l}', a.stale.map(x=>(x.law||'')+(x.date?' ('+x.date+')':'')).join('، ')))}</p>`:''}
+    ${a.slug && a.n?`<button class="linkbtn" data-tx="${esc(a.slug)}|${esc(a.n)}" style="margin:0 11px 6px">${esc(t('txOpen'))}</button>`:''}</details>`).join('');
 function bindArts(root){
   root.querySelectorAll('[data-artk]').forEach(b=>b.onclick=()=>{ const card=b.closest('.aiCard') || root;
-    const d=[...card.querySelectorAll('details.art')].find(x=>x.dataset.art===b.dataset.artk); if(!d) return;
+    const d=[...card.querySelectorAll('details.art')].find(x=>x.dataset.art===b.dataset.artk);
+    if(!d){ const k=b.dataset.artk, i=k.indexOf(':'); if(i>0) openTexts(k.slice(0,i), k.slice(i+1)); return; }
     d.open=true; d.scrollIntoView({ behavior:'smooth', block:'nearest' }); });
+  root.querySelectorAll('[data-tx]').forEach(b=>b.onclick=()=>{ const [slug,n]=b.dataset.tx.split('|'); if(slug) openTexts(slug, n); });
 }
 function failHTML(e){ return `<div class="aiCard">${esc(aiErr(e))}${e && e.code==='quota' && !AI.google ? ` <button class="linkbtn" data-glink>${t('gLink')}</button>` : ''}${e && e.code==='quota' && adsCanAI() ? ` <button class="linkbtn" data-aiad>${esc(t('adAIBtn'))}</button>` : ''}</div>`; }
 function bindCommon(root, close){
@@ -2808,7 +3126,7 @@ function openAiFlag(spec, card){
   };
 }
 function aiRowHTML(q, sel, res){
-  if(!CLOUD || !CLOUD.supabase) return '';
+  if(!CLOUD || !CLOUD.supabase || q.gen) return '';
   return `<div class="aiRow"><button class="aib" id="aiw">${ICO.ai}${t(res && !res.exact ? 'aiWhy' : 'aiMore')}</button>
     <button class="aib" id="ait">${ICO.ai}${t('aiTwin')}</button></div><div id="aiOut"></div>`;
 }
@@ -2818,7 +3136,7 @@ function bindAiRow(q, sel, res){
   tw.onclick=()=>aiTwin(q, 0);
 }
 async function aiWhy(q, sel){
-  const out=$('#aiOut'); if(!out) return; out.innerHTML=shimHTML();
+  const out=$('#aiOut'); if(!out || !(await ageGate())) return; out.innerHTML=shimHTML();
   try{
     const d=await aiCall('why', { id:q.id, sel }), x=d.data;
     out.innerHTML=`<div class="aiCard"><h4>${esc(x.title||'')}</h4><p>${md(x.trap||'')}</p>
@@ -2835,7 +3153,7 @@ async function aiWhy(q, sel){
   }catch(e){ out.innerHTML=failHTML(e); bindCommon(out); }
 }
 async function aiTwin(q, n){
-  const out=$('#aiOut'); if(!out) return; out.innerHTML=shimHTML();
+  const out=$('#aiOut'); if(!out || !(await ageGate())) return; out.innerHTML=shimHTML();
   try{
     const d=await aiCall('twin', { id:q.id, n }), x=d.data, lt=lts();
     out.innerHTML=`<div class="aiCard tq"><span class="lbl">${t('aiTwinNote')}</span><p class="stem" dir="rtl" style="font-size:calc(18px * var(--fz));margin:6px 0 10px">${md(x.stem)}</p>
@@ -2873,66 +3191,379 @@ function runStep(s){
   if(s.kind==='daily') return openDaily();
   openQuiz('mixed');
 }
-async function openAI(tab){
+
+/* ---------- عرض أجوبة «المساعد» (يشترك فيها أكثر من أداة) ---------- */
+const ulHTML = (k, arr, A) => (arr||[]).length ? `<span class="lbl">${t(k)}</span><ul>${arr.map(s=>`<li>${citeHTML(s, A)}</li>`).join('')}</ul>` : '';
+const ringHTML = (score, max) => { const C=2*Math.PI*36, pc=Math.max(0, Math.min(1, score/max));
+  return `<svg class="ring" viewBox="0 0 84 84"><circle class="rb" cx="42" cy="42" r="36"/><circle class="rf" cx="42" cy="42" r="36" stroke-dasharray="${(C*pc).toFixed(1)} ${C.toFixed(1)}"/>
+    <text x="42" y="50" text-anchor="middle">${score}/${max}</text></svg>`; };
+const barsHTML = rows => `<div class="crit">${rows.map(([l,val,max])=>`<span>${esc(l)}</span><span class="bar"><i style="width:${Math.round(val/max*100)}%"></i></span><span>${val}/${max}</span>`).join('')}</div>`;
+const scoreHTML = (score, max, rows) => `<div style="display:flex;gap:14px;align-items:center">${ringHTML(score, max)}${barsHTML(rows)}</div>`;
+// مولّد التمارين (v8.1): بطاقة بعدد التمارين ومصادرها، ثم جلسة في محرك الأسئلة نفسه دون نقاط ولا إحصاءات
+const genHTML = x => { const its=x.items||[], src=[...new Set(its.map(i=>i.label+' — '+i.law))].slice(0,4).join('، ');
+  return `<div class="aiCard"><span class="lbl">${esc(t('genReady').replace('{n}', its.length))}</span>
+    <p class="meta" style="margin:2px 0 10px" dir="auto">${esc(t('genFrom').replace('{a}', src))}</p>
+    <div class="duo"><button class="btn" data-gstart>${t('genStart')}</button><button class="btn2" data-gagain>${t('genAgain')}</button></div>
+    ${artsHTML(x.articles)}${guardHTML(x)}${metaHTML('gen', its[0] ? its[0].slug+':'+its[0].n : '')}</div>`; };
+const KEYTAG = /\s*\[[a-z_]{2,40}:[^\]]{1,30}\]/g;
+function startGen(x){
+  const first=(BANK.branches[0]||{}).id, stamp=Date.now().toString(36);
+  const queue=(x.items||[]).map((it,i)=>({ id:'GEN-'+stamp+'-'+i, gen:true, branch:byId(it.branch) ? it.branch : first,
+    difficulty:Math.min(5, Math.max(1, +it.difficulty || 3)), type:it.type, stem:it.stem, options:it.options, correct:it.correct,
+    why:Object.fromEntries((it.why||[]).map((w,j)=>[j, String(w).replace(KEYTAG,'')])), explain:String(it.rule||'').replace(KEYTAG,''),
+    hint:it.hint||'', source:{ law:it.law, ref:it.label }, art:{ slug:it.slug, n:it.n }, conf:'v' }));
+  if(!queue.length) return toast(t('aiFail'));
+  startSess({ bid:'gen', mode:'practice', queue, gen:true, title:t('genTitle') });
+  track('gen_start', { type:x.type, n:queue.length });
+}
+const metaHTML = (kind, ref) => `<div class="meta2">${t('aiNote')} · ${esc(quotaText())} · ${aiFlagBtn(kind, ref)}</div>`;
+const guardHTML = x => x && x.guard===false ? `<p class="warn">${t('aiGuard')}</p>` : '';
+const fuHTML = x => (x.followups||[]).length ? `<div class="aiRow">${x.followups.slice(0,2).map(f=>`<button class="aib" data-fu="${esc(f)}">${esc(f)}</button>`).join('')}</div>` : '';
+function askHTML(x){
+  return `<div class="aiCard">${x.covered===false||!x.answer?`<p>${t('aiNotCovered')}</p>`:`<p style="white-space:pre-line">${citeHTML(x.answer, x.articles)}</p>`}
+    ${artsHTML(x.articles)}
+    ${(x.sources||[]).length?`<span class="lbl">${t('aiSources')}</span><div class="cites">${x.sources.map(s=>`<button data-cite="${esc(s.id)}" title="${esc(s.law+'، '+s.ref)}">${esc(s.id)}</button>`).join('')}</div>`:''}
+    ${fuHTML(x)}${guardHTML(x)}${metaHTML('ask', ((x.sources||[])[0]||{}).id || (x.arts||[])[0])}</div>`;
+}
+function caseHTML(x){
+  const A=x.articles||[];
+  return `<div class="aiCard">${x.covered===false && !(x.issues||[]).length ? `<p>${t('aiNotCovered')}</p>` : `
+    ${x.facts?`<span class="lbl">${t('aiFacts')}</span><p>${citeHTML(x.facts, A)}</p>`:''}
+    ${(x.issues||[]).map(i=>`<div class="issue"><h4>${md(i.point||'')}</h4><div class="box">${citeHTML(i.rule||'', A)}</div>
+      <span class="lbl">${t('aiApply')}</span><p>${citeHTML(i.apply||'', A)}</p></div>`).join('')}
+    ${x.conclusion?`<span class="lbl">${t('aiConcl')}</span><p><b>${citeHTML(x.conclusion, A)}</b></p>`:''}
+    ${(x.missing||[]).length?`<span class="lbl">${t('aiMissing')}</span><ul>${x.missing.map(m=>`<li>${md(m)}</li>`).join('')}</ul>`:''}`}
+    ${artsHTML(A)}${fuHTML(x)}${guardHTML(x)}
+    <div class="disc">${esc(t('aiCaseNote'))}</div>${metaHTML('case', (A[0]||{}).key)}</div>`;
+}
+function scanHTML(x){
+  const ex=x.extracted||{}, L0=lts(), A=x.articles||[];
+  const read = ex.text ? `<div class="aiCard"><span class="lbl">${t('aiScanRead')}</span><p dir="auto" style="white-space:pre-line">${esc(ex.text)}</p>
+    ${(ex.options||[]).length?`<ul>${ex.options.map((o,i)=>`<li dir="auto"><b>${esc(L0[i]||String(i+1))})</b> ${esc(o)}</li>`).join('')}</ul>`:''}</div>` : '';
+  if(x.mode==='none') return read + `<div class="aiCard">${esc(t('aiScanNone'))}</div>`;
+  if(x.mode==='case') return read + caseHTML(x);
+  if(x.mode!=='mcq') return read + askHTML(x);
+  return read + `<div class="aiCard">${x.covered===false?`<p>${t('aiNotCovered')}</p>`:''}
+    ${(x.verdicts||[]).map((o,i)=>`<div class="ol"><i class="${o.ok?'y':'n'}">${esc(L0[i]||o.letter||'')}</i><span>${citeHTML(o.why||'', A)}</span></div>`).join('')}
+    ${x.rule?`<span class="lbl">${t('aiRule')}</span><div class="box">${citeHTML(x.rule, A)}</div>`:''}
+    ${artsHTML(A)}${guardHTML(x)}${metaHTML('scan', (x.arts||[])[0])}</div>`;
+}
+function explainHTML(x){
+  const A=x.articles||[], a=x.article||{};
+  if(x.empty) return `<div class="aiCard"><p>${esc(t('txEmpty'))}</p>${artsHTML([a])}</div>`;
+  return `<div class="aiCard"><h4>${esc(a.label||'')} · <bdi>${esc(a.title||'')}</bdi></h4>
+    <span class="lbl">${t('aiSimple')}</span><p>${citeHTML(x.simple||'', A)}</p>
+    ${ulHTML('aiElements', x.elements, A)}${ulHTML('aiEffects', x.effects, A)}${ulHTML('aiExceptions', x.exceptions, A)}
+    ${x.example && x.example.facts?`<span class="lbl">${t('aiExample')}</span><p>${md(x.example.facts)}</p><div class="box"><b>${t('aiSolution')}:</b> ${citeHTML(x.example.solution||'', A)}</div>`:''}
+    ${ulHTML('aiTraps', x.traps, A)}
+    ${x.hook?`<span class="lbl">${t('aiHook')}</span><p>${md(x.hook)}</p>`:''}
+    ${(x.related||[]).length?`<span class="lbl">${t('aiRelArts')}</span>${x.related.map(r=>{ const ra=A.find(z=>z.key===r.key);
+      return `<div class="ol"><button class="ak" data-artk="${esc(r.key)}">${esc(ra?ra.label:r.key)}</button><span>${md(r.why||'')}</span></div>`; }).join('')}`:''}
+    ${artsHTML(A, t('aiArts'))}
+    <div class="aiRow"><button class="aib" data-xcards="${esc(a.slug||'')}|${esc(a.n||'')}">${ICO.cards}${t('txCards')}</button></div>
+    ${guardHTML(x)}${metaHTML('explain', x.key)}</div>`;
+}
+function compareHTML(x){
+  const A=x.articles||[];
+  return `<div class="aiCard"><h4><bdi>${esc(x.a)}</bdi> ⇄ <bdi>${esc(x.b)}</bdi></h4>
+    ${x.covered===false && !(x.rows||[]).length?`<p>${t('aiNotCovered')}</p>`:''}
+    ${x.intro?`<p>${citeHTML(x.intro, A)}</p>`:''}
+    ${(x.rows||[]).length?`<div class="cmp"><div class="hd">${esc(x.a)}</div><div class="hd">${esc(x.b)}</div>${x.rows.map(r=>
+      `<div class="asp">${esc(r.aspect)}</div><div>${citeHTML(r.a||'', A)}</div><div>${citeHTML(r.b||'', A)}</div>`).join('')}</div>`:''}
+    ${ulHTML('aiSame', x.same, A)}
+    ${x.summary?`<span class="lbl">${t('aiSummary')}</span><div class="box">${citeHTML(x.summary, A)}</div>`:''}
+    ${x.trap?`<span class="lbl">${t('aiTrapMix')}</span><p>${citeHTML(x.trap, A)}</p>`:''}
+    ${artsHTML(A)}${guardHTML(x)}${metaHTML('compare', (x.arts||[])[0])}</div>`;
+}
+function essayHTML(x){
+  const A=x.articles||[];
+  if(x.covered===false && !(x.parts||[]).length && x.mode!=='grade') return `<div class="aiCard"><p>${t('aiNotCovered')}</p></div>`;
+  if(x.mode==='grade') return `<div class="aiCard"><h4>${esc(x.topic)}</h4>
+    ${scoreHTML(x.score, 20, [[t('aiE1'),x.intro,3],[t('aiE2'),x.problem,4],[t('aiE3'),x.structure,4],[t('aiE4'),x.basis,5],[t('aiE5'),x.analysis,4]])}
+    <p><b>${md(x.verdict||'')}</b></p>${ulHTML('aiStrong', x.strengths, A)}${ulHTML('aiGaps', x.gaps, A)}${ulHTML('aiFixes', x.fixes, A)}
+    ${(x.better||[]).length?`<span class="lbl">${t('aiBetter')}</span><div class="box">${x.better.map(b=>md(b)).join('<br>')}</div>`:''}
+    ${artsHTML(A)}${guardHTML(x)}${metaHTML('essay', (x.arts||[])[0])}</div>`;
+  return `<div class="aiCard"><h4>${esc(x.topic)}</h4>
+    ${x.intro?`<span class="lbl">${t('aiIntro')}</span><p>${citeHTML(x.intro, A)}</p>`:''}
+    ${x.problem?`<span class="lbl">${t('aiProblem')}</span><div class="box">${md(x.problem)}</div>`:''}
+    ${(x.subq||[]).length?`<ul>${x.subq.map(s=>`<li>${md(s)}</li>`).join('')}</ul>`:''}
+    ${(x.parts||[]).map((p,i)=>`<div class="issue"><h4>${t(i?'aiPart2':'aiPart1')}: ${esc(p.title)}</h4>${(p.sections||[]).map(s=>
+      `<p style="margin-bottom:0"><b>${esc(s.title)}</b></p><ul>${(s.points||[]).map(pt=>`<li>${citeHTML(pt, A)}</li>`).join('')}</ul>`).join('')}</div>`).join('')}
+    ${x.conclusion?`<span class="lbl">${t('aiConclusion')}</span><p>${citeHTML(x.conclusion, A)}</p>`:''}
+    ${ulHTML('aiTips', x.tips, A)}${artsHTML(A)}${guardHTML(x)}${metaHTML('essay', (x.arts||[])[0])}</div>`;
+}
+function oralHTML(x, q){
+  return `<div class="aiCard">${x.voice?`<span class="lbl">${t('aiTranscript')}</span><p dir="auto" style="margin-top:2px">${esc(x.transcript||'—')}</p>`:''}
+    ${scoreHTML(x.score, 10, [[t('aiC1'),x.rule,4],[t('aiC2'),x.basis,3],[t('aiC3'),x.application,3]])}
+    <p><b>${esc(x.verdict||'')}</b></p>${ulHTML('aiStrong', x.strengths)}${ulHTML('aiGaps', x.gaps)}
+    <span class="lbl">${t('aiModel')}</span><div class="box">${md(x.model||'')}</div>
+    <div class="meta2">${esc(q.source.law)}، ${esc(q.source.ref)} · ${t('aiNote')} · ${aiFlagBtn('oral', q.id)}</div>
+    <button class="linkbtn" data-cite="${q.id}">${t('aiSeeQ')}</button></div>`;
+}
+
+/* ---------- وسائط: صورة السؤال (مصغَّرة JPEG) والتسجيل الصوتي للشفوي — لا يُحفظ أي منهما ---------- */
+async function imgB64(file, max=1600){
+  if(!file || (file.type && !/^image\//.test(file.type))) throw new Error('type');
+  const url=URL.createObjectURL(file);
+  try{
+    const im=await new Promise((ok,no)=>{ const i=new Image(); i.onload=()=>ok(i); i.onerror=()=>no(new Error('decode')); i.src=url; });
+    const k=Math.min(1, max/Math.max(im.naturalWidth||1, im.naturalHeight||1));
+    const c=document.createElement('canvas'); c.width=Math.max(1, Math.round(im.naturalWidth*k)); c.height=Math.max(1, Math.round(im.naturalHeight*k));
+    const g=c.getContext('2d'); g.fillStyle='#fff'; g.fillRect(0,0,c.width,c.height); g.drawImage(im,0,0,c.width,c.height);
+    let b64=c.toDataURL('image/jpeg', .85).split(',')[1]||'';
+    if(b64.length>2800000) b64=c.toDataURL('image/jpeg', .6).split(',')[1]||'';
+    if(b64.length<1500 || b64.length>2800000) throw new Error('size');
+    return { b64, mime:'image/jpeg' };
+  } finally { URL.revokeObjectURL(url); }
+}
+const canRec = () => !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia && window.MediaRecorder);
+async function recStart(){
+  const stream=await navigator.mediaDevices.getUserMedia({ audio:true });
+  const ok=m=>{ try{ return MediaRecorder.isTypeSupported(m); }catch(e){ return false; } };
+  const mime=['audio/webm;codecs=opus','audio/webm','audio/mp4','audio/ogg;codecs=opus'].find(ok) || '';
+  let mr; try{ mr=new MediaRecorder(stream, mime ? { mimeType:mime, audioBitsPerSecond:32000 } : { audioBitsPerSecond:32000 }); }
+  catch(e){ mr=new MediaRecorder(stream); }
+  const chunks=[]; mr.ondataavailable=e=>{ if(e.data && e.data.size) chunks.push(e.data); };
+  mr.start(1000);
+  return { t0:Date.now(), stop:()=>new Promise(res=>{ mr.onstop=()=>{ stream.getTracks().forEach(x=>x.stop());
+    res(new Blob(chunks, { type:(mr.mimeType || mime || 'audio/webm').split(';')[0] })); }; try{ mr.stop(); }catch(e){ res(new Blob(chunks)); } }) };
+}
+const blobB64 = b => new Promise((ok,no)=>{ const r=new FileReader(); r.onload=()=>ok(String(r.result).split(',')[1]||''); r.onerror=no; r.readAsDataURL(b); });
+
+/* ---------- بطاقات المراجعة: صندوق ليتنر محلي (ما تعرفه يبتعد، وما تنساه يعود اليوم) ---------- */
+const BOX_DAYS=[0,1,2,4,8,16,32];
+const deck = () => S.p.cards || (S.p.cards={});
+function deckAdd(cards){
+  const D=deck(), d0=dnum(); let n=0;
+  for(const c of cards||[]){ const id='c'+hash((c.front||'')+'|'+(c.key||'')).toString(36); if(D[id]) continue;
+    D[id]={ f:String(c.front||'').slice(0,300), b:String(c.back||'').slice(0,500), k:String(c.key||''), x:0, d:d0 }; n++; }
+  // 300 بطاقة على الأكثر (تُحذف أبعدها موعداً): تبقى المزامنة خفيفة
+  const ids=Object.keys(D); if(ids.length>300) ids.sort((a,b)=>D[b].d-D[a].d).slice(0, ids.length-300).forEach(id=>delete D[id]);
+  if(n) save();
+  return n;
+}
+const deckDue = () => Object.entries(deck()).filter(([,c])=>c.d<=dnum()).map(([id])=>id);
+function deckGrade(id, knew){ const c=deck()[id]; if(!c) return; c.x = knew ? Math.min(BOX_DAYS.length-1, c.x+1) : 0; c.d = dnum()+(knew ? BOX_DAYS[c.x] : 0); save(); }
+
+/* ---------- «المساعد»: الأدوات ---------- */
+const AITOOLS=[['gen','aiGen','gen'],['ask','aiAsk','chat'],['scan','aiScan','cam'],['case','aiCase','scale'],['explain','aiExplain','book'],['compare','aiCompare','cmp'],
+               ['essay','aiEssay','pen'],['drill','aiDrill','drill'],['cards','aiCards','cards'],['oral','aiOral','mic'],['plan','aiPlan','daily']];
+// تأكيد السن مرة واحدة: شروط Gemini API تقصر الخدمة على من بلغ 18 سنة
+function ageGate(){
+  if(S.cfg.age18) return Promise.resolve(true);
+  return new Promise(res=>{
+    const w=sheet(`<h2>${t('ageT')}</h2><p style="line-height:1.9;margin:0 0 6px">${esc(t('ageS'))}</p>
+      <div class="duo" style="margin-top:14px"><button class="btn" data-y>${t('ageOk')}</button><button class="btn2" data-n>${t('ageNo')}</button></div>`);
+    let done=false;
+    const fin=v=>{ if(done) return; done=true; mo.disconnect(); w.remove(); if(v){ S.cfg.age18=true; saveCfg(); } else toast(t('ageBlock')); res(v); };
+    const mo=new MutationObserver(()=>{ if(!w.isConnected) fin(false); }); mo.observe($('#sheets'), { childList:true });
+    w.querySelector('[data-y]').onclick=()=>fin(true); w.querySelector('[data-n]').onclick=()=>fin(false);
+  });
+}
+const normArtNo = s => String(s||'').replace(/[٠-٩]/g, d=>'٠١٢٣٤٥٦٧٨٩'.indexOf(d)).replace(/(المادة|الفصل|art(icle)?\.?)/gi,'')
+  .replace(/\s*[-–]\s*/g,'-').replace(/\s+/g,' ').trim().slice(0,20);
+async function fillLaws(sel, chosen, anyLabel){
+  try{ const ix=await txIndex();
+    sel.innerHTML=`<option value="">${esc(anyLabel || t('aiLaw')+'…')}</option>` + ix.laws.map(l=>`<option value="${esc(l.slug)}"${l.slug===chosen?' selected':''}>${esc(l.title)}</option>`).join('');
+  }catch(e){ sel.innerHTML=`<option value="">${esc(t('txFail'))}</option>`; }
+}
+async function openAI(tab, pre){
+  if(!(await ageGate())) return;
   const w=sheet(`<h2>${t('aiT')}</h2><p class="meta sub" style="line-height:1.8">${t('aiSub')}</p><div class="quota" id="aiq"></div>
-    <div class="chips" id="aitabs">${[['ask','aiAsk'],['case','aiCase'],['oral','aiOral'],['plan','aiPlan']].map(([k,l])=>`<button class="chip" data-k="${k}" aria-pressed="false">${t(l)}</button>`).join('')}</div>
+    <div class="aitools" id="aitabs">${AITOOLS.map(([k,l,ic])=>`<button class="aitool${k==='gen'?' wide':''}" data-k="${k}" aria-pressed="false">${ICO[ic]}<span>${t(l)}</span></button>`).join('')}</div>
     <div id="aiv" style="margin-top:12px"></div>`);
-  const close=()=>w.remove(), v=w.querySelector('#aiv');
+  const close=()=>w.remove(), v=w.querySelector('#aiv'), box=w.firstElementChild;
   const paintQ=()=>{ const el=w.querySelector('#aiq'); if(!el) return;
     el.innerHTML = AI.cap!=null ? `<span>${esc(quotaText())}</span>${!AI.google && AI.capG ? `<button class="lk" data-glink>${esc(t('aiBoost').replace('{c}',AI.capG))}</button>` : ''}${AI.left!=null && AI.left<=2 && adsCanAI() ? `<button class="lk" data-aiad>${esc(t('adAIBtn'))}</button>` : ''}` : '';
     bindCommon(el, close); };
   w.addEventListener('qt-aiq', paintQ);
   aiCall('quota').then(paintQ).catch(e=>{ const el=w.querySelector('#aiq'); if(el) el.textContent=aiErr(e); });
+  // تشغيل طلب وعرض نتيجته في out، مع الرصيد والأخطاء والإحصاء
+  const run=async(out, kind, payload, render, after)=>{
+    out.innerHTML=shimHTML(); out.scrollIntoView({ behavior:'smooth', block:'nearest' });
+    try{ const d=await aiCall(kind, payload); out.innerHTML=render(d.data); bindCommon(out, close); bindTools(out); if(after) after(d.data); paintQ();
+         track('ai', { kind }); return d.data; }
+    catch(e){ out.innerHTML=failHTML(e); bindCommon(out, close); return null; }
+  };
+  const bindTools=root=>{
+    root.querySelectorAll('[data-xcards]').forEach(b=>b.onclick=()=>{ const [slug,n]=b.dataset.xcards.split('|'); pick('cards', { slug, n }); });
+    root.querySelectorAll('[data-fu]').forEach(b=>b.onclick=()=>pick('ask', { q:b.dataset.fu, send:true }));
+  };
   const tabs={
-    ask:()=>{
-      v.innerHTML=`<div class="aiq"><textarea class="ta" id="aqt" maxlength="500" placeholder="${esc(t('aiAskPh'))}"></textarea></div>
-        <button class="btn" id="aqs" style="max-width:none;margin-top:8px">${t('aiSend')}</button><div id="aqa"></div>`;
-      const box=v.querySelector('#aqa');
-      const render=()=>{ box.innerHTML=AI.hist.map(h=>h.html).join(''); bindCommon(box, close);
-        box.querySelectorAll('[data-fu]').forEach(b=>b.onclick=()=>{ v.querySelector('#aqt').value=b.dataset.fu; send(); }); };
-      const send=async()=>{
-        const q=v.querySelector('#aqt').value.trim(); if(q.length<6) return;
-        box.insertAdjacentHTML('afterbegin', shimHTML());
-        try{
-          const d=await aiCall('ask', { q }), x=d.data;
-          const html=`<div class="aiCard"><h4 dir="auto">${esc(q)}</h4>${x.covered===false||!x.answer?`<p>${t('aiNotCovered')}</p>`:`<p style="white-space:pre-line">${citeHTML(x.answer, x.articles)}</p>`}
-            ${artsHTML(x.articles)}
-            ${(x.sources||[]).length?`<span class="lbl">${t('aiSources')}</span><div class="cites">${x.sources.map(s=>`<button data-cite="${esc(s.id)}" title="${esc(s.law+'، '+s.ref)}">${esc(s.id)}</button>`).join('')}</div>`:''}
-            ${(x.followups||[]).length?`<div class="aiRow">${x.followups.slice(0,2).map(f=>`<button class="aib" data-fu="${esc(f)}">${esc(f)}</button>`).join('')}</div>`:''}
-            ${x.guard===false?`<p class="warn">${t('aiGuard')}</p>`:''}<div class="meta2">${t('aiNote')} · ${aiFlagBtn('ask', ((x.sources||[])[0]||{}).id)}</div></div>`;
-          AI.hist.unshift({ q, html }); AI.hist=AI.hist.slice(0,8); v.querySelector('#aqt').value=''; render(); paintQ();
-          track('ai', { kind:'ask' });
-        }catch(e){ box.firstElementChild && box.firstElementChild.remove(); box.insertAdjacentHTML('afterbegin', failHTML(e)); bindCommon(box, close); }
+    gen:p=>{
+      const G=AI.gen || (AI.gen={ slug:'', n:'', type:'knowledge', lvl:'medium', count:5 });
+      if(p && p.slug!==undefined){ G.slug=p.slug||''; G.n=p.n||''; }
+      const TY=['knowledge','problem','case','riddle','mix'], LV=[['easy','aiLvlE'],['medium','aiLvlM'],['hard','aiLvlH']];
+      v.innerHTML=`<p class="aisub">${esc(t('genSub'))}</p>
+        <div class="inrow"><select class="sel" id="gnl"></select><input class="inp" id="gnn" maxlength="20" placeholder="${esc(t('genArt'))}" value="${esc(G.n)}" style="flex:0 0 118px"></div>
+        <span class="lbl">${t('genKindT')}</span><div class="chips" id="gnk">${TY.map(k=>`<button class="chip" data-v="${k}" aria-pressed="${G.type===k}">${t('genT_'+k)}</button>`).join('')}</div>
+        <span class="lbl">${t('genLvlT')}</span><div class="chips" id="gnv">${LV.map(([k,l])=>`<button class="chip" data-v="${k}" aria-pressed="${G.lvl===k}">${t(l)}</button>`).join('')}</div>
+        <span class="lbl">${t('genCntT')}</span><div class="chips" id="gnc">${[3,5].map(k=>`<button class="chip" data-v="${k}" aria-pressed="${G.count===k}">${k}</button>`).join('')}</div>
+        <button class="btn" id="gng" style="max-width:none;margin-top:12px">${t('genGo')}</button><div id="gno"></div>
+        <p class="disc">${esc(t('genNote'))}</p>`;
+      const sl=v.querySelector('#gnl'), nn=v.querySelector('#gnn'), out=v.querySelector('#gno');
+      fillLaws(sl, G.slug, t('genAny'));
+      sl.onchange=()=>{ G.slug=sl.value; };
+      nn.oninput=()=>{ G.n=nn.value; };
+      const chips=(id, key, num)=>v.querySelectorAll(id+' .chip').forEach(c=>c.onclick=()=>{ G[key]=num ? +c.dataset.v : c.dataset.v;
+        v.querySelectorAll(id+' .chip').forEach(x=>x.setAttribute('aria-pressed', x===c)); });
+      chips('#gnk', 'type'); chips('#gnv', 'lvl'); chips('#gnc', 'count', true);
+      const go=async()=>{
+        const slug=sl.value, n=normArtNo(nn.value);
+        if(n && !slug){ toast(t('aiInput')); sl.focus(); return; }
+        const d=await run(out, 'gen', { slug:slug||undefined, n:n||undefined, type:G.type, level:G.lvl, count:G.count }, genHTML);
+        if(!d) return;
+        // الجلسة تملأ الشاشة: تُغلق النوافذ كلها (ومنها النصوص إن فُتح المولّد من مادة)، كما في «أسئلة البنك» من المكتبة
+        const st=out.querySelector('[data-gstart]'); if(st) st.onclick=()=>{ document.querySelectorAll('.sheet').forEach(x=>x.remove()); startGen(d); };
+        const ag=out.querySelector('[data-gagain]'); if(ag) ag.onclick=go;
       };
-      v.querySelector('#aqs').onclick=send; render();
+      v.querySelector('#gng').onclick=go;
+    },
+    ask:p=>{
+      v.innerHTML=`<div id="aqa" class="chat"></div>
+        <div class="aiq"><textarea class="ta" id="aqt" maxlength="500" placeholder="${esc(t('aiAskPh'))}"></textarea></div>
+        <div class="inrow"><button class="btn" id="aqs" style="flex:1;max-width:none">${t('aiSend')}</button>${AI.chat.length?`<button class="btn2" id="aqn" style="flex:none;padding-inline:14px">${t('aiNewChat')}</button>`:''}</div>
+        ${AI.chat.length?`<p class="aisub">${esc(t('aiChatOn'))}</p>`:''}`;
+      const thread=v.querySelector('#aqa'), ta=v.querySelector('#aqt');
+      thread.innerHTML=AI.chat.map(h=>h.html).join(''); bindCommon(thread, close);
+      thread.querySelectorAll('[data-fu]').forEach(b=>b.onclick=()=>{ ta.value=b.dataset.fu; send(); });
+      const send=async()=>{
+        const q=ta.value.trim(); if(q.length<6){ ta.focus(); return; }
+        const ctx=AI.chat.slice(-3).map(h=>({ q:h.q, a:h.a }));
+        thread.insertAdjacentHTML('beforeend', `<div class="me" dir="auto">${esc(q)}</div>${shimHTML()}`); ta.value='';
+        thread.lastElementChild.scrollIntoView({ behavior:'smooth', block:'nearest' });
+        try{
+          const d=await aiCall('ask', { q, ctx }), x=d.data;
+          AI.chat.push({ q, a:String(x.answer||'').slice(0,600), html:`<div class="me" dir="auto">${esc(q)}</div>${askHTML(x)}` });
+          AI.chat=AI.chat.slice(-8); tabs.ask(); paintQ(); track('ai', { kind:'ask', ctx:ctx.length });
+          const last=v.querySelectorAll('#aqa .me'); if(last.length) last[last.length-1].scrollIntoView({ behavior:'smooth', block:'start' });
+        }catch(e){ thread.lastElementChild.remove(); thread.insertAdjacentHTML('beforeend', failHTML(e)); bindCommon(thread, close); }
+      };
+      v.querySelector('#aqs').onclick=send;
+      const nb=v.querySelector('#aqn'); if(nb) nb.onclick=()=>{ AI.chat=[]; tabs.ask(); };
+      if(p && p.q){ ta.value=p.q; if(p.send) send(); else { ta.focus(); try{ ta.setSelectionRange(ta.value.length, ta.value.length); }catch(e){} } }
+    },
+    scan:()=>{
+      v.innerHTML=`<p class="aisub">${esc(t('aiScanSub'))}</p>
+        <div class="duo"><label class="btn" style="max-width:none;flex:1">${t('aiScanCam')}<input type="file" accept="image/*" capture="environment" hidden id="sc1"></label>
+        <label class="btn2" style="max-width:none;flex:1">${t('aiScanPick')}<input type="file" accept="image/*" hidden id="sc2"></label></div>
+        <div class="disc">${esc(t('aiScanNote'))}</div><div id="sco"></div>`;
+      const out=v.querySelector('#sco');
+      const go=async f=>{
+        if(!f) return;
+        let img; out.innerHTML=shimHTML();
+        try{ img=await imgB64(f); }catch(e){ out.innerHTML=`<div class="aiCard">${esc(t('aiScanBig'))}</div>`; return; }
+        const thumb=`<img class="thumb" alt="" src="data:${img.mime};base64,${img.b64}">`;
+        out.innerHTML=thumb+shimHTML();
+        try{ const d=await aiCall('scan', { img:img.b64, mime:img.mime }); out.innerHTML=thumb+scanHTML(d.data); bindCommon(out, close); bindTools(out); paintQ();
+             track('ai', { kind:'scan', mode:d.data.mode }); }
+        catch(e){ out.innerHTML=thumb+failHTML(e); bindCommon(out, close); }
+      };
+      v.querySelectorAll('input[type=file]').forEach(i=>i.onchange=()=>{ const f=i.files && i.files[0]; i.value=''; go(f); });
     },
     case:()=>{
       v.innerHTML=`<textarea class="ta" id="act" maxlength="1500" placeholder="${esc(t('aiCasePh'))}" style="min-height:130px"></textarea>
         <button class="btn" id="acs" style="max-width:none;margin-top:8px">${t('aiCaseGo')}</button><div id="aca"></div>`;
-      const box=v.querySelector('#aca'), ta=v.querySelector('#act');
-      const go=async()=>{
-        const q=ta.value.trim(); if(q.length<40){ toast(t('aiCaseShort')); return; }
-        box.innerHTML=shimHTML();
-        try{
-          const d=await aiCall('case', { q }), x=d.data, A=x.articles||[];
-          box.innerHTML=`<div class="aiCard">${x.covered===false && !(x.issues||[]).length ? `<p>${t('aiNotCovered')}</p>` : `
-            ${x.facts?`<span class="lbl">${t('aiFacts')}</span><p>${citeHTML(x.facts, A)}</p>`:''}
-            ${(x.issues||[]).map(i=>`<div class="issue"><h4>${md(i.point||'')}</h4><div class="box">${citeHTML(i.rule||'', A)}</div>
-              <span class="lbl">${t('aiApply')}</span><p>${citeHTML(i.apply||'', A)}</p></div>`).join('')}
-            ${x.conclusion?`<span class="lbl">${t('aiConcl')}</span><p><b>${citeHTML(x.conclusion, A)}</b></p>`:''}
-            ${(x.missing||[]).length?`<span class="lbl">${t('aiMissing')}</span><ul>${x.missing.map(m=>`<li>${md(m)}</li>`).join('')}</ul>`:''}`}
-            ${artsHTML(A)}
-            ${(x.followups||[]).length?`<div class="aiRow">${x.followups.slice(0,2).map(f=>`<button class="aib" data-fu="${esc(f)}">${esc(f)}</button>`).join('')}</div>`:''}
-            ${x.guard===false?`<p class="warn">${t('aiGuard')}</p>`:''}
-            <div class="disc">${esc(t('aiCaseNote'))}</div>
-            <div class="meta2">${esc(quotaText())} · ${aiFlagBtn('case', (A[0]||{}).key)}</div></div>`;
-          bindCommon(box, close); paintQ();
-          box.querySelectorAll('[data-fu]').forEach(b=>b.onclick=()=>{ w.querySelector('#aitabs .chip[data-k="ask"]').click();
-            const qa=v.querySelector('#aqt'); if(qa){ qa.value=b.dataset.fu; v.querySelector('#aqs').click(); } });
-          track('ai', { kind:'case' });
-        }catch(e){ box.innerHTML=failHTML(e); bindCommon(box, close); }
+      const out=v.querySelector('#aca'), ta=v.querySelector('#act');
+      v.querySelector('#acs').onclick=()=>{ const q=ta.value.trim(); if(q.length<40){ toast(t('aiCaseShort')); return; } run(out, 'case', { q }, caseHTML); };
+    },
+    explain:p=>{
+      v.innerHTML=`<p class="aisub">${esc(t('aiExplainSub'))}</p>
+        <div class="inrow"><select class="sel" id="exl"></select><input class="inp" id="exn" maxlength="20" placeholder="${esc(t('aiArtNo'))}" style="flex:0 0 96px"></div>
+        <button class="btn" id="exg" style="max-width:none">${t('aiExplainGo')}</button><div id="exo"></div>`;
+      const out=v.querySelector('#exo'), sl=v.querySelector('#exl'), nn=v.querySelector('#exn');
+      const ready=fillLaws(sl, p && p.slug);
+      if(p && p.n) nn.value=p.n;
+      const go=()=>{ const slug=sl.value, n=normArtNo(nn.value); if(!slug || !n){ toast(t('aiInput')); return; } run(out, 'explain', { slug, n }, explainHTML); };
+      v.querySelector('#exg').onclick=go;
+      if(p && p.slug && p.n) ready.then(go);
+    },
+    compare:()=>{
+      v.innerHTML=`<p class="aisub">${esc(t('aiCmpSub'))}</p>
+        <input class="inp" id="cma" maxlength="80" placeholder="${esc(t('aiCmpA'))}" style="width:100%">
+        <input class="inp" id="cmb" maxlength="80" placeholder="${esc(t('aiCmpB'))}" style="width:100%;margin-top:6px">
+        <button class="btn" id="cmg" style="max-width:none;margin-top:8px">${t('aiCmpGo')}</button><div id="cmo"></div>`;
+      const out=v.querySelector('#cmo');
+      v.querySelector('#cmg').onclick=()=>{ const a=v.querySelector('#cma').value.trim(), b=v.querySelector('#cmb').value.trim();
+        if(a.length<2 || b.length<2){ toast(t('aiInput')); return; } run(out, 'compare', { a, b }, compareHTML); };
+    },
+    essay:()=>{
+      v.innerHTML=`<p class="aisub">${esc(t('aiEssaySub'))}</p>
+        <input class="inp" id="est" maxlength="300" placeholder="${esc(t('aiEssayPh'))}" style="width:100%">
+        <div class="duo" style="margin-top:8px"><button class="btn" id="esp">${t('aiEssayPlan')}</button><button class="btn2" id="esg">${t('aiEssayGrade')}</button></div>
+        <div id="esw" class="hidden"><textarea class="ta" id="esx" maxlength="6000" placeholder="${esc(t('aiEssayTextPh'))}" style="min-height:190px;margin-top:8px"></textarea>
+        <button class="btn" id="ess" style="max-width:none;margin-top:6px">${t('aiEssayGrade')}</button></div><div id="eso"></div>`;
+      const out=v.querySelector('#eso'), topic=()=>v.querySelector('#est').value.trim();
+      v.querySelector('#esp').onclick=()=>{ if(topic().length<8){ toast(t('aiEssayShort')); return; } run(out, 'essay', { topic:topic() }, essayHTML); };
+      v.querySelector('#esg').onclick=()=>{ v.querySelector('#esw').classList.remove('hidden'); v.querySelector('#esx').focus(); };
+      v.querySelector('#ess').onclick=()=>{ const tx=v.querySelector('#esx').value.trim();
+        if(topic().length<8){ toast(t('aiEssayShort')); return; } if(tx.length<200){ toast(t('aiEssayTextShort')); return; }
+        run(out, 'essay', { topic:topic(), mode:'grade', text:tx }, essayHTML); };
+    },
+    drill:()=>{
+      const LV=[['easy','aiLvlE'],['medium','aiLvlM'],['hard','aiLvlH']];
+      v.innerHTML=`<p class="aisub">${esc(t('aiDrillSub'))}</p>
+        <div class="inrow"><select class="sel" id="drl"></select></div>
+        <div class="chips" id="drv">${LV.map(([k,l])=>`<button class="chip" data-l="${k}" aria-pressed="${AI.lvl===k}">${t(l)}</button>`).join('')}</div>
+        <button class="btn" id="drg" style="max-width:none;margin-top:10px">${t('aiDrillGo')}</button><div id="dro"></div>`;
+      const out=v.querySelector('#dro'), sl=v.querySelector('#drl');
+      fillLaws(sl, AI.drillLaw, t('aiAnyLaw'));
+      sl.onchange=()=>{ AI.drillLaw=sl.value; };
+      v.querySelectorAll('#drv .chip').forEach(c=>c.onclick=()=>{ AI.lvl=c.dataset.l; v.querySelectorAll('#drv .chip').forEach(x=>x.setAttribute('aria-pressed', x===c)); });
+      const show=()=>{
+        const x=AI.drill; if(!x) return;
+        out.innerHTML=`<div class="aiCard"><span class="lbl">${esc(x.law||'')} · ${t({easy:'aiLvlE',medium:'aiLvlM',hard:'aiLvlH'}[x.level]||'aiLvlM')}</span>
+          <h4>${esc(x.title||'')}</h4><p style="white-space:pre-line">${md(x.facts||'')}</p>
+          <span class="lbl">${t('aiAsked')}</span><ol>${(x.questions||[]).map(q=>`<li>${md(q)}</li>`).join('')}</ol>
+          ${guardHTML(x)}</div>
+          <textarea class="ta" id="dra" maxlength="4000" placeholder="${esc(t('aiDrillPh'))}" style="min-height:150px;margin-top:10px">${esc(AI.drillAns||'')}</textarea>
+          <div class="duo" style="margin-top:6px"><button class="btn" id="drs">${t('aiDrillGrade')}</button><button class="btn2" id="drn">${t('aiDrillNew')}</button></div><div id="drr"></div>`;
+        const ta=out.querySelector('#dra'); ta.oninput=()=>{ AI.drillAns=ta.value; };
+        out.querySelector('#drn').onclick=gen;
+        out.querySelector('#drs').onclick=()=>{ const ans=ta.value.trim(); if(ans.length<30){ toast(t('aiDrillShort')); return; }
+          run(out.querySelector('#drr'), 'drill', { id:x.id, answer:ans }, g=>`<div class="aiCard">
+            ${scoreHTML(g.score, 20, [[t('aiC1'),g.rule,8],[t('aiC2'),g.basis,6],[t('aiC3'),g.application,6]])}
+            <p><b>${md(g.verdict||'')}</b></p>${ulHTML('aiStrong', g.strengths, g.articles)}${ulHTML('aiGaps', g.gaps, g.articles)}
+            <span class="lbl">${t('aiModel')}</span>${(g.model||[]).map((m,i)=>`<div class="box">${(g.model||[]).length>1?`<b>${i+1})</b> `:''}${citeHTML(m.answer||'', g.articles)}</div>`).join('')}
+            ${artsHTML(g.articles)}${guardHTML(g)}${metaHTML('drill', x.id)}</div>`); };
       };
-      v.querySelector('#acs').onclick=go;
+      const gen=async()=>{ AI.drillAns='';
+        const d=await run(out, 'drill', { slug:sl.value||undefined, level:AI.lvl }, ()=>'');
+        if(d){ AI.drill=d; show(); } };
+      v.querySelector('#drg').onclick=gen;
+      show();
+    },
+    cards:p=>{
+      v.innerHTML=`<p class="aisub">${esc(t('aiCardsSub'))}</p><div id="dk"></div>
+        <input class="inp" id="cdt" maxlength="160" placeholder="${esc(t('aiCardsPh'))}" style="width:100%;margin-top:10px">
+        <button class="btn" id="cdg" style="max-width:none;margin-top:8px">${t('aiCardsGo')}</button><div id="cdo"></div>`;
+      const out=v.querySelector('#cdo');
+      const paintDeck=()=>{ const n=Object.keys(deck()).length, due=deckDue().length, el=v.querySelector('#dk');
+        el.innerHTML=`<div class="deck"><span class="nm"><b>${t('aiDeck')}</b><br><small>${n ? esc(t('aiDeckN').replace('{n}',n).replace('{d}',due)) : esc(t('aiDeckEmpty'))}</small></span>
+          ${due?`<button class="btn" id="dkr" style="flex:none;padding-inline:16px">${t('aiDeckGo')}</button>`:''}</div>`;
+        const r=el.querySelector('#dkr'); if(r) r.onclick=review; };
+      const review=()=>{
+        const ids=deckDue(); let i=0, flip=false;
+        const step=()=>{
+          if(i>=ids.length){ out.innerHTML=`<div class="aiCard"><p><b>${t('aiDeckDone')}</b></p></div>`; paintDeck(); return; }
+          const c=deck()[ids[i]]; if(!c){ i++; return step(); }
+          out.innerHTML=`<div class="fcard"><small>${i+1}/${ids.length}</small><p class="f" dir="auto">${md(c.f)}</p>
+            ${flip?`<p class="b" dir="auto">${md(c.b)}</p>${c.k?`<button class="ak" data-tx="${esc(c.k.replace(':','|'))}">${esc(c.k)}</button>`:''}
+              <div class="duo" style="margin-top:12px"><button class="btn" data-k="1">${t('aiKnew')}</button><button class="btn2" data-k="0">${t('aiForgot')}</button></div>`
+            :`<button class="btn" data-fl style="max-width:none;margin-top:12px">${t('aiFlip')}</button>`}</div>`;
+          const fl=out.querySelector('[data-fl]'); if(fl) fl.onclick=()=>{ flip=true; step(); };
+          out.querySelectorAll('[data-k]').forEach(b=>b.onclick=()=>{ const knew=b.dataset.k==='1'; deckGrade(ids[i], knew); if(!knew) ids.push(ids[i]); i++; flip=false; step(); });
+          bindArts(out);
+        };
+        step(); track('cards_review', { n:ids.length });
+      };
+      const cardsHTML=x=>{ const n=deckAdd(x.cards); if(n) toast(t('aiCardsAdded').replace('{n}', n)); setTimeout(paintDeck, 0);
+        return `<div class="aiCard">${(x.cards||[]).length?(x.cards||[]).map(c=>`<details class="fc"><summary dir="auto">${md(c.front)}</summary><p dir="auto">${md(c.back)}</p>
+          <button class="ak" data-artk="${esc(c.key)}">${esc(((x.articles||[]).find(a=>a.key===c.key)||{}).label||c.key)}</button></details>`).join(''):`<p>${t('aiNotCovered')}</p>`}
+          ${artsHTML(x.articles)}${guardHTML(x)}${metaHTML('cards', ((x.cards||[])[0]||{}).key)}</div>`; };
+      v.querySelector('#cdg').onclick=()=>{ const tp=v.querySelector('#cdt').value.trim(); if(tp.length<4){ toast(t('aiInput')); return; } run(out, 'cards', { topic:tp }, cardsHTML); };
+      paintDeck();
+      if(p && p.slug && p.n) run(out, 'cards', { slug:p.slug, n:p.n }, cardsHTML);
     },
     oral:()=>{
       const pool=VERIFIED.filter(q=>q.type==='case' || q.type==='problem'), q=pool[Math.floor(Math.random()*pool.length)];
@@ -2941,28 +3572,32 @@ async function openAI(tab){
       v.innerHTML=`<div class="qtools"><span class="tag">${t('tc')}</span><span class="tag br">${esc(bName(b))}</span><span class="sp"></span>
           <button class="aib" id="aon">${t('aiOralNew')}</button></div>
         <p class="stem" dir="rtl" style="margin:10px 0">${md(q.stem)}</p>
+        ${canRec()?`<div class="rec" id="arec"><button class="aib" id="arb">${ICO.mic}${t('aiVoice')}</button><span class="aisub" style="margin:0">${t('aiRecMax')}</span></div>`:''}
         <textarea class="ta" id="aoa" maxlength="1500" placeholder="${esc(t('aiOralPh'))}" style="min-height:120px"></textarea>
         <button class="btn" id="aog" style="max-width:none;margin-top:8px">${t('aiGrade')}</button><div id="aor"></div>`;
       v.querySelector('#aon').onclick=()=>tabs.oral();
-      v.querySelector('#aog').onclick=async()=>{
-        const ans=v.querySelector('#aoa').value.trim(); if(ans.length<15) return;
-        const out=v.querySelector('#aor'); out.innerHTML=shimHTML();
-        try{
-          const d=await aiCall('oral', { id:q.id, answer:ans }), x=d.data, pc=Math.round(x.score/10*100), C=2*Math.PI*36;
-          const bar=(l,val,max)=>`<span>${esc(l)}</span><span class="bar"><i style="width:${Math.round(val/max*100)}%"></i></span><span>${val}/${max}</span>`;
-          out.innerHTML=`<div class="aiCard"><div style="display:flex;gap:14px;align-items:center">
-              <svg class="ring" viewBox="0 0 84 84"><circle class="rb" cx="42" cy="42" r="36"/><circle class="rf" cx="42" cy="42" r="36" stroke-dasharray="${(C*pc/100).toFixed(1)} ${C.toFixed(1)}"/>
-              <text x="42" y="50" text-anchor="middle">${x.score}/10</text></svg>
-              <div class="crit">${bar(t('aiC1'),x.rule,4)}${bar(t('aiC2'),x.basis,3)}${bar(t('aiC3'),x.application,3)}</div></div>
-            <p><b>${esc(x.verdict||'')}</b></p>
-            ${(x.strengths||[]).length?`<span class="lbl">${t('aiStrong')}</span><ul>${x.strengths.map(s=>`<li>${md(s)}</li>`).join('')}</ul>`:''}
-            ${(x.gaps||[]).length?`<span class="lbl">${t('aiGaps')}</span><ul>${x.gaps.map(s=>`<li>${md(s)}</li>`).join('')}</ul>`:''}
-            <span class="lbl">${t('aiModel')}</span><div class="box">${md(x.model||'')}</div>
-            <div class="meta2">${esc(q.source.law)}، ${esc(q.source.ref)} · ${t('aiNote')} · ${aiFlagBtn('oral', q.id)}</div>
-            <button class="linkbtn" data-cite="${q.id}">${t('aiSeeQ')}</button></div>`;
-          bindCommon(out, close); paintQ(); track('ai', { kind:'oral', score:x.score });
-        }catch(e){ out.innerHTML=failHTML(e); bindCommon(out, close); }
+      const out=v.querySelector('#aor');
+      v.querySelector('#aog').onclick=()=>{ const ans=v.querySelector('#aoa').value.trim(); if(ans.length<15){ toast(t('aiInput')); return; }
+        run(out, 'oral', { id:q.id, answer:ans }, x=>oralHTML(x, q)); };
+      const rb=v.querySelector('#arb'); if(!rb) return;
+      let rec=null, blob=null, timer=0;
+      const area=v.querySelector('#arec');
+      const idle=()=>{ area.innerHTML=`<button class="aib" id="arb">${ICO.mic}${t(blob?'aiRecAgain':'aiVoice')}</button>
+          ${blob?`<audio controls src="${URL.createObjectURL(blob)}"></audio><button class="btn" id="arsend" style="flex:none;padding-inline:14px">${t('aiSendVoice')}</button>`:`<span class="aisub" style="margin:0">${t('aiRecMax')}</span>`}
+          <span class="disc" style="flex-basis:100%;margin-top:4px">${esc(t('aiVoiceNote'))}</span>`;
+        area.querySelector('#arb').onclick=start;
+        const sd=area.querySelector('#arsend'); if(sd) sd.onclick=async()=>{ sd.disabled=true; const audio=await blobB64(blob);
+          run(out, 'oral', { id:q.id, audio, mime:blob.type||'audio/webm' }, x=>oralHTML(x, q)); };
       };
+      const stop=async()=>{ clearInterval(timer); if(!rec) return; const r=rec; rec=null; blob=await r.stop(); if(!blob.size) blob=null; idle(); };
+      const start=async()=>{
+        try{ rec=await recStart(); }catch(e){ toast(t('aiMicNo')); return; }
+        area.innerHTML=`<span class="dotrec"></span><b id="art">0:00</b><button class="btn2" id="ars" style="flex:none;padding-inline:16px">${t('aiStop')}</button>`;
+        area.querySelector('#ars').onclick=stop;
+        timer=setInterval(()=>{ const s=Math.round((Date.now()-rec.t0)/1000), el=area.querySelector('#art'); if(el) el.textContent=Math.floor(s/60)+':'+z2(s%60); if(s>=120) stop(); }, 500);
+      };
+      rb.onclick=start;
+      new MutationObserver((m,o)=>{ if(!w.isConnected || !area.isConnected){ o.disconnect(); clearInterval(timer); if(rec) rec.stop(); } }).observe($('#sheets'), { childList:true, subtree:true });
     },
     plan:()=>{
       const show=pl=>{
@@ -2986,8 +3621,176 @@ async function openAI(tab){
       else { v.innerHTML=`<button class="btn" id="apg" style="max-width:none">${t('aiPlanGo')}</button>`; v.querySelector('#apg').onclick=()=>build(false); }
     }
   };
-  w.querySelectorAll('#aitabs .chip').forEach(c=>c.onclick=()=>{ w.querySelectorAll('#aitabs .chip').forEach(x=>x.setAttribute('aria-pressed', x===c)); tabs[c.dataset.k](); });
-  const first=w.querySelector(`#aitabs .chip[data-k="${tab||'ask'}"]`) || w.querySelector('#aitabs .chip'); first.click();
+  const pick=(k, p)=>{ if(!tabs[k]) k='ask';
+    w.querySelectorAll('#aitabs .aitool').forEach(x=>x.setAttribute('aria-pressed', x.dataset.k===k)); tabs[k](p);
+    const tb=w.querySelector('#aitabs'); if(p) tb.scrollIntoView({ block:'start' }); };
+  w.querySelectorAll('#aitabs .aitool').forEach(c=>c.onclick=()=>pick(c.dataset.k));
+  pick(tab||'ask', pre);
+}
+
+/* ---------- النصوص القانونية (v8): مكتبة المواد داخل التطبيق، تعمل دون اتصال ----------
+   lib/index.json وlib/<قانون>.json تبنيهما build.py من data/corpus؛ في تطبيق الهاتف مضمّنة فيه، وفي الويب تُخزَّن بعد أول فتح،
+   وفي الملف المستقل تُجلب من الموقع. البحث محلي: تطبيع عربي (التشكيل وصور الألف والياء والتاء المربوطة) وكل الكلمات مطلوبة. */
+const TX = { idx:null, laws:{}, busy:{}, base:null };
+const txBase = () => TX.base || (TX.base = (window.Capacitor || window.QT_CAP || (!INLINE && /^https?:$/.test(location.protocol)))
+  ? 'lib/' : String((CLOUD && CLOUD.site) || '').replace(/\/+$/, '') + '/app/lib/');
+async function txGet(f){ const r=await within(fetch(txBase()+f), 30000, 'lib timeout'); if(!r.ok) throw new Error('lib '+r.status); return r.json(); }
+async function txIndex(){ if(!TX.idx) TX.idx=await txGet('index.json'); return TX.idx; }
+function txLaw(slug){
+  if(TX.laws[slug]) return Promise.resolve(TX.laws[slug]);
+  if(!TX.busy[slug]) TX.busy[slug]=txGet(slug+'.json').then(d=>{
+      const P=d.paths||[];
+      d.items=(d.items||[]).map((a,i)=>({ n:String(a[0]), l:a[1]||'', p:P[a[2]]||'', t:a[3]||'', x:a[4]||null, i }));
+      d.byN={}; d.items.forEach(a=>{ d.byN[a.n]=a; });
+      TX.laws[slug]=d; return d; }).finally(()=>{ delete TX.busy[slug]; });
+  return TX.busy[slug];
+}
+const arN = s => String(s||'').replace(/[ً-ٰٟـ]/g,'').replace(/[أإآٱ]/g,'ا').replace(/ى/g,'ي').replace(/ة/g,'ه')
+  .replace(/ؤ/g,'و').replace(/ئ/g,'ي').replace(/[٠-٩]/g, d=>'٠١٢٣٤٥٦٧٨٩'.indexOf(d)).toLowerCase();
+const txToks = q => [...new Set(arN(q).split(/[\s،,.;:؟?!«»"'()\[\]]+/).filter(w=>w.length>1)
+  .map(w=>w.length>4 ? w.replace(/^(وال|بال|فال|كال|لل|ال)/,'') : w).filter(w=>w.length>1))].slice(0,8);
+const txRx = toks => toks.length ? new RegExp('('+toks.map(w=>w.split('').map(c=>({'ا':'[اأإآٱ]','ي':'[يىئ]','ه':'[هة]','و':'[وؤ]'}[c]
+  || c.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'))).join('[\\u064B-\\u065F\\u0670\\u0640]*')).join('|')+')', 'g') : null;
+// كل الكلمات أولاً (full)؛ ومعها، إن طُلب، ما ينقصه كلمة واحدة (صيغ الاشتقاق: «سقوط» و«تسقط» مثلاً)
+function txFind(law, toks, lim=40, partial=false){
+  const out=[], need=toks.length;
+  for(const a of law.items){
+    if(!a.t) continue;
+    const s=a.nt || (a.nt=arN(a.l+' '+a.t));
+    let sc=0, m=0;
+    for(const w of toks){ const k=s.indexOf(w); if(k<0) continue; m++; sc+=1+Math.min(5, s.split(w).length-2)*.25+(k<80?.3:0); }
+    if(m===need) out.push({ a, sc:sc+10, law, full:true });
+    else if(partial && need>=2 && m>=need-1) out.push({ a, sc, law, full:false });
+  }
+  return out.sort((x,y)=>y.sc-x.sc).slice(0, lim);
+}
+// النتائج الكاملة، ثم القريبة إن قلّت الكاملة
+const txMerge = (hits, cap=60) => { hits.sort((x,y)=>y.sc-x.sc); const full=hits.filter(h=>h.full);
+  return full.length>=10 ? full.slice(0, cap) : full.concat(hits.filter(h=>!h.full).slice(0, Math.max(0, Math.min(cap, 40)-full.length))); };
+function txSnip(a, toks){
+  const s=a.nt || arN(a.l+' '+a.t), f=toks.map(w=>s.indexOf(w)).filter(k=>k>=0), k=Math.max(0, (f.length ? Math.min(...f) : 0) - a.l.length - 1);
+  const from=Math.max(0, k-70), sn=(from?'… ':'')+a.t.slice(from, from+220)+(a.t.length>from+220?' …':'');
+  const rx=txRx(toks); return rx ? esc(sn).replace(rx, '<mark>$1</mark>') : esc(sn);
+}
+const isArtNo = q => /^\s*(?:(?:المادة|الفصل|art(?:icle)?\.?)\s*)?[0-9٠-٩]+(?:\s*[-–]\s*[0-9٠-٩]+)?(?:\s*مكرر(?:\s*(?:مرتين|ثلاث مرات))?)?\s*$/i.test(q);
+// قانون المكتبة الذي يقابل مصدر سؤال من البنك، ورقم المادة فيه
+function txFor(q){
+  if(q.art && q.art.slug) return q.art;
+  if(!TX.idx) return null;
+  const law=(TX.idx.laws||[]).find(l=>{ try{ return l.bank && new RegExp(l.bank).test(q.source.law||''); }catch(e){ return false; } });
+  const n=law && artsOf(q)[0];
+  return law && n ? { slug:law.slug, n } : null;
+}
+function bankFor(meta, n){
+  let re=null; try{ re=meta && meta.bank ? new RegExp(meta.bank) : null; }catch(e){}
+  return re ? BANK.questions.filter(q=>re.test(q.source.law||'') && artsOf(q).includes(n)) : [];
+}
+const txFavs = () => S.p.txFav || (S.p.txFav={});
+async function openTexts(slug0, n0){
+  const w=sheet(`<div id="txv" class="txv"></div>`), v=w.querySelector('#txv'), box=w.firstElementChild;
+  const hist=[]; let cur=null, seq=0;
+  const go=(st, push=true)=>{ if(push && cur) hist.push(cur); cur=st; box.scrollTop=0; paint(); };
+  const backHTML=()=>`<button class="back" data-bk>${document.body.dir==='rtl'?'→':'←'} ${t('back')}</button>`;
+  const bindBack=()=>{ const b=v.querySelector('[data-bk]'); if(b) b.onclick=()=>{ if(hist.length){ cur=hist.pop(); paint(); } else w.remove(); }; };
+  const fail=e=>{ v.innerHTML=`${backHTML()}<div class="empty">${esc(t('txFail'))}<br><button class="btn2" data-rt style="margin-top:12px">${t('txRetry')}</button></div>`;
+    bindBack(); const r=v.querySelector('[data-rt]'); if(r) r.onclick=()=>paint(); };
+  const lawLi=l=>`<button class="li" data-law="${esc(l.slug)}"><span class="nm"><bdi>${esc(l.title)}</bdi><small>${esc(t('txArts').replace('{n}', l.n))}${l.consolidated?' · '+esc(fmtDate(l.consolidated)):''}</small></span><span class="ct">›</span></button>`;
+  const bindLaws=()=>v.querySelectorAll('[data-law]').forEach(b=>b.onclick=()=>go({ v:'law', slug:b.dataset.law }));
+  const hitsHTML=hits=>{ const nf=hits.filter(h=>h.full).length;
+    return `<p class="meta">${esc(t('txHits').replace('{n}', nf))}</p>` + hits.map((h,i)=>(i===nf?`<p class="meta" style="margin-top:12px">${esc(t('txNear'))}</p>`:'')+
+      `<button class="hit" data-a="${esc(h.law.slug)}|${esc(h.a.n)}"><b>${esc(h.a.l)}</b> <small><bdi>${esc(h.law.title)}</bdi></small><span>${txSnip(h.a, h.toks)}</span></button>`).join(''); };
+  const bindHits=root=>root.querySelectorAll('[data-a]').forEach(b=>b.onclick=()=>{ const [s,n]=b.dataset.a.split('|'); go({ v:'art', slug:s, n }); });
+  const paint=async()=>{
+    const my=++seq, s=cur;
+    if(s.v!=='home' && !TX.laws[s.slug]){ v.innerHTML=shimHTML(); }
+    try{
+      const ix=await txIndex(); if(my!==seq) return;
+      if(s.v==='home'){
+        const fav=Object.keys(txFavs()).filter(k=>txFavs()[k]);
+        v.innerHTML=`<h2>${t('txT')}</h2><p class="meta sub">${esc(t('txSub').replace('{n}', ix.laws.length).replace('{a}', ix.laws.reduce((x,l)=>x+l.n,0)))}</p>
+          <form id="txf"><input class="inp" id="txq" type="search" enterkeyhint="search" placeholder="${esc(t('txSearchPh'))}" value="${esc(s.q||'')}" style="width:100%"></form>
+          <div id="txr"></div>
+          ${fav.length?`<h3>${t('txFavs')}</h3><div class="achips">${fav.map(k=>{ const [sl,n]=k.split('|'), L=ix.laws.find(l=>l.slug===sl);
+            return L?`<button data-a="${esc(k)}">${esc((L.word||'المادة')+' '+n)} · <small>${esc(L.short||L.title)}</small></button>`:''; }).join('')}</div>`:''}
+          <h3>${t('txLawsH')}</h3>${ix.laws.map(lawLi).join('')}
+          <p class="disc">${esc(t('txDisc'))}</p>`;
+        bindLaws(); bindHits(v); bindBack();
+        const f=v.querySelector('#txf'), qi=v.querySelector('#txq'), res=v.querySelector('#txr');
+        const search=async()=>{
+          const q=qi.value.trim(); cur.q=q; const toks=txToks(q);
+          if(!toks.length){ res.innerHTML=''; return; }
+          const mine=++seq; let hits=[], done=0;
+          res.innerHTML=`<p class="meta" id="txp">${esc(t('txSearching').replace('{n}', ix.laws.length))}</p>`;
+          for(const L of ix.laws){
+            let law; try{ law=await txLaw(L.slug); }catch(e){ continue; }
+            if(mine!==seq) return;
+            hits=hits.concat(txFind(law, toks, 25, true).map(h=>Object.assign(h, { toks }))); done++;
+            if(!TX.laws[ix.laws[Math.min(done, ix.laws.length-1)].slug]) await new Promise(r=>setTimeout(r, 0));
+          }
+          hits=txMerge(hits);
+          res.innerHTML=hits.length ? hitsHTML(hits) : `<p class="empty">${esc(t('txNone'))}</p>`;
+          bindHits(res); track('tx_search', { n:hits.length });
+        };
+        f.onsubmit=e=>{ e.preventDefault(); qi.blur(); search(); };
+        if(s.q) search();
+        return;
+      }
+      const meta=ix.laws.find(l=>l.slug===s.slug); if(!meta){ cur={ v:'home' }; return paint(); }
+      const law=await txLaw(s.slug); if(my!==seq) return;
+      if(s.v==='law'){
+        const groups=[]; for(const a of law.items){ const g=groups[groups.length-1]; if(g && g.p===a.p) g.items.push(a); else groups.push({ p:a.p, items:[a] }); }
+        v.innerHTML=`${backHTML()}<h2><bdi>${esc(meta.title)}</bdi></h2>
+          <p class="meta" style="margin:-8px 0 6px">${esc(t('txArts').replace('{n}', law.items.length))}${meta.consolidated?' · '+esc(t('txHeld').replace('{d}', fmtDate(meta.consolidated))):''}</p>
+          ${(meta.stale||[]).length?`<p class="warn">${esc(t('aiStale').replace('{l}', meta.stale.map(x=>(x.law||'')+(x.date?' ('+x.date+')':'')).join('، ')))}</p>`:''}
+          ${CLOUD && CLOUD.supabase?`<div class="aiRow" style="margin:0 0 10px"><button class="aib" data-xg>${ICO.gen}${t('txGenLaw')}</button></div>`:''}
+          <form id="tlf"><input class="inp" id="tlq" type="search" enterkeyhint="search" placeholder="${esc(t('txLawPh'))}" style="width:100%"></form><div id="tlr"></div>
+          <div class="toc">${groups.map((g,i)=>{ const segs=(g.p||'').split(' ← '), head=segs.pop()||meta.title;
+            return `<details class="txg" data-g="${i}"><summary><span><bdi>${esc(head)}</bdi>${segs.length?`<small>${esc(segs.join(' ← '))}</small>`:''}</span><em>${g.items.length}</em></summary><div class="achips"></div></details>`; }).join('')}</div>`;
+        bindBack();
+        const xg=v.querySelector('[data-xg]'); if(xg) xg.onclick=()=>openAI('gen', { slug:s.slug, n:'' });
+        v.querySelectorAll('.txg').forEach(d=>d.addEventListener('toggle', ()=>{ const c=d.querySelector('.achips'); if(!d.open || c.childElementCount) return;
+          c.innerHTML=groups[+d.dataset.g].items.map(a=>`<button data-a="${esc(s.slug)}|${esc(a.n)}"${a.t?'':' class="x"'}>${esc(a.n)}</button>`).join(''); bindHits(c); }));
+        if(groups.length===1){ const d=v.querySelector('.txg'); if(d) d.open=true; }
+        const lf=v.querySelector('#tlf'), lq=v.querySelector('#tlq'), lr=v.querySelector('#tlr');
+        lf.onsubmit=e=>{ e.preventDefault(); const q=lq.value.trim(); if(!q){ lr.innerHTML=''; return; }
+          if(isArtNo(q)){ const n=normArtNo(q); if(law.byN[n]) return go({ v:'art', slug:s.slug, n }); toast(t('txNoArt').replace('{n}', n)); return; }
+          const toks=txToks(q), hits=txMerge(txFind(law, toks, 80, true).map(h=>Object.assign(h, { toks })));
+          lr.innerHTML=hits.length?hitsHTML(hits):`<p class="empty">${esc(t('txNone'))}</p>`; bindHits(lr); };
+        return;
+      }
+      // المادة
+      const a=law.byN[s.n];
+      if(!a){ toast(t('txNoArt').replace('{n}', s.n)); cur={ v:'law', slug:s.slug }; return paint(); }
+      const prev=law.items[a.i-1], next=law.items[a.i+1], fk=s.slug+'|'+a.n, qs=bankFor(meta, a.n), cloud=CLOUD && CLOUD.supabase;
+      v.innerHTML=`${backHTML()}<div class="txhead"><h2>${esc(a.l)}</h2><button class="aib" data-fav aria-pressed="${!!txFavs()[fk]}">${ICO.bm}${t(txFavs()[fk]?'txUnfav':'txFav')}</button></div>
+        <p class="meta" style="margin:-8px 0 4px"><button class="linkbtn" data-law="${esc(s.slug)}" style="margin:0"><bdi>${esc(meta.title)}</bdi></button></p>
+        ${a.p?`<div class="ap">${esc(a.p)}</div>`:''}
+        <div class="txt" dir="rtl">${a.t?esc(a.t):`<i>${esc(t('txEmpty'))}</i>`}</div>
+        ${a.x && a.x.length?`<div class="an"><b>${esc(t('aiNotes'))}:</b> ${a.x.map(esc).join(' · ')}</div>`:''}
+        ${(meta.stale||[]).length?`<p class="warn">${esc(t('aiStale').replace('{l}', meta.stale.map(x=>(x.law||'')+(x.date?' ('+x.date+')':'')).join('، ')))}</p>`:''}
+        <div class="duo txnav"><button class="btn2" data-nav="${prev?esc(prev.n):''}"${prev?'':' disabled'}>${t('txPrev')}${prev?' · '+esc(prev.n):''}</button>
+          <button class="btn2" data-nav="${next?esc(next.n):''}"${next?'':' disabled'}>${t('txNext')}${next?' · '+esc(next.n):''}</button></div>
+        <div class="aiRow txact">${cloud && a.t?`<button class="aib" data-x="gen">${ICO.gen}${t('txGen')}</button><button class="aib" data-x="explain">${ICO.ai}${t('txExplain')}</button><button class="aib" data-x="cards">${ICO.cards}${t('txCards')}</button>
+          <button class="aib" data-x="ask">${ICO.chat}${t('txAsk')}</button>`:''}
+          ${qs.length?`<button class="aib" data-x="bank">${ICO.lib}${esc(t('txBank').replace('{n}', qs.length))}</button>`:''}
+          ${a.t?`<button class="aib" data-x="copy">${ICO.save}${t('txCopy')}</button>`:''}</div>
+        <p class="disc">${esc(t('txDisc'))}</p>`;
+      bindBack(); bindLaws();
+      v.querySelectorAll('[data-nav]').forEach(b=>b.onclick=()=>{ if(b.dataset.nav) go({ v:'art', slug:s.slug, n:b.dataset.nav }, false); });
+      v.querySelector('[data-fav]').onclick=e=>{ const F=txFavs(); if(F[fk]) delete F[fk]; else F[fk]=1; save(); paint(); };
+      v.querySelectorAll('[data-x]').forEach(b=>b.onclick=()=>{
+        const k=b.dataset.x;
+        if(k==='gen') return openAI('gen', { slug:s.slug, n:a.n });
+        if(k==='explain') return openAI('explain', { slug:s.slug, n:a.n });
+        if(k==='cards') return openAI('cards', { slug:s.slug, n:a.n });
+        if(k==='ask') return openAI('ask', { q:t('txAskQ').replace('{a}', a.l).replace('{l}', meta.title) });
+        if(k==='bank'){ document.querySelectorAll('.sheet').forEach(x=>x.remove()); return practiceList(qs, a.l+' — '+meta.title); }
+        if(k==='copy') return copyText(`${a.l} — ${meta.title}\n\n${a.t}`);
+      });
+      track('tx_art', { law:s.slug });
+    }catch(e){ if(my===seq) fail(e); }
+  };
+  go(slug0 ? (n0 ? { v:'art', slug:slug0, n:String(n0) } : { v:'law', slug:slug0 }) : { v:'home' });
 }
 
 /* ---------- الإعلانات (أندرويد وحده، AdMob): تموّل التطبيق دون أن تقاطع التعلّم ----------
@@ -3262,6 +4065,8 @@ function regSW(){
   nativeAuthListen();
   adsBoot();
   regSW();
+  // فهرس النصوص القانونية صغير: يُحمَّل في الخلفية فيظهر زر «نص المادة» تحت كل سؤال يقابله نص في المكتبة
+  setTimeout(()=>txIndex().catch(()=>{}), 1500);
 })();
 </script>
 </body>

@@ -21,6 +21,7 @@ on:
       - "tests/**"
       - "supabase/**"
       - ".github/workflows/bank.yml"
+      - ".github/workflows/ios.yml"
   workflow_dispatch:
 
 permissions:
@@ -70,7 +71,7 @@ jobs:
       - name: Version
         run: |
           echo "QT_VERSION_CODE=$(( $(date +%s) / 60 + ${{ vars.QT_VERSION_OFFSET || 0 }} ))" >> "$GITHUB_ENV"
-          echo "QT_VERSION_NAME=7.0.${{ github.run_number }}" >> "$GITHUB_ENV"
+          echo "QT_VERSION_NAME=8.1.${{ github.run_number }}" >> "$GITHUB_ENV"
 
       - name: Signing key
         if: env.HAS_KEYSTORE == 'true'
@@ -113,6 +114,9 @@ jobs:
           grep -q 'android:host="auth-callback"' "$MAN" || { echo "::error::Google sign-in deep link missing"; exit 1; }
           grep -q 'android:scheme="com.qanontahiro.app"' "$MAN" || { echo "::error::deep link scheme missing"; exit 1; }
           grep -q 'com.google.android.gms.permission.AD_ID' "$MAN" || { echo "::error::AD_ID permission missing (AdMob needs it)"; exit 1; }
+          grep -q 'android.permission.RECORD_AUDIO' "$MAN" || { echo "::error::RECORD_AUDIO permission missing (voice oral answers)"; exit 1; }
+          test -s www/lib/index.json && test -s www/lib/labour.json || { echo "::error::law texts library missing from www/lib"; exit 1; }
+          grep -q " assets/public/lib/index.json\$" "$RUNNER_TEMP/apk-list.txt" || { echo "::error::law texts library missing from APK"; exit 1; }
           APPID=$(python3 -c "import json;print(json.load(open('config/cloud.json'))['admob']['app'])")
           grep -q "android:value=\"$APPID\"" "$MAN" || { echo "::error::AdMob APPLICATION_ID missing from manifest"; exit 1; }
           grep -o 'QT_ADS_MODE="[a-z]*"' www/native.js

@@ -24,7 +24,7 @@ CLOUDCFG = ROOT / "config" / "cloud.json"
 SITE = ROOT / "dist" / "site"
 # ما لا يجوز أن يصل إلى أي ملف يُشحن للعميل: أسرار الخوادم. مفتاح Ably الجذر يُعرف باسمه (لا بسره).
 SECRET_MARKERS = [r"sb_secret_", r"service_role", r"bjCE2A\.7YUitA", r"-----BEGIN [A-Z ]*PRIVATE KEY",
-                  r"\"type\"\s*:\s*\"service_account\"", r"\bsbp_[0-9a-f]{20,}"]
+                  r"\"type\"\s*:\s*\"service_account\"", r"\bsbp_[0-9a-f]{20,}", r"\bAQ\.[A-Za-z0-9_-]{30,}"]
 
 # الحصة المستهدفة لكل فرع من أصل 10.000
 TARGET = {
@@ -534,6 +534,7 @@ def write_pwa(version):
                 "background_color": "#12181F", "theme_color": "#12181F", "icons": icons}
     (APP / "manifest.webmanifest").write_text(json.dumps(manifest, ensure_ascii=False, indent=1), encoding="utf-8")
     core = ["./", "./index.html", "./questions.json", "./manifest.webmanifest", "./icon.svg"] + \
+           (["./lib/index.json"] if (APP / "lib" / "index.json").exists() else []) + \
            [f"./{i['src']}" for i in icons if i["src"].endswith(".png")]
     (APP / "sw.js").write_text(f"""// قانون تاهيرو — عامل الخدمة: يُخزّن القشرة والبنك فيعمل التطبيق دون اتصال.
 // الإصدار يتغير مع كل بناء، فيُجلب البنك الجديد مرة واحدة ثم يُقرأ من الذاكرة.
@@ -565,6 +566,53 @@ const CDN = /^(cdn\\.jsdelivr\\.net|unpkg\\.com|cdn\\.ably\\.com)$/;
     return len(icons)
 
 
+CORPUS = ROOT / "data" / "corpus"
+
+def lib_payload():
+    """مكتبة النصوص القانونية للتطبيق (v8): فهرس صغير وملف لكل قانون بصيغة مضغوطة
+    (المادة مصفوفة [الرقم، العنوان، رقم المسار، النص، الحواشي]، والمسارات في جدول واحد لكل قانون)."""
+    import hashlib
+    if not (CORPUS / "index.json").exists():
+        return {}, "nolib"
+    ix = json.loads((CORPUS / "index.json").read_text(encoding="utf-8"))
+    files, laws, h = {}, [], hashlib.sha1()
+    for L in ix["laws"]:
+        d = json.loads((CORPUS / f"{L['slug']}.json").read_text(encoding="utf-8"))
+        paths, pidx, items = [], {}, []
+        for it in d["items"]:
+            p = it.get("path") or ""
+            if p not in pidx:
+                pidx[p] = len(paths)
+                paths.append(p)
+            row = [str(it["n"]), it.get("label") or str(it["n"]), pidx[p], it.get("text") or ""]
+            notes = [x for x in (it.get("notes") or []) if x]
+            if notes:
+                row.append(notes)
+            items.append(row)
+        body = json.dumps({"slug": L["slug"], "title": L["title"], "word": L.get("word") or "المادة", "paths": paths, "items": items},
+                          ensure_ascii=False, separators=(",", ":"))
+        files[L["slug"] + ".json"] = body
+        h.update(body.encode("utf-8"))
+        laws.append({"slug": L["slug"], "title": L["title"], "short": L.get("key") or L["title"], "word": L.get("word") or "المادة",
+                     "n": len(items), "branch": L.get("branch"), "consolidated": L.get("consolidated"), "stale": L.get("stale") or [],
+                     "bank": L.get("bank")})
+    index = json.dumps({"built": ix.get("built"), "laws": laws}, ensure_ascii=False, separators=(",", ":"))
+    files["index.json"] = index
+    h.update(index.encode("utf-8"))
+    return files, h.hexdigest()[:10]
+
+
+def write_lib(files):
+    import shutil
+    lib = APP / "lib"
+    if lib.exists():
+        shutil.rmtree(lib)
+    lib.mkdir(parents=True)
+    for name, body in files.items():
+        (lib / name).write_text(body, encoding="utf-8")
+    return sum(len(b.encode("utf-8")) for b in files.values())
+
+
 def load_cloud():
     """المفاتيح العامة للخدمات السحابية (config/cloud.json). يرفض البناء أي سر خادم فيها."""
     if not CLOUDCFG.exists():
@@ -588,7 +636,7 @@ def js_hash(s):
 
 
 def write_site(out, cloud, version):
-    """الموقع: صفحة رئيسية حية + سياسة الخصوصية + لوحة المؤلف + نسخة الويب من التطبيق في app/."""
+    """الموقع: صفحة رئيسية حية + الخصوصية والبنود وحذف البيانات (أربع لغات) + لوحة المؤلف + نسخة الويب من التطبيق في app/."""
     import shutil, datetime
     if SITE.exists():
         shutil.rmtree(SITE)
@@ -624,7 +672,9 @@ def write_site(out, cloud, version):
                        .replace("__AMD__", str(len(amends))))
     tpl = (ROOT / "src" / "site.html").read_text(encoding="utf-8")
     (SITE / "index.html").write_text(fill(tpl).replace("__LDJSON__", js(ld)).replace("/*__DATA__*/null", js(data)), encoding="utf-8")
-    (SITE / "privacy.html").write_text(fill((ROOT / "src" / "privacy.html").read_text(encoding="utf-8")), encoding="utf-8")
+    # الصفحات القانونية (v8.1) بأربع لغات: الخصوصية، والبنود والشروط، وحذف البيانات (تفتحها أزرار التطبيق في المتصفح)
+    for page in ("privacy", "terms", "delete-data"):
+        (SITE / f"{page}.html").write_text(fill((ROOT / "src" / f"{page}.html").read_text(encoding="utf-8")), encoding="utf-8")
     (SITE / "admin.html").write_text((ROOT / "src" / "admin.html").read_text(encoding="utf-8")
                                      .replace("/*__CLOUD__*/null", js(public)), encoding="utf-8")
     (SITE / "404.html").write_text(
@@ -642,7 +692,7 @@ def write_site(out, cloud, version):
         (SITE / "app-ads.txt").write_text(appads + "\n", encoding="utf-8")
     (SITE / "sitemap.xml").write_text(
         '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'
-        + "".join(f"<url><loc>{site_url}{p}</loc><lastmod>{today.isoformat()}</lastmod></url>" for p in ("/", "/app/", "/privacy"))
+        + "".join(f"<url><loc>{site_url}{p}</loc><lastmod>{today.isoformat()}</lastmod></url>" for p in ("/", "/app/", "/privacy", "/terms", "/delete-data"))
         + "</urlset>\n", encoding="utf-8")
     leaks = [str(p.relative_to(ROOT)) for p in SITE.rglob("*") if p.is_file() and p.suffix in (".html", ".js", ".json", ".txt", ".xml")
              and any(re.search(m, p.read_text(encoding="utf-8", errors="ignore")) for m in SECRET_MARKERS)]
@@ -689,7 +739,8 @@ def main():
     cloud = load_cloud()
     cloud_js = json.dumps(cloud, ensure_ascii=False, separators=(",", ":")) if cloud else "null"
     import hashlib
-    version = hashlib.sha1((payload + tpl + cloud_js).encode("utf-8")).hexdigest()[:10]
+    lib_files, lib_sig = lib_payload()
+    version = hashlib.sha1((payload + tpl + cloud_js + lib_sig).encode("utf-8")).hexdigest()[:10]
     tpl = tpl.replace("/*__CLOUD__*/null", cloud_js)
 
     # (1) بناء مستقل: البنك محقون كنص يُمرَّر لـ JSON.parse — أسرع تحليلاً من كائن JS
@@ -703,15 +754,18 @@ def main():
            '<link rel="apple-touch-icon" href="icon-192.png">')
     (APP / "index.html").write_text(tpl.replace("<!--__PWA__-->", pwa).replace("/*__BANK__*/null", "null"), encoding="utf-8")
     (APP / "questions.json").write_text(payload, encoding="utf-8")
+    lib_bytes = write_lib(lib_files) if lib_files else 0
     n_icons = write_pwa(version)
     print(f"\nسجل النصوص في التطبيق: {len(laws)} نصاً، {sum(len(L['a']) for L in laws)} تعديلاً معتبراً، "
           f"و{len(lawof)} اسم مصدر مربوطاً بنصه · ملفات التثبيت: {n_icons} أيقونة، الإصدار {version}")
+    if lib_files:
+        print(f"مكتبة النصوص القانونية في التطبيق: {len(lib_files) - 1} قانوناً في app/lib/ ({lib_bytes / 1048576:.1f} م.ب، تُجلب عند الحاجة)")
     print("الخدمات السحابية: " + ("، ".join(k for k in ("supabase", "pubnub", "ably", "firebase") if cloud and cloud.get(k))
                                   if cloud else "لا شيء (تطبيق محلي)"))
 
     # (3) الموقع: يُبنى من البنك نفسه ويحمل التطبيق المقسوم في app/
     n_days = write_site(out, cloud, version)
-    print(f"→ {SITE.relative_to(ROOT)}/  (الرئيسية + الخصوصية + لوحة المؤلف + app/، وسؤال اليوم لـ{n_days} يوماً)")
+    print(f"→ {SITE.relative_to(ROOT)}/  (الرئيسية + الخصوصية والبنود وحذف البيانات بأربع لغات + لوحة المؤلف + app/، وسؤال اليوم لـ{n_days} يوماً)")
 
     kb = lambda p: p.stat().st_size / 1024
     print(f"\n→ {OUT.relative_to(ROOT)}  ({kb(OUT):.0f} ك.ب، {len(ship)} سؤالاً) — مستقل")

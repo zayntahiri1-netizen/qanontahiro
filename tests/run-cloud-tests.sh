@@ -5,13 +5,15 @@
 #   2) tests/browser/e2e_cloud.js : ثلاثة أجهزة، الهوية والنقل والحذف والمزامنة واللوحة والنبض والتحدي والإعلان والإحصاءات
 #   3) tests/browser/e2e_site.js  : الموقع متصلاً ودون اتصال، هاتفاً وسطح مكتب
 #   4) tests/fn/run.mjs           : دالة النبض بشيفرتها نفسها
-#   5) tests/fn/run-ai.mjs        : «المساعد» بشيفرته نفسها، وClaude بديل، والبنك كاملاً في قاعدة المعرفة ومكتبة القوانين كاملة
+#   5) tests/fn/run-ai.mjs        : «المساعد» بشيفرته نفسها، وGemini بديل، والبنك كاملاً في قاعدة المعرفة ومكتبة القوانين كاملة
 #   5ب) tests/fn/run-ads.mjs      : التحقق من مكافآت AdMob بتوقيعات ECDSA حقيقية (qt-ads)
 #   6) tests/browser/e2e_v5.js    : الدخول بـ Google، والترتيب العالمي، و«المساعد» في متصفح حقيقي
 #   7) tests/browser/e2e_native.js: نسخة أندرويد (www/) بـ capacitor.js الحقيقي وبيئة أصلية محاكاة
 #   8) tests/browser/e2e_ads.js   : الإعلانات في نسخة أندرويد بمحاكٍ لـ AdMob: الموافقة، والشريط، والبيني، والمكافأة، وشاشة الفتح
 #   (ومعها tests/sql/behave_v5.sql: الترتيب العالمي وأسماء Google وحصص المساعد، وbehave_v6.sql: مكافآت الإعلانات،
-#    وbehave_v7.sql: مكتبة القوانين — التحميل والبحث بالجذور والمطابقة الدقيقة والصلاحيات)
+#    وbehave_v7.sql: مكتبة القوانين — التحميل والبحث بالجذور والمطابقة الدقيقة والصلاحيات،
+#    وbehave_v8.sql: أدوات المساعد الجديدة — المواد المجاورة، والنازلة التدريبية، وإبطال الذاكرة، والحذف،
+#    وbehave_v81.sql: مولّد التمارين — عينة المواد العشوائية ومواد الآجال والمقادير والصلاحيات)
 # يُشغَّل بعد python3 build.py. المنافذ: Postgres 5439، التطبيق 8765، الموقع 8766.
 # في GitHub Actions (bank.yml): Postgres خدمةً على localhost:5432 بـ PGPASSWORD، وQT_SKIP_BROWSER=1 يترك فحوص المتصفح.
 # =========================================================================
@@ -31,6 +33,8 @@ $P -d qt -t -f tests/sql/behave.sql 2>&1 | grep -E "PASSED|FAIL|ERROR" || { echo
 $P -d qt -t -f tests/sql/behave_v5.sql 2>&1 | grep -E "PASSED|FAIL|ERROR" || { echo "✗ فشل اختبار SQL v5"; exit 1; }
 $P -d qt -t -f tests/sql/behave_v6.sql 2>&1 | grep -E "PASSED|FAIL|ERROR" || { echo "✗ فشل اختبار SQL v6"; exit 1; }
 $P -d qt -t -f tests/sql/behave_v7.sql 2>&1 | grep -E "PASSED|FAIL|ERROR" || { echo "✗ فشل اختبار SQL v7"; exit 1; }
+$P -d qt -t -f tests/sql/behave_v8.sql 2>&1 | grep -E "PASSED|FAIL|ERROR" || { echo "✗ فشل اختبار SQL v8"; exit 1; }
+$P -d qt -t -f tests/sql/behave_v81.sql 2>&1 | grep -E "PASSED|FAIL|ERROR" || { echo "✗ فشل اختبار SQL v8.1"; exit 1; }
 echo "== دالة النبض =="
 T=$(mktemp -d); cp tests/fn/*.mjs "$T"/
 sed 's#import { createClient } from "npm:@supabase/supabase-js@2";#import { createClient } from "./mock-sb.mjs";#' supabase/functions/qt-pulse/index.ts > "$T/fn.mts"

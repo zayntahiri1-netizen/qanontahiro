@@ -122,6 +122,7 @@ async function enter(page, alias) {
   await page.waitForSelector('#alias');
   await page.fill('#alias', alias);
   await page.click('#enter');
+  await acceptTerms(page);
   await page.waitForSelector('#lobby:not(.hidden)');
   await page.waitForSelector('#onbs', { timeout: 4000 });
   await page.click('#onbs');
@@ -129,13 +130,36 @@ async function enter(page, alias) {
 const answerN = async (page, n) => { for (let i = 0; i < n; i++) { await page.click('#opts .opt[data-i="0"]'); await page.click('#go');
   if (await page.$('#verdict .vhead')) { await page.click('#go'); } } };
 const toastText = page => page.waitForSelector('.toast', { timeout: 6000 }).then(e => e.textContent()).catch(() => '');
+// البنود والشروط (v8.1): تظهر بعد التسجيل وقبل الردهة؛ يقبلها الاختبار حيث يُنتظر ظهورها
+const acceptTerms = async (page, ms = 15000) => { const c = await page.waitForSelector('#tgate #tgC', { timeout: ms }).catch(() => null);
+  if (!c) return false; await c.check(); await page.click('#tgY'); await page.waitForSelector('#tgate', { state: 'detached', timeout: 4000 }).catch(() => null); return true; };
 
 (async () => {
   const browser = await chromium.launch();
 
   // ===== الجهاز 1: «سلمى» تحجز اسمها =====
   const A = await device(browser, 'A');
-  await enter(A, 'سلمى');
+  // البنود والشروط (v8.1): أزرار الصفحات في شاشة الدخول، ثم الموافقة الإلزامية بعد التسجيل وقبل الردهة
+  await A.goto(APP_URL); await A.waitForSelector('#alias');
+  const lk = await A.$$eval('#lLegal a', as => as.map(a => [a.dataset.page, a.getAttribute('href'), a.target]));
+  ok(lk.length === 3 && /\/terms\?lang=ar$/.test(lk[0][1]) && /\/privacy\?lang=ar$/.test(lk[1][1]) && /\/delete-data\?lang=ar$/.test(lk[2][1]) && lk.every(x => x[2] === '_blank'),
+     'شاشة الدخول: أزرار البنود والخصوصية وحذف البيانات، تُفتح في المتصفح بلغة الواجهة');
+  await A.fill('#alias', 'سلمى'); await A.click('#enter');
+  await A.waitForSelector('#tgate #tgC');
+  const tgx = await A.textContent('#tgate');
+  ok(await A.isHidden('#lobby') && (await A.$$('#tgate li')).length === 4 && /ليس مستشاراً قانونياً/.test(tgx) && /لا يتحمل التطبيق ولا مطوّره أي مسؤولية/.test(tgx),
+     'بعد التسجيل: البنود والشروط قبل الردهة، ومنها أن التطبيق ليس مستشاراً، وإخلاء المسؤولية عن الاستشارات');
+  ok(await A.isDisabled('#tgY') && (await A.$$('#tgate .legal a')).length === 3, 'الموافقة معطلة حتى تُؤشَّر الخانة، والصفحات الثلاث في متناوله');
+  await sleep(300); await A.screenshot({ path: OUT + '/terms-gate.png' });
+  await A.click('#tgN');
+  ok(/دون الموافقة/.test(await toastText(A)) && await A.isVisible('#login') && await A.isHidden('#lobby') && !(await A.$('#tgate')), 'من لا يوافق يبقى في شاشة الدخول');
+  ok(sql(`select count(*) from qt_profiles where alias='سلمى'`) === '0', 'ولا يُحجز اسمه في السحابة قبل الموافقة');
+  await A.click('#enter'); await A.waitForSelector('#tgate #tgC'); await A.check('#tgate #tgC');
+  ok(await A.isEnabled('#tgY'), 'تأشير الخانة يفعّل «أوافق وأدخل»');
+  await A.click('#tgY');
+  await A.waitForSelector('#lobby:not(.hidden)');
+  await A.waitForSelector('#onbs', { timeout: 4000 }); await A.click('#onbs');
+  ok(await A.evaluate(() => S.p.terms && S.p.terms.v === TERMS_V && !!S.p.terms.at), 'الموافقة محفوظة مع التقدم (نسخة البنود وتاريخها)');
   await A.waitForSelector('.sheet .code', { timeout: 12000 });
   const code = (await A.textContent('.sheet .code')).trim();
   ok(/^[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}$/.test(code), `رمز الاسترجاع يظهر مرة واحدة بصيغة مقروءة (${code})`);
@@ -151,6 +175,12 @@ const toastText = page => page.waitForSelector('.toast', { timeout: 6000 }).then
   await A.click('#qx');
   ok(await A.evaluate(() => cloudPush()), 'المزامنة ترفع التقدم');
   ok(sql(`select answered from qt_progress where alias='سلمى'`) === '3', 'التقدم في القاعدة = 3 أجوبة');
+  ok(sql(`select data->'terms'->>'v' from qt_progress where alias='سلمى'`) === await A.evaluate(() => TERMS_V), 'الموافقة على البنود تصل إلى السحابة مع التقدم');
+  const lb = await A.$$eval('#lbLegal a', as => as.map(a => a.dataset.page).join());
+  ok(lb === 'terms,privacy,del' && await A.isVisible('#lbLegal'), 'الردهة: أزرار الصفحات الثلاث في أسفلها');
+  await A.reload(); await A.waitForSelector('#alias'); await A.click('#enter');
+  await A.waitForSelector('#lobby:not(.hidden)', { timeout: 8000 });
+  ok(!(await A.$('#tgate')), 'من وافق لا تُعرض عليه البنود ثانية');
 
   // ===== الجهاز 2: «يوسف» =====
   const C = await device(browser, 'C');

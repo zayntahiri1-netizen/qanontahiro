@@ -106,7 +106,8 @@ $('#st').onclick=async()=>{
       ${j.ai?`<tr><td>المساعد اليوم: استدعاءات / من الذاكرة / فشل</td><td>${j.ai.calls} / ${j.ai.cached} / ${j.ai.failed}</td></tr>
       <tr><td>مستخدمو المساعد اليوم</td><td>${j.ai.users}</td></tr>
       <tr><td>الرموز اليوم (دخل / خرج)</td><td>${j.ai.in_tok} / ${j.ai.out_tok}</td></tr>
-      <tr><td>تقدير أعلى للكلفة اليوم (بسعر Sonnet)</td><td>$${(j.ai.in_tok/1e6*2 + j.ai.out_tok/1e6*10).toFixed(2)}</td></tr>
+      <tr><td>تقدير أعلى للكلفة اليوم (بسعر Gemini 3.8 Flash لكل الطلبات${new Date()<new Date('2027-01-01')?'، 0.75$ و3.75$ للمليون حتى 31 دجنبر 2026':'، 1.50$ و7.50$ للمليون'})</td><td>$${(new Date()<new Date('2027-01-01') ? j.ai.in_tok/1e6*0.75 + j.ai.out_tok/1e6*3.75 : j.ai.in_tok/1e6*1.5 + j.ai.out_tok/1e6*7.5).toFixed(2)}</td></tr>
+      ${j.ai.kinds && Object.keys(j.ai.kinds).length?`<tr><td>الطلبات حسب الأداة</td><td>${Object.entries(j.ai.kinds).sort((a,b)=>b[1]-a[1]).map(([k,n])=>({why:'لماذا أخطأت',twin:'توأم',ask:'اسأل',case:'نازلة',scan:'صورة',explain:'شرح مادة',compare:'قارن',essay:'موضوع',drill:'نازلة تدريبية',cards:'بطاقات',oral:'شفوي',plan:'خطة',gen:'مولّد التمارين'}[k]||k)+': '+n).join(' · ')}</td></tr>`:''}
       <tr><td>أسئلة قاعدة المعرفة</td><td>${j.ai.kb}</td></tr>
       ${j.ai.laws!=null?`<tr><td>مكتبة القوانين: قوانين / مواد</td><td>${j.ai.laws} / ${j.ai.articles}</td></tr>
       <tr><td>نوازل حُلّلت اليوم</td><td>${j.ai.cases||0}</td></tr>`:''}`:''}

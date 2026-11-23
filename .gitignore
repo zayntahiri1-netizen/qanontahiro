@@ -15,6 +15,10 @@ node_modules/
 *.keystore
 *.p12
 *.pem
+*.p8
+*.cer
+*.mobileprovision
+*.certSigningRequest
 .env
 .env.*
 *.secret
