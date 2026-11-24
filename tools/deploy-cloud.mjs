@@ -15,6 +15,7 @@
 //   node tools/deploy-cloud.mjs
 // المتغيرات (اختيارية، وإلا سُئلت عنها بإدخال مخفي؛ و«Enter» فارغاً يُبقي القيمة المحفوظة على الخادم):
 //   SUPABASE_ACCESS_TOKEN  ABLY_ROOT_KEY  GEMINI_API_KEY  GOOGLE_CLIENT_ID  GOOGLE_CLIENT_SECRET  QT_ADMIN_SECRET
+//   TAVILY_API_KEY (اختياري، v8.3: البحث في الإنترنت في الخدمة المجانية؛ مفتاح مجاني من app.tavily.com يبدأ بـ tvly-)
 //   صمامات TAHIRO AI اليومية لكل التطبيق (لا رصيد للمستخدم منذ v8.2؛ 0 = دون سقف). تُضبط أول مرة بقيمها الافتراضية،
 //   ثم تبقى كما هي على الخادم (أو كما عدّلتها في اللوحة) إلا إن مرّرتها هنا:
 //     QT_AI_DAILY_BUDGET (600 جواب في اليوم)  QT_AI_WEB_DAILY (150 بحثاً في الإنترنت)  QT_AI_TTS_DAILY (1500 مقطع صوتي)
@@ -42,6 +43,7 @@ const SECRET_FILE = path.join(os.homedir(), '.qanoun-tahiro-admin');
 const LEAKED_ROOT = 'bjCE2A.7YUitA';          // اسم المفتاح الذي أُرسل نصاً في المحادثة (الاسم وحده، لا السر)
 const GEMINI_API = (process.env.QT_GEMINI_BASE || 'https://generativelanguage.googleapis.com/v1beta').replace(/\/+$/, '');
 const AI_FAST = process.env.QT_AI_FAST || 'gemini-3.5-flash-lite', AI_SMART = process.env.QT_AI_SMART || 'gemini-3.8-flash';
+const WEB_FREE = String(process.env.QT_AI_WEB_MODEL || 'gemini-2.5-flash-lite').trim();   // باحث الخدمة المجانية (v8.3)
 
 const say = (...a) => console.log(...a);
 const step = (n, t) => say(`\n[${n}] ${t}`);
@@ -143,6 +145,32 @@ const NATIVE_CB = 'com.qanontahiro.app://auth-callback';
     else say(`  ⚠ تعذّر فحص مفتاح Gemini الآن (${gc.status || 'الشبكة'}: ${gm || short(gc.data)}) — سيُحفظ ويُفحص TAHIRO AI في آخر النشر.`);
   }
 
+  // البحث في الإنترنت في الخدمة المجانية (v8.3): Google لا يتيح أداة البحث مجاناً لنماذج Gemini الحديثة، ويتيحها لنموذج 2.5 الخفيف
+  // للمشاريع التي استعملته من قبل وحدها؛ والطريق المضمون مفتاح Tavily المجاني (اختياري، يُخفى عند الكتابة ولا يُحفظ إلا في أسرار Supabase)
+  if (TIER0 === 'free' && gem) {
+    const gw = await probe('POST', `${GEMINI_API}/models/${encodeURIComponent(WEB_FREE)}:generateContent`,
+      { json: { contents: [{ role: 'user', parts: [{ text: 'اكتب: نعم' }] }], generationConfig: { maxOutputTokens: 8 }, store: false }, headers: { 'x-goog-api-key': gem } });
+    say(gw.ok || gw.status === 429 ? `  ✓ بحث Google المجاني متاح لمشروعك (${WEB_FREE})`
+      : gw.status === 404 || gw.status === 403 || gw.status === 400 ? `  · بحث Google المجاني غير متاح لمشروعك (${WEB_FREE}: ${gw.status}) — Google قصرته على من استعمله من قبل؛ مفتاح Tavily أدناه يكفي`
+      : `  · تعذّر فحص بحث Google المجاني الآن (${gw.status || 'الشبكة'})`);
+  }
+  let tav = String(process.env.TAVILY_API_KEY || '').trim();
+  if (!tav && TIER0 === 'free' && !have.has('TAVILY_API_KEY')) {
+    say('\nالبحث في الإنترنت لـ TAHIRO AI (اختياري ومجاني): مفتاح Tavily.'
+      + '\n  1) افتح https://app.tavily.com وأنشئ حساباً ببريدك (لا بطاقة بنكية).'
+      + '\n  2) انسخ المفتاح الظاهر في الصفحة الأولى (يبدأ بـ tvly-) والصقه هنا؛ لن يظهر وأنت تلصقه.'
+      + '\n  1000 بحث مجاني في الشهر، والخادم لا يتجاوز 30 في اليوم. Enter وحده يتخطى هذه الخطوة.');
+    tav = await ask('TAVILY_API_KEY: ', true);
+  }
+  if (tav && !/^tvly-[\w-]{16,}$/.test(tav)) fail('مفتاح Tavily يبدأ بـ tvly- (انسخه كاملاً من app.tavily.com)');
+  if (tav) {
+    const tu = await probe('GET', 'https://api.tavily.com/usage', { headers: { authorization: 'Bearer ' + tav } });
+    const k = (tu.data && tu.data.key) || {}, ac = (tu.data && tu.data.account) || {};
+    if (tu.ok) say(`  ✓ مفتاح Tavily يعمل${ac.current_plan ? ` (${ac.current_plan})` : ''}${k.usage != null ? ` — استُعمل منه ${k.usage}${ac.plan_limit ? ` من ${ac.plan_limit}` : ''} في هذه الدورة` : ''}`);
+    else if (tu.status === 401 || tu.status === 403) fail(`مفتاح Tavily مرفوض (${tu.status}): انسخه من جديد من app.tavily.com ثم أعد الأمر.`);
+    else say(`  ⚠ تعذّر فحص مفتاح Tavily الآن (${tu.status || 'الشبكة'}) — سيُحفظ، وإن رُفض عاد الخادم إلى بحث Google المجاني.`);
+  }
+
   let gid = process.env.GOOGLE_CLIENT_ID || '', gsec = process.env.GOOGLE_CLIENT_SECRET || '';
   if (!gid) {
     say('\nالدخول بـ Google: معرّف عميل OAuth من نوع «Web application» من Google Cloud (انظر الخطوات في README).'
@@ -225,16 +253,20 @@ const NATIVE_CB = 'com.qanontahiro.app://auth-callback';
   secrets.push({ name: 'QT_AI_TIER', value: tier });
   if (ably) secrets.push({ name: 'ABLY_ROOT_KEY', value: ably });
   if (gem) secrets.push({ name: 'GEMINI_API_KEY', value: gem });
+  if (tav) secrets.push({ name: 'TAVILY_API_KEY', value: tav });
   if (process.env.QT_AI_FAST) secrets.push({ name: 'QT_AI_FAST', value: AI_FAST });
   if (process.env.QT_AI_SMART) secrets.push({ name: 'QT_AI_SMART', value: AI_SMART });
-  for (const n of ['QT_AI_TTS', 'QT_AI_TTS_FMT', 'QT_AI_IX_REV', 'QT_AI_SMART2', 'QT_AI_LITE2', 'QT_AI_TTS2']) if (process.env[n]) secrets.push({ name: n, value: String(process.env[n]).trim() });
+  for (const n of ['QT_AI_TTS', 'QT_AI_TTS_FMT', 'QT_AI_IX_REV', 'QT_AI_SMART2', 'QT_AI_LITE2', 'QT_AI_TTS2', 'QT_AI_WEB_MODEL', 'QT_AI_WEB_FREE', 'QT_AI_TAVILY_DAILY'])
+    if (process.env[n]) secrets.push({ name: n, value: String(process.env[n]).trim() });
   if (CFG.admob && CFG.admob.rewarded) secrets.push({ name: 'QT_ADS_REWARDED_UNITS', value: CFG.admob.rewarded });
   const se = await call('POST', API + '/secrets', { token, json: secrets });
   if (!se.ok) fail(`تعذّر ضبط الأسرار (${se.status}): ${short(se.data)}`);
   say('  ✓ ' + secrets.map(x => x.name).join('، ') + ' — على الخادم وحده');
   if (valves.length) say('  · صمامات TAHIRO AI: ' + valves.join('، '));
   say(tier === 'free'
-    ? '  · TAHIRO AI على خدمة Google المجانية: نحو 20 جواباً في اليوم بالنموذج الأقوى ثم نحو 500 لكل نموذج خفيف، ودون بحث في الإنترنت،\n    وGoogle قد تستعمل ما يُرسل لتحسين منتجاتها (الخصوصية تقول ذلك). للانتقال إلى المدفوع: docs/v8-guide.md القسم 7'
+    ? '  · TAHIRO AI على خدمة Google المجانية: نحو 20 جواباً في اليوم بالنموذج الأقوى ثم نحو 500 لكل نموذج خفيف،\n'
+      + `    والبحث في الإنترنت ${tav || have.has('TAVILY_API_KEY') ? 'بمفتاح Tavily (30 بحثاً في اليوم)، ثم بحث Google المجاني إن تعذّر' : 'ببحث Google المجاني إن كان متاحاً لمشروعك (وإلا أضف مفتاح Tavily: أعد الأمر)'}،\n`
+      + '    وGoogle قد تستعمل ما يُرسل لتحسين منتجاتها (الخصوصية تقول ذلك). للانتقال إلى المدفوع: docs/v8-guide.md القسم 7'
     : '  · TAHIRO AI على المستوى المدفوع: البحث في الإنترنت مفعّل، ولا تستعمل Google ما يُرسل لتحسين منتجاتها');
   // ما لم يعد مستعملاً: مفتاح Claude ونماذجه (قبل v8)، وحصتا المستخدم اليوميتان (قبل v8.2: لا رصيد للمستخدم الآن)
   const old = ['ANTHROPIC_API_KEY', 'QT_AI_MODEL_FAST', 'QT_AI_MODEL_SMART', 'QT_AI_CAP_ANON', 'QT_AI_CAP_GOOGLE'].filter(n => have.has(n));

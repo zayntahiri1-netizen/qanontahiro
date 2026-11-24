@@ -73,7 +73,7 @@ def _kind(t):
         return "L"
     if re.fullmatch(r"[0-9]+", t):
         return "D"
-    if t in ("-", "–", ".", "/", ",", ":", "+"):
+    if t in ("-", "–", ".", "/", ",", ":", "+", "٫"):     # «1٫5» (الفاصلة العشرية العربية) عدد واحد يُقرأ من اليسار
         return "S"
     if t in ("%", "°", "٪"):
         return "E"
@@ -154,7 +154,7 @@ BOLD = "\u0001"          # بادئة السطر العريض (عناوين)؛ �
 NOTE = re.compile(r"⟦(\d+):(\d+)⟧")   # موضع رقم حاشية في السطر: ⟦الصفحة:الرقم⟧
 
 
-def assemble(pages, cols=False):
+def assemble(pages, cols=False, arcol=False):
     """الأسطر بخط القاعدة (فالحرف النازل كالراء لا يشذ عن سطره).
     ما صغر خطه عن المتن بوضوح حواشٍ: الرقم المرفوع يصير علامة ⟦ص:ر⟧ في السطر الذي يليه، ونص الحاشية يُحفظ في notes
     (فيعرف «المساعد» أن المادة نُسخت أو غُيّرت ولا يختلط ذلك بنص القانون)."""
@@ -167,6 +167,9 @@ def assemble(pages, cols=False):
             left = [g for g in gl if (g[1] + g[2]) / 2 < mid]
             if len(right) > 40 and len(left) > 40:
                 groups = [right, left]          # الجريدة الرسمية: العمود الأيمن أولاً ثم الأيسر
+                if arcol:                       # نشرة بلغتين متقابلتين: نأخذ العمود العربي وحده (يتبدل موضعه من صفحة إلى أخرى)
+                    share = lambda gg: sum(1 for x in gg if AR.search(x[4])) / max(1, len(gg))
+                    groups = [max(groups, key=share)]
         lines = []
         for g in groups:
             g = dedupe(g)
@@ -357,7 +360,7 @@ def label_of(word, base, sub, sub2, bis):
 TAIL = r"^(?:الفهرس|فهرس|الملاحق|ملحق|الملحق|نماذج|النماذج|جدول المحتويات|المحتويات)(?:\s|$|:)"
 
 
-def split_articles(lines, word, tail=None, notes=None):
+def split_articles(lines, word, tail=None, notes=None, colon=False):
     """يختار سلسلة العناوين الأطول تسلسلاً (فتسقط الإحالات وفهارس المحتوى)، ثم يقطع النص عندها."""
     notes = notes or {}
     bold = [l.startswith(BOLD) for l in lines]
@@ -373,7 +376,9 @@ def split_articles(lines, word, tail=None, notes=None):
         marks = " ".join(f"⟦{p}:{n}⟧" for p, n in NOTE.findall(l))       # حاشية على سطر العنوان تبقى للمادة
         after = (m.group("after").strip(" :.-–") + " " + marks).strip()
         # عنوان المادة سطر وحده، أو يتبعه نص قصير يبدأ الجملة (لا «من هذا القانون»: تلك إحالة)
-        if after and re.match(r"^(?:من|أعلاه|أدناه|و|إلى|او|أو|في|بعده|قبله|الى|على)\b", after):
+        # إلا في نص يكتب العنوان ونص المادة في سطر واحد بعد نقطتين («المادة 48: في حالة سكوت…»): النقطتان علامة العنوان
+        if after and re.match(r"^(?:من|أعلاه|أدناه|و|إلى|او|أو|في|بعده|قبله|الى|على)\b", after) \
+                and not (colon and m.group("after").lstrip().startswith(":")):
             continue
         key = parse_num(m.group("num"), m.group("suf") or "")
         sp = re.match(r"^(\d{1,3})\s+(\d{1,3})(?=\s|$)", after)
@@ -578,6 +583,66 @@ def candidates(w):
 
 QUIRKS = set()
 
+# خط «مجموعة النصوص القانونية المتعلقة بنظام التحفيظ العقاري» (الوكالة الوطنية للمحافظة العقارية): يرسم pdfminer الصاد والضاد والشين
+# سيناً بلا نقط، ويقرؤها pdftotext صحيحة لكنه يقلب بعض الأربطة. فنأخذ ترتيب الحروف من الأول وهوية حروف السين من الثاني، بمحاذاة
+# الكلمات بالترتيب (كلمتان بالحروف نفسها، والسين والصاد والضاد والشين حرف واحد، هما الكلمة نفسها في الموضع نفسه)؛ فلا تلتبس
+# «الشياع» بـ«الضياع» لأن كل كلمة تأخذ نظيرتها في موضعها لا أكثر الكلمات تكراراً.
+def pop_key(w):
+    w = re.sub("[صضش]", "س", w).translate(str.maketrans("أإآؤئى", "اااويي"))    # والهمزات تُصلح بعد المحاذاة
+    return "".join(sorted(w))
+
+
+def pop_tokens(path):
+    raw = subprocess.run(["pdftotext", str(path), "-"], capture_output=True, text=True).stdout.replace("\ufffd", "")
+    return TOK.findall(unicodedata.normalize("NFKC", raw).translate(BIDI))
+
+
+def sad_align(law, ptoks):
+    """يصحح حروف السين في مواد القانون بنظائرها في نص pdftotext للملف نفسه."""
+    import difflib
+    for art in law["articles"]:                   # الحرف الزائد بلا خريطة قبل السين ونظائرها (يرسم أسنانها) لا معنى له
+        # وفي هذا الخط تُرسم الألف المهموزة ألفاً ثم «أ»، والمدة ألفاً ثم «آ»، والهمزة على الواو واواً ثم «ؤ»
+        art["text"] = re.sub("ا([أإآ])", r"\1", re.sub("وؤ", "ؤ", art["text"].replace("\ufffd", "")))
+    spans = []                                   # (رقم المادة، بداية الكلمة، نهايتها، الكلمة)
+    for ai, art in enumerate(law["articles"]):
+        for m in TOK.finditer(art["text"]):
+            spans.append((ai, m.start(), m.end(), m.group(0)))
+    ka, kp = [pop_key(x[3]) for x in spans], [pop_key(t) for t in ptoks]
+    fix = {}
+
+    def put(j, pw):
+        ai, b, e, w = spans[j]
+        pos, seq = [i for i, ch in enumerate(w) if ch == "س"], re.sub("[^صضشس]", "", pw)
+        if len(pos) != len(seq):
+            return
+        out = list(w)
+        for i, ch in zip(pos, seq):
+            out[i] = ch
+        fix[(ai, b, e)] = "".join(out)
+    done = set()
+    for blk in difflib.SequenceMatcher(None, ka, kp, autojunk=False).get_matching_blocks():
+        for k in range(blk.size):
+            done.add(blk.a + k)
+            if "س" in spans[blk.a + k][3]:
+                put(blk.a + k, ptoks[blk.b + k])
+    # ما لم يُحاذَ: نظيره الوحيد في الملف كله (إن كان لحروفه نطق واحد للسين في كل مواضعه)
+    seqs = collections.defaultdict(set)
+    for t in ptoks:
+        seqs[pop_key(t)].add(re.sub("[^صضشس]", "", t))
+    for j, (ai, b, e, w) in enumerate(spans):
+        if j not in done and "س" in w and len(seqs.get(ka[j], ())) == 1:
+            put(j, next(iter(seqs[ka[j]])))
+    n = 0
+    for ai, art in enumerate(law["articles"]):
+        ed = sorted(((b, e, t) for (a, b, e), t in fix.items() if a == ai), reverse=True)
+        txt = art["text"]
+        for b, e, t in ed:
+            if txt[b:e] != t:
+                txt = txt[:b] + t + txt[e:]
+                n += 1
+        art["text"] = txt
+    return n
+
 
 def fix_token(w):
     if len(w) < 2 or (len(w) == 2 and not QUIRKS & {"hamza", "alef_sin"}):
@@ -708,6 +773,7 @@ def merge_pieces(text):
 def repair(text):
     def word(m):
         return split_glued(fix_token(m.group(0)))
+
     if "hamza" in QUIRKS:
         text = re.sub(r"(?<![\u0600-\u06FF(])[أآ] (?=[\u0621-\u064A])", "", text)     # همزات شاردة: «أ أ أ إذا» ← «إذا»
     if "alef_sin" in QUIRKS:
@@ -720,6 +786,7 @@ def repair(text):
     text = TOK.sub(word, text)
     text = merge_pieces(text)
     text = re.sub(r"(?<![\u0600-\u06FF])ل(?= [يتن][\u0621-\u064A])", "لا", text)       # «ل يمكن» ← «لا يمكن»
+    text = re.sub(r"(?<![\u0600-\u06FF])ول(?= [يتن][\u0621-\u064A])", "ولا", text)     # «ول يعتد» ← «ولا يعتد» (ألف لام ألف ساقطة)
     text = re.sub(r"(?<![\u0600-\u06FF])إل(?= [\u0621-\u064A])", "إلا", text)
     return re.sub(r" {2,}", " ", text)
 
@@ -736,16 +803,42 @@ def quality(law):
 # ---------------------------------------------------------------- المصادر
 # (المفتاح في سجل القوانين، الاسم المختصر، العنوان، الفرع، كلمة المادة، المصادر المرشحة [(الطريقة، الملف، خيارات)]، خيارات القانون)
 # إن تعددت المصادر بُني القانون من كل واحد واختير أسلمها بالقياس (التغطية، والحروف المشوهة، والكلمات المجهولة، والثغرات).
+
+# أشكال خط Sakkal Majalla التي أغفلتها خريطة ToUnicode في ملف المرسوم 2.18.181 (رقم الشكل ← حروفه).
+# استُخرجت بمحاذاة طبقة النص مع التعرف الضوئي للصفحات (855 كلمة متطابقة)، ثم رُوجعت بالعين على صور الأشكال نفسها.
+# 2219 مسافة، و1756 وصلة بين الضاد/الصاد والياء الأخيرة لا حرف لها، و1782 ربط «هن» («مهني»).
+SAKKAL_181 = {
+    513: "ئ", 517: "ا", 519: "ا", 522: "ب", 523: "ب", 524: "ب", 526: "ب", 534: "ت", 536: "ت", 550: "ح",
+    585: "ط", 608: "ك", 610: "ك", 626: "ن", 628: "ن", 632: "ه", 634: "ه", 638: "ى", 643: "ى", 644: "ى",
+    647: "ي", 648: "ي", 649: "ي", 651: "ي", 655: "ي", 854: "ف", 884: "ق", 887: "ق", 1136: "ه", 1464: "لا",
+    1467: "لا", 1540: "ب", 1541: "ت", 1544: "ي", 1591: "ص", 1592: "ص", 1593: "ض", 1594: "ض", 1601: "ر", 1602: "ز",
+    1617: "ب", 1618: "ت", 1620: "ن", 1621: "ي", 1645: "ب", 1646: "ت", 1672: "ه", 1714: "ل", 1716: "ل", 1751: "ب",
+    1752: "ت", 1754: "ن", 1756: "\u200b", 1782: "هن", 1787: "ه", 1826: "ى", 1827: "ي", 1829: "س", 1830: "س", 1831: "ش",
+    1832: "ش", 1845: "ص", 1869: "ل", 1871: "ل", 1896: "ج", 1904: "ح", 1907: "ح", 1909: "خ", 1912: "خ", 2153: "ف",
+    2219: " ", 2221: "ف", 2222: "ق",
+}
+
 R, T, D = "rtl", "txt", "dustour"
+# v8.3 — ج.ر 7526 (16 يوليوز 2026): القانون 041.25 جعل المحرر الرسمي وحده شكل التصرفات العقارية (المادة 4 من 39.08،
+# والمادة 12 من 18.00، والفصل 618-3 من ق.ل.ع، ونسخ الفصل 618-17)، والقانون 032.26 غيّر المادة 193 من مدونة الشغل.
+# نصوص المواد الجديدة ليست بين أيدينا: تُحذف المواد المتجاوزة إلى أن يُرفع نص الجريدة (التفصيل في data/laws.json).
+# والقاعدة نفسها لكل تعديل مسجل بعد تاريخ صيغة النص (71.24 و44.24 و45.24 و58.25 وظهيرا 2019 و16.25 و87.21):
+# المادة التي مسّها التعديل لا تبقى في المكتبة بصيغتها القديمة، والقانون المنسوخ كله لا يدخلها («repealed»).
 SOURCES = [
-    ("ق.ل.ع", "doc", "قانون الالتزامات والعقود", "obligations", "الفصل", [(R, "4_ONC_Law_ar-MA.pdf", {})], {}),
-    ("مدونة التجارة 15.95", "commerce", "مدونة التجارة (القانون 15.95)", "commercial", "المادة", [(R, "3_TradeRecord_ar-MA.pdf", {})], {}),
-    ("القانون 39.08", "real_rights", "مدونة الحقوق العينية (القانون 39.08)", "real_estate", "المادة", [(R, "18729844-39_08.pdf", {})], {}),
+    # «إمضاء ات هم» في الفصل 987-1 كان يُلحم بالمعجم المأخوذ من نص البنك؛ يثبت هنا كي لا يتبدل بتبدل أسئلة البنك
+    ("ق.ل.ع", "doc", "قانون الالتزامات والعقود", "obligations", "الفصل", [(R, "4_ONC_Law_ar-MA.pdf", {})],
+     {"drop": ["618-3", "618-17"], "fixes": [(r"إمضاء ات هم", "إمضاءاتهم")]}),
+    # القانون 71.24 (ج.ر 7478، 29 يناير 2026): مقتضيات الشيك؛ والمواد 231-1 إلى 231-4 المضافة ليست في صيغة 2019
+    ("مدونة التجارة 15.95", "commerce", "مدونة التجارة (القانون 15.95)", "commercial", "المادة", [(R, "3_TradeRecord_ar-MA.pdf", {})],
+     {"drop": ["240", "242", "295", "306", "310", "311", "312", "313", "314", "316", "317", "318", "319", "320", "325", "328"]}),
+    ("القانون 39.08", "real_rights", "مدونة الحقوق العينية (القانون 39.08)", "real_estate", "المادة", [(R, "18729844-39_08.pdf", {})],
+     {"drop": ["4"]}),
     ("مدونة الأسرة 70.03", "family", "مدونة الأسرة (القانون 70.03)", "family", "المادة", [(R, "mudawwana-usra.pdf", {})], {}),
     ("القانون 58.25", "civil_proc", "قانون المسطرة المدنية (القانون 58.25)", "civil_proc", "المادة", [(R, "e488000d-_____________________.pdf", {})], {}),
     ("ق.م.ج", "criminal_proc", "قانون المسطرة الجنائية (القانون 22.01 كما غيّره القانون 03.23)", "criminal_proc", "المادة",
      [(R, "قانون_المسطرة_الجنائية_الجديد_2025__مكتبة_امين_اليعقوبي__.pdf", {})], {"quirks": ["sad"]}),
-    ("مدونة الشغل 65.99", "labour", "مدونة الشغل (القانون 65.99)", "labour", "المادة", [(R, "القانون_رقم_65_99_المتعلق_بمدونة_الشغل__1_.pdf", {})], {}),
+    ("مدونة الشغل 65.99", "labour", "مدونة الشغل (القانون 65.99)", "labour", "المادة", [(R, "القانون_رقم_65_99_المتعلق_بمدونة_الشغل__1_.pdf", {})],
+     {"drop": ["193"]}),
     ("مجموعة القانون الجنائي", "criminal", "مجموعة القانون الجنائي", "criminal", "الفصل", [(R, "مجموعة-القانون-الجنائي-المعدلة-2025.pdf", {})], {}),
     # عناوين الفصول بخط زخرفي لا مقابل عربياً لحروفه: «[ÖË’Ø<12<» = «الفصل 12»؛ وبعد الفصل 180 قرار المجلس الدستوري
     ("دستور 2011", "constitution", "دستور المملكة المغربية (2011)", "constitutional", "الفصل",
@@ -756,17 +849,21 @@ SOURCES = [
      [(R, "ظهير-شريف-رقم-1_22_38-بتنفيذ-القانون-رقم-38_15-المتعلق-بالتنظيم-القضائي__1_.pdf", {})], {}),
     ("القانون 17.95", "sa", "شركات المساهمة (القانون 17.95)", "companies", "المادة", [(T, "sa_17_95.txt", {})], {}),
     ("القانون 5.96", "companies_other", "شركة التضامن والتوصية والمسؤولية المحدودة والمحاصة (القانون 5.96)", "companies", "المادة",
-     [(R, "39843aa9-3-_______-___-5.96-_______-_____-_______-_____-_______-_______.pdf", {}), (T, "sharikat_5_96.txt", {})], {}),
+     [(R, "39843aa9-3-_______-___-5.96-_______-_____-_______-_____-_______-_______.pdf", {}), (T, "sharikat_5_96.txt", {})],
+     {"drop": ["71", "85"]}),   # تمّمهما القانونان 44.24 و45.24 (ج.ر 7328، 22 غشت 2024) بعد صيغة 2019
     ("ظهير 24 فبراير 1958", "civil_service", "النظام الأساسي العام للوظيفة العمومية (ظهير 24 فبراير 1958)", "administrative", "الفصل",
      [(R, "SGFP_06092024_Ar.pdf", {})], {}),
-    ("القانون 18.00", "copropriety", "نظام الملكية المشتركة للعقارات المبنية (القانون 18.00)", "real_estate", "المادة", [(R, "3647cd9f-18_00.pdf", {})], {}),
+    ("القانون 18.00", "copropriety", "نظام الملكية المشتركة للعقارات المبنية (القانون 18.00)", "real_estate", "المادة", [(R, "3647cd9f-18_00.pdf", {})],
+     {"drop": ["12"]}),
     # فصول كثيرة منسوخة (2 إلى 5 و33… بالقانون 14.07)، فالثغرات هنا نسخ لا عناوين ضائعة
     ("ظهير التحفيظ العقاري", "land_registry", "التحفيظ العقاري (ظهير 12 غشت 1913 كما غُيّر وتُمّم)", "real_estate", "الفصل",
      [(R, "04e0233f-______-_______-________-_______.pdf", {})], {"gaps_ok": True}),
     ("القانون 41.90", "admin_courts", "إحداث المحاكم الإدارية (القانون 41.90)", "administrative", "المادة",
-     [(R, "94baead7-____-____-___-1.91.225-______-_______-___-41.90-______-______-_____-______.pdf", {})], {}),
+     [(R, "94baead7-____-____-___-1.91.225-______-_______-___-41.90-______-______-_____-______.pdf", {})],
+     {"repealed": "منسوخ كله بالمادة 644 من القانون 58.25 ابتداء من 24 غشت 2026، وأحكامه المماثلة في القانون 58.25"}),
     ("القانون 42.10", "proximity_courts", "قضاء القرب (القانون 42.10)", "judicial_org", "المادة",
-     [(R, "37c07dce-____-____-___-1.11.151-_____-___-42.10-_____-______-____-_____-______-_________.pdf", {})], {}),
+     [(R, "37c07dce-____-____-___-1.11.151-_____-___-42.10-_____-______-____-_____-______-_________.pdf", {})],
+     {"drop": ["4", "5", "7", "8", "9", "10", "11", "12", "13"], "gaps_ok": True}),   # نسختها المادة 644 من 58.25 (24 غشت 2026)
     ("القانون 49.16", "commercial_lease", "كراء العقارات للاستعمال التجاري أو الصناعي أو الحرفي (القانون 49.16)", "commercial", "المادة",
      [(R, "6f2691f3-____-________-________-_______-_________-_______-__-_______-__-______.pdf", {})], {}),
     ("القانون 67.12", "residential_lease", "كراء المحلات المعدة للسكنى أو للاستعمال المهني (القانون 67.12)", "obligations", "المادة",
@@ -781,23 +878,59 @@ SOURCES = [
      [(R, "d456903a-Loi-09-08-Ar.pdf", {}), (R, "d456903a-Loi-09-08-Ar.pdf", {"cols": True}), (T, "maatiyat_09_08.txt", {})], {}),
     ("القانون 31.13", "access_info", "الحق في الحصول على المعلومات (القانون 31.13)", "administrative", "المادة",
      [(R, "9d8c776c-____-__-________.pdf", {}), (T, "31_13_maaloumat.txt", {})], {}),
+    # القانون 87.21 (ج.ر 7533، 10 غشت 2026 — العدد الذي رفعه المؤلف): غيّر أو تمّم المواد 52 و68 و79 و86 و87 و89 و108 و109 و112
+    # و128 إلى 132 و145، ونسخ وعوّض المواد 113 إلى 118 و136 و139، ونسخ المواد 121 و125 (الفقرة الأخيرة) و126 و127،
+    # وأضاف 113-1 إلى 113-4 و114-1 و114-2 و127-1 إلى 127-29 و136-1. نشرة 2020 التي بين أيدينا سابقة له: تُحذف تلك المواد
     ("القانون 103.12", "credit", "مؤسسات الائتمان والهيئات المعتبرة في حكمها (القانون 103.12)", "commercial", "المادة",
-     [(R, "8bc562a3-loi-103-12-credit-ar.pdf", {})], {"quirks": ["hamza"]}),
+     [(R, "8bc562a3-loi-103-12-credit-ar.pdf", {})],
+     {"quirks": ["hamza"], "gaps_ok": True,
+      "drop": ["52", "68", "79", "86", "87", "89", "108", "109", "112", "113", "114", "115", "116", "117", "118",
+               "121", "125", "126", "127", "128", "129", "130", "131", "132", "136", "139", "145"]}),
     ("مدونة الأوقاف", "awqaf", "مدونة الأوقاف (ظهير 23 فبراير 2010)", "real_estate", "المادة",
-     [(R, "f73ab2af-_____-_______.pdf", {}), (T, "awqaf_2010.txt", {})], {"quirks": ["hamza"]}),
+     [(R, "f73ab2af-_____-_______.pdf", {}), (T, "awqaf_2010.txt", {})],
+     # غيّرها الظهيران 1.19.46 و1.19.47 (ج.ر 6759، 11 مارس 2019) بعد صيغة 2010
+     {"quirks": ["hamza"], "gaps_ok": True,
+      "drop": ["13", "27", "31", "54", "57", "58", "59", "60", "64", "72", "73", "98", "113", "134", "138", "143"]}),
     ("القانون 80.03", "admin_appeal", "إحداث محاكم استئناف إدارية (القانون 80.03)", "administrative", "المادة",
      [(R, "الظهير-الشريف-رقم-1_06_07-بتنفيذ-القانون-رقم-80_03-المحدثة-بموجبه-محاكم-استئناف-إدارية.pdf", {"cols": True}),
-      (R, "الظهير-الشريف-رقم-1_06_07-بتنفيذ-القانون-رقم-80_03-المحدثة-بموجبه-محاكم-استئناف-إدارية.pdf", {})], {}),
+      (R, "الظهير-الشريف-رقم-1_06_07-بتنفيذ-القانون-رقم-80_03-المحدثة-بموجبه-محاكم-استئناف-إدارية.pdf", {})],
+     {"repealed": "منسوخ كله بالمادة 644 من القانون 58.25 ابتداء من 24 غشت 2026، وأحكامه المماثلة في القانون 58.25"}),
     ("القانون 55.19", "simplification", "تبسيط المساطر والإجراءات الإدارية (القانون 55.19)", "local_gov", "المادة",
      [(R, "القانون_رقم_19-55_المتعلق_بتبسيط_المساطر_والإجراءات_الإدارية.pdf", {"cols": True}),
       (R, "القانون_رقم_19-55_المتعلق_بتبسيط_المساطر_والإجراءات_الإدارية.pdf", {})], {}),
     ("القانون 36.21", "civil_status", "الحالة المدنية (القانون 36.21)", "family", "المادة",
      [(R, "1eaaa27a-Dahir_n__1.21.81_en_date_du_14_Juillet_2021_en_application_de_la_loi_36.21_relative___l__tat_civil.pdf", {"cols": True})],
-     {"quirks": ["sad"]}),
+     {"quirks": ["sad"], "drop": ["35"]}),   # غيّر القانون 16.25 فقرتها الرابعة (ج.ر 7478، 29 يناير 2026)
     ("القانون 97.15", "strike", "القانون التنظيمي لممارسة حق الإضراب (القانون 97.15)", "labour", "المادة",
      [(R, "80f0c616-97-15-Ar.pdf", {"cols": True}), (R, "80f0c616-97-15-Ar.pdf", {})], {}),
     ("القانون 051.26", "adoul", "تنظيم مهنة العدول (القانون 051.26)", "judicial_org", "المادة",
      [(R, "da5b606c-BO_7533_Ar.pdf", {"cols": True, "pages": (37, 67)})], {"quirks": ["alef_sin"]}),
+    # v8.3 — نصوص العقاري التي رفعها المؤلف (24 نونبر 2026)
+    ("القانون 12.90", "urbanism", "التعمير (القانون 12.90)", "real_estate", "المادة",
+     [(R, "83ec5396-___________________.pdf", {"colon_heads": True})],
+     # النسخة المرفوعة صيغة 1992: غيّر القانون 66.12 (ج.ر. 6501، 19 شتنبر 2016) المواد 40 و41 و55، ونسخ الباب الرابع (64 إلى 80) وعوّضه
+     {"drop": ["40", "41", "55"] + [str(n) for n in range(64, 81)], "gaps_ok": True, "nopath": True,
+      "fixes": [(r"ال مت طلبات", "المتطلبات"), (r"المهندس ين", "المهندسين"), (r"المعماري ين", "المعماريين"), (r"استخدام ها", "استخدامها")]}),
+    ("المرسوم 2.13.18", "registry_proc", "إجراءات التحفيظ العقاري (المرسوم 2.13.18)", "real_estate", "المادة",
+     [(R, "d47ea1da-_____-14-______-2014-__-___-_______-_______-_______.pdf", {})],
+     {"quirks": ["sad_poppler"], "fixes": [   # الألف الساقطة من «لا» في هذا الخط، وسطر مفكك في المادة 21 (ص 133 من التجميعة)
+         (r"التس اميم العقارية لأنه ائية والتعدي لات اللاحقة، عن د القتس اء،", "التصاميم العقارية النهائية والتعديلات اللاحقة، عند الاقتضاء،"),
+         (r"\bالقتساء\b", "الاقتضاء"), (r"\bلحتساب\b", "لاحتساب"), (r"في حالت مبررة", "في حالات مبررة"), (r"ك لما", "كلما")],
+      # المادتان 12 و26 غيّرهما المرسوم 2.21.605 (30 نوفمبر 2021، النسخ الإلكترونية) ونص هذا الملف سابق له (2017): لا تدخلان المكتبة
+      "drop": ["12", "26"], "gaps_ok": True}),
+    ("المرسوم 2.18.181", "registry_digital", "التدبير الإلكتروني لعمليات التحفيظ العقاري (المرسوم 2.18.181)", "real_estate", "المادة",
+     [(R, "a6c740bb-_______-______-__-10-______-2018-___-___-______-_______.pdf", {"tufix": "map", "cidmap": SAKKAL_181})],
+     # طبعة 2022 من الوكالة: النص كما غيّره المرسوم 2.21.604 (30 نوفمبر 2021)؛ المادة 16 نسخت به، وعناوين الأقسام لا يوثق باستخراجها
+     {"drop": ["16"], "gaps_ok": True, "nopath": True, "fixes": [
+         (r"للوث ائق", "للوثائق"), (r"المودع ة", "المودعة"), (r"المعني ب الأمر", "المعني بالأمر"), (r"المعدة ل ذلك", "المعدة لذلك")]}),
+    ("المرسوم 2.16.375", "registry_fees", "تعريفة وجيبات المحافظة العقارية (المرسوم 2.16.375)", "real_estate", "المادة",
+     [(R, "420f261a-Tarifs.pdf", {"cols": True, "arcol": True, "leaders": True,
+                                  "head": [(r"^(المادة) الرابعة", r"\1 4"), (r"^(المادة) الخامسة", r"\1 5")]})],
+     {"nopath": True, "fixes": [(r"الم ست وفاة", "المستوفاة"), (r"%(\d+(?:٫\d+)?)", r"\1 %"), (r"(?m)([؛.])\.+$", r"\1"),
+                                (r"(?<=[^\d\s.])\.{2,3}(?=\d)", ": "), (r"(\d)٫(\d)", r"\1,\2")]}),
+    ("القانون 58.00", "ancfcc", "الوكالة الوطنية للمحافظة العقارية والمسح العقاري والخرائطية (القانون 58.00)", "real_estate", "المادة",
+     [(R, "ae896e3a-2.pdf", {"tufix": "font"})],
+     {"fixes": [(r"الوك آلة", "الوكالة"), (r"رج ح", "رجح"), (r"(?s)\s*ظهير شريف رقم 1\.02\.125 صادر في فاتح ربيع الآخر.*$", "")]}),
 ]
 
 
@@ -814,7 +947,19 @@ def cached_lines(path, how, opt):
     else:
         pages = pdf_glyphs(path, first, last)
         f.write_bytes(pickle.dumps(pages))
-    return assemble(pages, cols=opt.get("cols", False))
+    return assemble(pages, cols=opt.get("cols", False), arcol=opt.get("arcol", False))
+
+
+def tufixed(path, opt):
+    """نسخة من الملف بخرائط ToUnicode مصححة (tools/fix_tounicode.py)، تُحفظ في ذاكرة الاستخراج المؤقتة."""
+    sys.path.insert(0, str(ROOT / "tools"))
+    from fix_tounicode import fix_pdf
+    CACHE.mkdir(parents=True, exist_ok=True)
+    tag = hashlib.sha256(path.read_bytes() + json.dumps([opt["tufix"], opt.get("cidmap")], sort_keys=True).encode()).hexdigest()[:16]
+    out = CACHE / f"{tag}-tufix.pdf"
+    if not out.exists():
+        fix_pdf(path, out, opt["tufix"], opt.get("cidmap"))
+    return out
 
 
 def build_one(src, how, fname, opt):
@@ -835,12 +980,14 @@ def build_one(src, how, fname, opt):
         if how == "dustour":
             arts = dustour_articles(path)
         else:
-            pages, notes = cached_lines(path, how, opt)
+            pages, notes = cached_lines(tufixed(path, opt) if opt.get("tufix") else path, how, opt)
             if opt.get("head"):
-                rx, rep = opt["head"]
-                pages = [[(BOLD if l.startswith(BOLD) else "") + re.sub(rx, rep, l.lstrip(BOLD)) for l in p] for p in pages]
+                for rx, rep in ([opt["head"]] if isinstance(opt["head"][0], str) else opt["head"]):
+                    pages = [[(BOLD if l.startswith(BOLD) else "") + re.sub(rx, rep, l.lstrip(BOLD)) for l in p] for p in pages]
+            if opt.get("leaders"):          # جدول تعريفة: «وجيبة ثابتة ........ 100 درهم» سطر من النص لا فهرس، فنُبقيه بلا نقاط
+                pages = [[re.sub(r"([؛.])\.+$", r"\1", re.sub(r"\s*:?\s*(?:\.{4,}|…{2,})[.…\s]*", ": ", l)) for l in p] for p in pages]
             lines = clean_pages(pages)
-            arts = split_articles(lines, word, opt.get("tail"), notes)
+            arts = split_articles(lines, word, opt.get("tail"), notes, opt.get("colon_heads", False))
     return {"key": key, "slug": slug, "title": title, "branch": branch, "word": word, "how": how, "opt": opt, "ocr": ocr,
             "source": path.name, "sha": hashlib.sha256(path.read_bytes()).hexdigest()[:16], "articles": arts}, None
 
@@ -870,13 +1017,15 @@ BANK_ALIAS = {
     "kafala": r"15\.01", "work_accidents": r"18\.12", "domestic_work": r"19\.12", "consumer": r"31\.08", "insurance": r"17\.99|التأمينات",
     "personal_data": r"09\.08", "access_info": r"31\.13", "adoul_plan": r"16\.03|خطة العدالة", "credit": r"103\.12", "awqaf": r"الأوقاف",
     "deconcentration": r"2\.17\.618|اللاتمركز", "admin_appeal": r"80\.03", "simplification": r"55\.19", "civil_status": r"36\.21",
-    "strike": r"97\.15", "adoul": r"051\.26",
+    "strike": r"97\.15", "adoul": r"051\.26", "urbanism": r"(?<![\d.])12\.90(?![\d.])|قانون التعمير", "registry_proc": r"(?<![\d.])2\.13\.18(?![\d.])",
+    "registry_digital": r"(?<![\d.])2\.18\.181(?![\d.])", "registry_fees": r"(?<![\d.])2\.16\.375(?![\d.])",
+    "ancfcc": r"(?<![\d.])58\.00(?![\d.])",   # لا «1.58.008» (ظهير الوظيفة العمومية)
 }
 
 
 # كيف يُذكر كل قانون في سؤال المستخدم (يُطابَق على نص مُطبَّع: الهمزات ألفاً، والتشكيل محذوف) — للبحث الدقيق «المادة N من …»
 USER_ALIAS = {
-    "doc": r"الالتزامات والعقود|ق\.?\s?ل\.?\s?ع|code des obligations|\bdoc\b",
+    "doc": r"الالتزامات والعقود|ق\.?\s?ل\.?\s?ع|code des obligations|\bdoc\b|44\.00|107\.12|بيع العقار(?:ات)? في طور الانجاز",
     "commerce": r"مدونة التجارة|القانون التجاري|15\.95|code de commerce",
     "real_rights": r"الحقوق العينية|39\.08|droits r[ée]els",
     "family": r"مدونة الاسرة|قانون الاسرة|70\.03|code de la famille|moudawana",
@@ -903,6 +1052,11 @@ USER_ALIAS = {
     "civil_status": r"الحالة المدنية|36\.21|[ée]tat civil",
     "strike": r"الاضراب|97\.15|gr[èe]ve",
     "adoul": r"العدول|خطة العدالة|\badoul\b",
+    "urbanism": r"التعمير|(?<![\d.])12\.90(?![\d.])|تصميم التهيئة|تصميم التنطيق|رخصة البناء|رخصة السكن|urbanisme",
+    "registry_proc": r"(?<![\d.])2\.13\.18(?![\d.])|مرسوم اجراءات التحفيظ|اجراءات التحفيظ العقاري",
+    "registry_digital": r"(?<![\d.])2\.18\.181(?![\d.])|التدبير الالكتروني|المنصة الالكترونية للوكالة",
+    "registry_fees": r"(?<![\d.])2\.16\.375(?![\d.])|وجيبات المحافظة|تعريفة الوجيبات|تعريفة وجيبات|droits de conservation",
+    "ancfcc": r"(?<![\d.])58\.00(?![\d.])|الوكالة الوطنية للمحافظة العقارية|\bancfcc\b",
 }
 
 
@@ -952,6 +1106,8 @@ def verdict(chk, q, meta=None, law=None):
     why = []
     if law and law.get("ocr"):
         why.append("النص المتاح مستخرج بالتعرف الضوئي على صور الصفحات، وفيه أخطاء حرفية لا تصلح للاستشهاد")
+    if meta.get("repealed"):                     # قانون نُسخ كله: لا يُعرض نصاً نافذاً مهما سلم استخراجه
+        why.append(meta["repealed"])
     if chk["articles"] < 5:
         why.append("لم تُستخرج مواده")
     if chk["coverage"] is not None and chk["cited"] >= 10 and chk["coverage"] < GATES["coverage"]:
@@ -972,6 +1128,7 @@ def main():
     ap.add_argument("--only", default="")
     ap.add_argument("--write", action="store_true")
     ap.add_argument("--show", default="")
+    ap.add_argument("--unk", default="", help="يعرض الكلمات المجهولة في هذه القوانين (للمراجعة)")
     a = ap.parse_args()
     only = set(filter(None, a.only.split(",")))
     cands, errs = {}, {}
@@ -998,6 +1155,11 @@ def main():
         scored = []
         QUIRKS.clear()
         QUIRKS.update(s[6].get("quirks", ()))
+        if "sad_poppler" in QUIRKS:
+            for l in outs:
+                src_pdf = find(l["source"])
+                if src_pdf and l["how"] == R:
+                    print(f"   {slug}: حروف السين من pdftotext: {sad_align(l, pop_tokens(src_pdf))} كلمة")
         CUR.clear()
         CUR.update(t for l in outs[:1] for a in l["articles"] for t in TOK.findall(a["text"]))
         for l in outs:
@@ -1009,6 +1171,14 @@ def main():
                     art["notes"] = [x for x in (repair(x).strip() for x in art["notes"]) if x and NOTE_KEEP.search(x)]
                     if not art["notes"]:
                         del art["notes"]
+            for art in l["articles"]:                   # تصحيحات ثابتة لهذا الملف، قوبلت بصور صفحاته
+                for pat, rp in s[6].get("fixes", ()):
+                    art["text"] = re.sub(pat, rp, art["text"])
+                if s[6].get("nopath"):                  # عناوين أقسام لا يُوثق باستخراجها في هذا الملف: لا مسار خير من مسار خاطئ
+                    art["path"] = ""
+            # مواد نصها المتاح قديم (غيّرها أو عوّضها قانون لاحق ليس نصه بين يدينا): لا تدخل المكتبة
+            if s[6].get("drop"):
+                l["articles"] = [x for x in l["articles"] if x["n"] not in set(s[6]["drop"])]
             q, chk = quality(l), check(l, refs)
             why = verdict(chk, q, s[6], l)
             score = (not why, chk["coverage"] if chk["coverage"] is not None else 1.0, -q["garbled"] / max(1, q["tokens"]),
@@ -1034,6 +1204,11 @@ def main():
         print(f"{'✓' if not why else '✗'} {l['slug']:<18} {chk['articles']:>4} مادة · تغطية {cov:>6} ({chk['cited']}) · ثغرات {chk['gap_rate']:.1%} · "
               f"مجهول {before[l['slug']]['unknown']:.1%}→{q['unknown']:.1%} · مشوه {before[l['slug']]['garbled']}→{q['garbled']} · الأطول {chk['longest']}"
               + (f"  ← {'؛ '.join(why)}" if why else ""))
+        if a.unk and l["slug"] in a.unk.split(","):
+            mine = RAW.get(l["slug"], set())
+            unk = collections.Counter(t for x in l["articles"] for t in TOK.findall(x["text"])
+                                      if len(t) >= 3 and LEX[t] < 2 and VOCAB[t] - (t in mine) < 1)
+            print("      المجهول:", "، ".join(f"{w}×{c}" if c > 1 else w for w, c in unk.most_common(400)))
         if a.show and l["slug"] in a.show.split(","):
             for art in l["articles"][:: max(1, len(l["articles"]) // 4)][:4]:
                 print(f"      [{art['label']}] {art['text'][:300]}")

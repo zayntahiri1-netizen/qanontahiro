@@ -10,6 +10,7 @@
 #   5ب) tests/fn/run-ads.mjs      : التحقق من مكافآت AdMob بتوقيعات ECDSA حقيقية (qt-ads)
 #   6) tests/browser/e2e_v5.js    : الدخول بـ Google، والترتيب العالمي، وأدوات TAHIRO AI في متصفح حقيقي
 #   6ب) tests/browser/e2e_v82.js  : فقاعة TAHIRO AI والدردشة والأصوات التسعة والأدوات السبع الجديدة بثلاث لغات
+#   6ج) tests/browser/e2e_layout.js: كل المقاسات (280px إلى الحاسوب، أفقياً، وبخط النظام المكبَّر)، والخطان المضمَّنان والأيقونات
 #   7) tests/browser/e2e_native.js: نسخة أندرويد (www/) بـ capacitor.js الحقيقي وبيئة أصلية محاكاة
 #   8) tests/browser/e2e_ads.js   : الإعلانات في نسخة أندرويد بمحاكٍ لـ AdMob: الموافقة، والشريط، والبيني، وساعة دون إعلانات، وشاشة الفتح، والفقاعة فوق الشريط
 #   (ومعها tests/sql/behave_v5.sql: الترتيب العالمي وأسماء Google وحصص المساعد، وbehave_v6.sql: مكافآت الإعلانات،
@@ -63,6 +64,7 @@ node tests/browser/e2e_cloud.js | grep -E "^(✓|✗)|لا أخطاء|FAIL"
 node tests/browser/e2e_site.js | grep -E "^(✗)|لا أخطاء|FAIL"
 node tests/browser/e2e_v5.js | grep -E "^(✗)|لا أخطاء|FAIL"
 node tests/browser/e2e_v82.js | grep -E "^(✗)|لا أخطاء|FAIL"
+node tests/browser/e2e_layout.js | grep -E "^(✗)|لا أخطاء|FAIL"
 # نسخة أندرويد: تحتاج www/ من node tools/cap-web.mjs (بعد npm install)، وإلا تُترك
 if [ -f www/native.js ]; then
   ( cd www && exec python3 -m http.server 8771 --bind 127.0.0.1 >/dev/null 2>&1 ) & N=$!

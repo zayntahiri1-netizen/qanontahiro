@@ -16,7 +16,7 @@ GH_USER=${GH_USER:-zayntahiri1-netizen}
 GH_REPO=${GH_REPO:-qanontahiro}
 BRANCH=${GH_BRANCH:-main}
 URL=${GH_URL:-https://github.com/$GH_USER/$GH_REPO.git}
-MSG=${1:-"قانون تاهيرو v8.2.2: صمود TAHIRO AI أمام ضغط Google في المجاني (أربعة نماذج، وانتقال فوري عند الضغط أو المهلة، ومهلة للطلب كله) — v8.2.1: TAHIRO AI يعمل بمفتاح Google المجاني (سلاسل نماذج حسب الحصص، ودون بحث في المجاني، وصوت الجهاز احتياطاً، وحذف المعرّفات الشخصية) — v8.2: TAHIRO AI في فقاعة عائمة (المكتبة أولاً ثم البحث في آخر المستجدات، والسؤال بالصوت، والقراءة بتسعة أصوات) دون رصيد يومي، وسبع أدوات جديدة: رادار المستجدات، واستمع، والخريطة الذهنية، ودفتر الأخطاء الذكي، وتحدي الدقيقة، وموعد امتحاني، وملاحظاتي"}
+MSG=${1:-"قانون تاهيرو v8.3: TAHIRO AI يبحث في الإنترنت في المجاني أيضاً (Tavily أو بحث Google المجاني)، وخط عربي مضمَّن، وأيقونة جديدة لكل المنصات، وكل المقاسات من 280 نقطة إلى الحاسوب، وخمسة نصوص عقارية في المكتبة، وخروج ما تجاوزته تعديلات 2026 منها (041.25 و87.21 و58.25…) فصارت 30 قانوناً، وإصلاح أسئلة المحرر الرسمي — v8.2.2: صمود TAHIRO AI أمام ضغط Google في المجاني (أربعة نماذج، وانتقال فوري عند الضغط أو المهلة، ومهلة للطلب كله) — v8.2.1: TAHIRO AI يعمل بمفتاح Google المجاني (سلاسل نماذج حسب الحصص، ودون بحث في المجاني، وصوت الجهاز احتياطاً، وحذف المعرّفات الشخصية) — v8.2: TAHIRO AI في فقاعة عائمة (المكتبة أولاً ثم البحث في آخر المستجدات، والسؤال بالصوت، والقراءة بتسعة أصوات) دون رصيد يومي، وسبع أدوات جديدة: رادار المستجدات، واستمع، والخريطة الذهنية، ودفتر الأخطاء الذكي، وتحدي الدقيقة، وموعد امتحاني، وملاحظاتي"}
 
 command -v git >/dev/null || { echo "✗ يلزم git:  pkg install git"; exit 1; }
 if [ -z "${GH_TOKEN:-}" ] && [[ "$URL" == https://* ]]; then
@@ -53,7 +53,7 @@ fi
 git add -A
 # حارس أخير: لا سر في ما سيُدفع (المفاتيح العامة للعميل مسموحة؛ هذه أنماط أسرار الخادم وملفات التوقيع)
 BAD=$(git diff --cached --name-only --diff-filter=AM | grep -E '\.(jks|keystore|p12|pem|p8|cer|mobileprovision|certSigningRequest)$|(^|/)\.env' || true)
-LEAK=$(git grep --cached -l -E 'sb_secret_[A-Za-z0-9]|sbp_[0-9a-f]{20,}|bjCE2A\.7YUitA:|-----BEGIN [A-Z ]*PRIVATE KEY|"type" *: *"service_account"|sk-ant-(api|admin)[0-9]{2}-[A-Za-z0-9_-]{20,}|AQ\.[A-Za-z0-9_-]{30,}' -- . ':!scripts/push-to-github.sh' ':!build.py' ':!tools/cap-web.mjs' ':!scripts/ios-signing.sh' || true)
+LEAK=$(git grep --cached -l -E 'sb_secret_[A-Za-z0-9]|sbp_[0-9a-f]{20,}|bjCE2A\.7YUitA:|-----BEGIN [A-Z ]*PRIVATE KEY|"type" *: *"service_account"|sk-ant-(api|admin)[0-9]{2}-[A-Za-z0-9_-]{20,}|AQ\.[A-Za-z0-9_-]{30,}|tvly-[A-Za-z0-9_-]{20,}' -- . ':!scripts/push-to-github.sh' ':!build.py' ':!tools/cap-web.mjs' ':!scripts/ios-signing.sh' || true)
 if [ -n "$BAD$LEAK" ]; then
   echo "✗ أوقفتُ الدفع: ملفات تبدو أسراراً:"; echo "$BAD"; echo "$LEAK"; git reset -q; exit 1
 fi

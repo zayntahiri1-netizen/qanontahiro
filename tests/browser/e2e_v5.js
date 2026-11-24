@@ -290,7 +290,7 @@ const answerN = async (page, n) => { for (let i = 0; i < n; i++) { await page.cl
   // ===== v8: النصوص القانونية داخل التطبيق =====
   await B.click('#tools .tool[data-k="texts"]');
   await B.waitForSelector('#txv .li[data-law]', { timeout: 10000 }).catch(() => null);
-  ok(await B.$$eval('#txv .li[data-law]', x => x.length) === 27, 'النصوص القانونية: 27 قانوناً في التطبيق');
+  ok(await B.$$eval('#txv .li[data-law]', x => x.length) === 30, 'النصوص القانونية: 30 قانوناً في التطبيق');
   await B.fill('#txq', 'سقوط الحضانة'); await B.press('#txq', 'Enter');
   await B.waitForSelector('#txr .hit', { timeout: 30000 }).catch(() => null);
   ok(await B.$$eval('#txr .hit', x => x.length) >= 1 && /مدونة الأسرة/.test(await B.textContent('#txr').catch(() => '')), 'البحث في كل النصوص يجد مواد الحضانة في مدونة الأسرة');
@@ -454,7 +454,11 @@ const answerN = async (page, n) => { for (let i = 0; i < n; i++) { await page.cl
   ok(/Google/.test(delMsg), 'تأكيد الحذف يذكر حساب Google المرتبط');
   ok(sql(`select count(*) from auth.users where id = '${uidL}'`) === '0' && sql(`select count(*) from qt_profiles where alias = 'ليلى'`) === '0',
     'حذف بيانات حساب Google يحذف الحساب نفسه (البريد والاسم) لا الاسم المستعار وحده');
-  ok(await C.evaluate(async () => !(await Store.get('sb:qt-auth')) && !CS.google && S.p.answered === 3), 'وتُمسح جلسته من الجهاز ويبقى التقدم محلياً');
+  // الخروج والرسم بعد الحذف غير متزامنين: ينتظر الفحص استقرار الحالة (5 ثوان على الأكثر)، ويذكر الحالة إن فشل
+  const delState = () => C.evaluate(async () => ({ auth: !!(await Store.get('sb:qt-auth')), google: !!CS.google, answered: S.p.answered }));
+  let ds = await delState();
+  for (let i = 0; i < 25 && (ds.auth || ds.google || ds.answered !== 3); i++) { await sleep(200); ds = await delState(); }
+  ok(!ds.auth && !ds.google && ds.answered === 3, 'وتُمسح جلسته من الجهاز ويبقى التقدم محلياً' + (ds.auth || ds.google || ds.answered !== 3 ? ` (${JSON.stringify(ds)})` : ''));
   await C.keyboard.press('Escape');
 
   // ===== الجهاز 4: مستخدم جديد يختار Google وحده — لا يُطلب منه اسم مستعار =====

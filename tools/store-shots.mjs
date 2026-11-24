@@ -36,6 +36,9 @@ const URL0 = `http://127.0.0.1:${srv.address().port}/index.html`;
 
 // ---------- أجوبة TAHIRO AI المحضَّرة (من نصوص المواد كما هي في المكتبة، ومصدر رسمي حقيقي) ----------
 const labour = JSON.parse(fs.readFileSync(path.join(ROOT, 'data', 'corpus', 'labour.json'), 'utf8'));
+// العددان في العناوين من البناء نفسه لا مكتوبين باليد: أسئلة البنك وقوانين المكتبة
+const NQ = JSON.parse(fs.readFileSync(path.join(APP, 'questions.json'), 'utf8')).questions.length;
+const NLAWS = JSON.parse(fs.readFileSync(path.join(ROOT, 'data', 'corpus', 'index.json'), 'utf8')).laws.length;
 const lawTitle = labour.title;
 const art = n => { const a = labour.items.find(x => x.n === n); return { key: 'labour:' + n, slug: 'labour', n, label: a.label, title: lawTitle, path: a.path || '', text: a.text, notes: [], stale: [] }; };
 const A13 = art('13'), A14 = art('14'), A43 = art('43');
@@ -75,9 +78,9 @@ const CANNED = {
 };
 
 const SHOTS = [
-  ['01-home', '7408 أسئلة في 13 فرعاً من القانون المغربي'],
+  ['01-home', `${NQ} أسئلة في 13 فرعاً من القانون المغربي`],
   ['02-question', 'كل خيار بشرحه ومرجعه في القانون'],
-  ['03-texts', '27 قانوناً بنصوصها داخل التطبيق، حتى دون اتصال'],
+  ['03-texts', `${NLAWS} قانوناً بنصوصها داخل التطبيق، حتى دون اتصال`],
   ['04-tahiro', TIER === 'paid' ? 'اسأل TAHIRO AI: من نصوص القوانين أولاً، ثم آخر المستجدات' : 'اسأل TAHIRO AI: من نصوص القوانين أولاً، ثم الشرح والتوسّع'],
   ['05-explain', 'اشرح أي مادة: شروطها وآثارها وفخاخ الامتحان'],
   ['06-compare', 'قارن بين مفهومين يختلط أمرهما'],
@@ -90,12 +93,12 @@ const PLATFORMS = [
 ];
 const CAP = 150, PAD = 20;
 
-// خطا التطبيق (Reem Kufi وMarkazi Text، رخصة OFL) من مجلد محلي إن وُجد، بدل Google Fonts: QT_FONTS_DIR=…
+// خطا التطبيق المضمَّنان (El Messiri وNoto Naskh Arabic، رخصة OFL) من resources/fonts (tools/make-fonts.py)
 const FONTS = process.env.QT_FONTS_DIR || path.join(ROOT, 'resources', 'fonts');
 const fontFile = re => { try { const f = fs.readdirSync(FONTS).find(x => re.test(x)); return f ? fs.readFileSync(path.join(FONTS, f)) : null; } catch { return null; } };
-const REEM = fontFile(/^ReemKufi.*\.ttf$/i), MARKAZI = fontFile(/^MarkaziText.*\.ttf$/i);
-const FACE = (REEM ? `@font-face{font-family:'Reem Kufi';src:url(data:font/ttf;base64,${REEM.toString('base64')}) format('truetype');font-weight:400 700}` : '') +
-             (MARKAZI ? `@font-face{font-family:'Markazi Text';src:url(data:font/ttf;base64,${MARKAZI.toString('base64')}) format('truetype');font-weight:400 700}` : '');
+const MESSIRI = fontFile(/^qt-messiri\.woff$/i), NASKH = fontFile(/^qt-naskh\.woff$/i);
+const FACE = (MESSIRI ? `@font-face{font-family:'El Messiri';src:url(data:font/woff;base64,${MESSIRI.toString('base64')}) format('woff');font-weight:400 700}` : '') +
+             (NASKH ? `@font-face{font-family:'Noto Naskh Arabic';src:url(data:font/woff;base64,${NASKH.toString('base64')}) format('woff');font-weight:400 700}` : '');
 async function fonts(ctx) {
   if (!FACE) return;
   await ctx.route(/fonts\.googleapis\.com\/css/, r => r.fulfill({ contentType: 'text/css', body: FACE }));
@@ -175,7 +178,7 @@ async function frame(pf, png, caption, file) {
   const ctx = await browser.newContext({ viewport: { width: pf.W, height: pf.H }, deviceScaleFactor: pf.dpr });
   const p = await ctx.newPage();
   await p.setContent(`<!doctype html><html lang="ar" dir="rtl"><meta charset="utf-8"><style>${FACE}</style><body style="margin:0;width:${pf.W}px;height:${pf.H}px;overflow:hidden;
-    background:radial-gradient(120% 70% at 50% 0%,#24313d 0%,#12181F 62%);font-family:'Reem Kufi','Noto Naskh Arabic','DejaVu Sans',sans-serif">
+    background:radial-gradient(120% 70% at 50% 0%,#24313d 0%,#12181F 62%);font-family:'El Messiri','Noto Naskh Arabic','DejaVu Sans',sans-serif">
     <div style="height:${CAP}px;display:flex;align-items:center;justify-content:center;padding:0 ${PAD + 6}px;box-sizing:border-box;text-align:center;
       color:#F0E2C3;font-size:${pf.W > 431 ? 29 : 28}px;font-weight:600;line-height:1.45">${caption}</div>
     <div style="position:absolute;top:${CAP}px;left:${PAD}px;right:${PAD}px;bottom:${PAD}px;border-radius:22px;overflow:hidden;
@@ -197,11 +200,11 @@ for (const pf of PLATFORMS) {
   const p = await ctx.newPage();
   const icon = fs.readFileSync(path.join(ROOT, 'resources', 'ios', 'AppIcon-1024.png')).toString('base64');
   await p.setContent(`<!doctype html><html lang="ar" dir="rtl"><meta charset="utf-8"><style>${FACE}</style><body style="margin:0;width:1024px;height:500px;overflow:hidden;display:flex;align-items:center;gap:48px;padding:0 70px;box-sizing:border-box;
-    background:radial-gradient(90% 120% at 85% 50%,#2a3846 0%,#12181F 60%);font-family:'Reem Kufi','Noto Naskh Arabic',sans-serif;color:#F0E2C3">
+    background:radial-gradient(90% 120% at 85% 50%,#2a3846 0%,#12181F 60%);font-family:'El Messiri','Noto Naskh Arabic',sans-serif;color:#F0E2C3">
     <img src="data:image/png;base64,${icon}" style="width:250px;height:250px;border-radius:56px;box-shadow:0 0 0 3px #C89A3C66,0 20px 50px #0009">
     <div><div style="font-size:74px;font-weight:700;line-height:1.2">قانون تاهيرو</div>
-    <div style="font-size:31px;line-height:1.6;margin-top:10px;color:#d9c9a6;font-family:'Markazi Text',serif">القانون المغربي: أسئلة، ونصوص، ومساعد ذكي</div>
-    <div style="font-size:24px;line-height:1.6;margin-top:14px;color:#9fb0bf;font-family:'Markazi Text',serif">7408 أسئلة · 27 قانوناً · نوازل تدريبية</div></div></body></html>`);
+    <div style="font-size:31px;line-height:1.6;margin-top:10px;color:#d9c9a6;font-family:'Noto Naskh Arabic',serif">القانون المغربي: أسئلة، ونصوص، ومساعد ذكي</div>
+    <div style="font-size:24px;line-height:1.6;margin-top:14px;color:#9fb0bf;font-family:'Noto Naskh Arabic',serif">${NQ} أسئلة · ${NLAWS} قانوناً · نوازل تدريبية</div></div></body></html>`);
   await p.waitForTimeout(150);
   await p.screenshot({ path: path.join(OUT, 'play-feature-1024x500.png') });
   await ctx.close();

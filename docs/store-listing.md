@@ -21,7 +21,7 @@
 
 ### العربية (اللغة الافتراضية)
 - **App name** (≤30): `قانون تاهيرو: القانون المغربي`
-- **Short description** (≤80): `7408 أسئلة و27 قانوناً مغربياً بنصوصها، وTAHIRO AI يشرح ويصحّح ويحل النوازل`
+- **Short description** (≤80): `7408 أسئلة و30 قانوناً مغربياً بنصوصها، وTAHIRO AI يشرح ويصحّح ويحل النوازل`
 - **Full description**:
 
 ```
@@ -32,7 +32,7 @@
 لكل خيار شرحه ومرجعه في القانون، ومراجعة متباعدة تعيد إليك ما أخطأت فيه في الوقت المناسب، وامتحانات بتوقيت، وتحديات مع الأصدقاء، ولوحة ترتيب.
 
 ◆ النصوص القانونية داخل التطبيق
-27 قانوناً مغربياً و7452 مادة بنصوصها كما في الصيغ المعتمدة، تقرؤها وتبحث فيها حتى دون اتصال: ابحث في كل النصوص، أو اكتب رقم المادة، واحفظ ما تريد الرجوع إليه. وتحت كل سؤال زر يفتح نص مادته.
+30 قانوناً مغربياً و7478 مادة بنصوصها كما في الصيغ المعتمدة، تقرؤها وتبحث فيها حتى دون اتصال: ابحث في كل النصوص، أو اكتب رقم المادة، واحفظ ما تريد الرجوع إليه. وتحت كل سؤال زر يفتح نص مادته.
 
 ◆ TAHIRO AI: ذكاؤك القانوني، من النصوص أولاً
 فقاعة عائمة تفتح دردشة كاملة مع TAHIRO AI: يجيبك من نصوص المكتبة أولاً فيذكر المادة ويعرض نصها، ثم يتوسّع بالشرح، ثم يبحث في الإنترنت عن آخر المستجدات بمصادرها.
@@ -54,7 +54,7 @@
 
 ### Français
 - **App name**: `Qanoun Tahiro : droit marocain`
-- **Short description**: `7408 QCM, 27 lois marocaines en texte intégral et TAHIRO AI, votre IA juridique`
+- **Short description**: `7408 QCM, 30 lois marocaines en texte intégral et TAHIRO AI, votre IA juridique`
 - **Full description**:
 
 ```
@@ -65,7 +65,7 @@ Qanoun Tahiro : votre compagnon pour étudier le droit marocain et préparer con
 Chaque option est expliquée avec sa référence légale ; révision espacée, examens chronométrés, défis entre amis et classement.
 
 ◆ Les textes de loi dans l’application
-27 lois marocaines et 7 452 articles dans leur version retenue, à lire et à chercher même hors ligne. Sous chaque question, un bouton ouvre le texte de l’article.
+30 lois marocaines et 7 478 articles dans leur version retenue, à lire et à chercher même hors ligne. Sous chaque question, un bouton ouvre le texte de l’article.
 
 ◆ TAHIRO AI : votre IA juridique, d’abord à partir des textes
 Une bulle flottante ouvre une conversation complète : TAHIRO AI répond d’abord à partir des textes de la bibliothèque (il cite l’article et en affiche le texte), puis approfondit, puis cherche sur le web les dernières nouveautés avec leurs sources. Posez vos questions par écrit ou à voix haute, et écoutez réponses, articles et questions avec neuf voix au choix.
@@ -83,7 +83,7 @@ Conditions d’utilisation : https://qanon-47831.web.app/terms
 
 ### English
 - **App name**: `Qanoun Tahiro: Moroccan Law`
-- **Short description**: `7,408 questions, 27 Moroccan laws in full, and TAHIRO AI, your legal AI`
+- **Short description**: `7,408 questions, 30 Moroccan laws in full, and TAHIRO AI, your legal AI`
 - **Full description**:
 
 ```
@@ -94,7 +94,7 @@ Qanoun Tahiro: your companion for studying Moroccan law and preparing for compet
 Every option is explained with its legal reference; spaced review, timed exams, challenges with friends and a leaderboard.
 
 ◆ The law texts inside the app
-27 Moroccan laws and 7,452 articles in their adopted versions, to read and search even offline. Under every question, one tap opens the article’s text.
+30 Moroccan laws and 7,478 articles in their adopted versions, to read and search even offline. Under every question, one tap opens the article’s text.
 
 ◆ TAHIRO AI: your legal AI, texts first
 A floating bubble opens a full chat: TAHIRO AI answers first from the library texts (citing the article and showing its text), then explains further, then searches the web for the latest updates with their sources. Ask by typing or by voice, and listen to answers, articles and questions in nine voices of your choice.
@@ -156,9 +156,11 @@ Terms of use: https://qanon-47831.web.app/terms
    فلا تكون «مقدّم خدمة» فقط: **Other user-generated content** (رسائل TAHIRO AI) و**Voice or sound recordings** و**Photos**.
 3. **App Privacy** في App Store: أضف تحت **Data Not Linked to You** (Purpose = **App Functionality**، Tracking = No): **Audio Data** و**Photos or Videos**؛
    و**Other User Content** معلن أصلاً.
-4. صفحة الخصوصية تُبنى تلقائياً بفقرة المجاني (استعمال Google للمحتوى، والمراجعة البشرية، وحذف المعرّفات الشخصية قبل الإرسال، ولا بحث في الإنترنت).
+4. صفحة الخصوصية تُبنى تلقائياً بفقرة المجاني (استعمال Google للمحتوى، والمراجعة البشرية، وحذف المعرّفات الشخصية قبل الإرسال، والبحث في الإنترنت
+   عبر بحث Google المجاني أو Tavily منذ v8.3، وTavily مقدّم خدمة يتلقى نص البحث وحده).
 
-5. **نصوص المتجرين في المجاني**: لا تَعِد بالبحث في الإنترنت ما دام غير متاح. استعمل هذه الصيغ بدل نظائرها أعلاه:
+5. **نصوص المتجرين في المجاني**: منذ v8.3 يبحث TAHIRO AI في الإنترنت في المجاني أيضاً (مفتاح Tavily، أو بحث Google المجاني إن أتيح لمشروعك:
+   الفحص الذاتي يقول أيهما يعمل)، فتبقى النصوص أعلاه كما هي. أما إن لم يعمل أي منهما، فلا تَعِد بالبحث في الإنترنت، واستعمل هذه الصيغ بدل نظائرها أعلاه:
    - الوصف العربي، بدل جملة «فقاعة عائمة…»: `فقاعة عائمة تفتح دردشة كاملة مع TAHIRO AI: يجيبك من نصوص المكتبة أولاً فيذكر المادة ويعرض نصها، ثم يتوسّع بالشرح والأمثلة.`
    - وبدل بند «رادار المستجدات»: `• رادار المستجدات: تاريخ الصيغة المعتمدة لكل قانون والتعديلات المسجلة بعدها، مع الإحالة على الجريدة الرسمية.`
    - Français, au lieu de « Une bulle flottante… » : `Une bulle flottante ouvre une conversation complète : TAHIRO AI répond d’abord à partir des textes de la bibliothèque (il cite l’article et en affiche le texte), puis approfondit avec explications et exemples. Posez vos questions par écrit ou à voix haute, et écoutez réponses, articles et questions avec neuf voix au choix.`
@@ -170,6 +172,21 @@ Terms of use: https://qanon-47831.web.app/terms
 
 وحين تنتقل إلى المدفوع (`"tier": "paid"`، ثم البناء والنشر): أعد البلدان إن شئت، وارجع بالأجوبة الثلاثة إلى ما في الجدول أعلاه (Shared = No)،
 واحذف Audio Data وPhotos or Videos من App Privacy.
+
+---
+
+## ملاحظات الإصدار 8.3 (Google Play: Release notes ≤500 · App Store: What's New in This Version)
+
+- **العربية** (`<ar>` في Play، 448 حرفاً):
+  `جديد في 8.3: TAHIRO AI يبحث في الإنترنت عن آخر المستجدات بمصادرها، بعد نصوص المكتبة وشرحها. خط عربي جديد أجمل وأوضح مضمَّن في التطبيق، وأيقونة جديدة. والتطبيق يناسب كل الشاشات: الهواتف الصغيرة والقابلة للطي والأجهزة اللوحية والوضع الأفقي. وخمسة نصوص عقارية جديدة في المكتبة: التعمير (12.90)، وإجراءات التحفيظ (2.13.18)، والتدبير الإلكتروني للتحفيظ (2.18.181)، وتعريفة وجيبات المحافظة العقارية (2.16.375)، والوكالة الوطنية للمحافظة العقارية (58.00).`
+- **Français** (`<fr-FR>`, 477) :
+  `Nouveau en 8.3 : TAHIRO AI recherche sur Internet les dernières nouveautés, avec leurs sources, après les textes de la bibliothèque et leur explication. Nouvelle police arabe, plus belle et plus lisible, intégrée à l'application, et nouvelle icône. L'application s'adapte à tous les écrans : petits téléphones, pliables, tablettes et mode paysage. Et cinq nouveaux textes fonciers : urbanisme (12-90), immatriculation (2-13-18 et 2-18-181), tarifs (2-16-375) et ANCFCC (58-00).`
+- **English** (`<en-US>`, 424):
+  `New in 8.3: TAHIRO AI now searches the web for the latest updates, with sources, after the library texts and their explanation. A new, more beautiful and readable Arabic font built into the app, and a new icon. The app fits every screen: small phones, foldables, tablets and landscape. Plus five new land-law texts: urbanism (12-90), land registration (2-13-18 and 2-18-181), registry fees (2-16-375) and the ANCFCC (58-00).`
+
+ولا يتغير في **Data safety** ولا في **App Privacy** شيء عن 8.2 (نص السؤال داخل أصلاً في **Other user-generated content**، وTavily مقدّم خدمة
+يعالجه نيابة عنا). والأيقونة الجديدة: ارفع `resources/store/play-icon-512.png` وصورة العرض `dist/store/play-feature-1024x500.png` في
+**Store presence** ← **Main store listing** ← **Graphics**، ولقطات الشاشة الجديدة من `dist/store/android/`.
 
 ---
 

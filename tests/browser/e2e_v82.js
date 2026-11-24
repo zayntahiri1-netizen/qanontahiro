@@ -295,16 +295,26 @@ const fabBox = async page => page.$eval('#tfab .tfo', e => { const r = e.getBoun
   await P.waitForSelector('.tm.a[data-m] .tsec.web', { timeout: 15000 });
   ok(/2026-10-01/.test(await P.textContent('.tm.a[data-m] .tsec.web')) && /رادار المستجدات/.test(JSON.stringify(GEM.slice(g0).find(c => c.url.endsWith('/interactions')).body.input)), 'رادار المستجدات: مستجدات مؤرخة من الإنترنت');
   ok(await noModelName(P), 'لا ذكر لاسم النموذج في الدردشة');
-  // ===== v8.2.1: خدمة Google المجانية — دون بحث في الإنترنت: يختفي زر «الإنترنت» ويعود حين يصير البحث متاحاً =====
+  // ===== v8.3: خدمة Google المجانية تبحث في الإنترنت أيضاً (Gemini 2.5 أو Tavily): يبقى زر «الإنترنت» ويظهر قسم المستجدات =====
   globalThis.__QT_ENV.QT_AI_TIER = 'free';
+  g0 = GEM.length;
+  await P.fill('#taiQ', 'ما آخر تعديل في مدونة الشغل؟'); await P.click('[data-tsend]');
+  const g25 = await waitGem(g0, c => /\/models\/gemini-2\.5-flash-lite:generateContent$/.test(c.url), 15000);
+  await P.waitForFunction(() => { const m = [...document.querySelectorAll('.tm.a[data-m]')].at(-1); return m && /2026-10-20/.test(m.textContent); }, null, { timeout: 15000 }).catch(() => null);
+  const lastA = await P.$$eval('.tm.a[data-m]', els => { const m = els.at(-1); return { web: (m.querySelector('.tsec.web') || {}).textContent || '', src: m.querySelectorAll('a[href^="https://www.sgg.gov.ma"]').length, sug: !!m.querySelector('.tsug') }; });
+  ok(!!g25 && (g25.body.tools || []).some(t => t.google_search) && /2026-10-20/.test(lastA.web) && lastA.src >= 1 && lastA.sug,
+    'المجاني: البحث في الإنترنت بالباحث المجاني (gemini-2.5-flash-lite)، وقسم «آخر المستجدات» بمصادره واقتراحات بحث Google');
+  ok(!!(await P.$('#taiF [data-tweb]')) && await P.evaluate(() => S.cfg.tnoweb === false), 'ويبقى زر «الإنترنت» ظاهراً في المجاني');
+  // ===== v8.2.1: حين يتعذر البحث المجاني (أو يطفئه المؤلف: QT_AI_WEB_FREE=off) يختفي زر «الإنترنت» ويعود حين يصير البحث متاحاً =====
+  globalThis.__QT_ENV.QT_AI_WEB_FREE = 'off';
   g0 = GEM.length;
   await P.fill('#taiQ', 'ما مدة فترة الاختبار للمستخدمين؟'); await P.click('[data-tsend]');
   await P.waitForFunction(() => !document.querySelector('#taiF [data-tweb]'), null, { timeout: 15000 }).catch(() => null);
   const fx = GEM.slice(g0).filter(c => c.url.endsWith('/interactions') || /:generateContent$/.test(c.url)).filter(c => /مدة فترة الاختبار للمستخدمين/.test(JSON.stringify(c.body)));
   ok(!(await P.$('#taiF [data-tweb]')) && /مكتبة التطبيق أولاً/.test(await P.textContent('#taiF .taihint')) && fx.length && fx.every(c => !JSON.stringify(c.body.tools || []).includes('google_search')),
-    'المجاني: لا بحث في الإنترنت، فيختفي زر «الإنترنت» ويقول التلميح إنه يجيب من مكتبة التطبيق أولاً ثم من معرفته');
+    'البحث المجاني متعذر: لا بحث في الإنترنت، فيختفي زر «الإنترنت» ويقول التلميح إنه يجيب من مكتبة التطبيق أولاً ثم من معرفته');
   ok(await P.evaluate(() => S.cfg.tnoweb === true), 'وتُحفظ الحالة فلا يظهر الزر في المرة القادمة');
-  globalThis.__QT_ENV.QT_AI_TIER = 'paid';
+  globalThis.__QT_ENV.QT_AI_TIER = 'paid'; delete globalThis.__QT_ENV.QT_AI_WEB_FREE;
   await P.fill('#taiQ', 'وللعمال؟'); await P.click('[data-tsend]');
   await P.waitForSelector('#taiF [data-tweb]', { timeout: 15000 }).catch(() => null);
   ok(!!(await P.$('#taiF [data-tweb]')) && await P.evaluate(() => S.cfg.tnoweb === false), 'المدفوع: يعود زر «الإنترنت» تلقائياً');

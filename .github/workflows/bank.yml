@@ -37,6 +37,9 @@ jobs:
       - name: Law library behind the Assistant (data/corpus)
         run: python3 tests/test_corpus.py
 
+      - name: App icons and bundled fonts (resources/)
+        run: python3 -m pip install --quiet --break-system-packages pillow && python3 tests/test_icons.py
+
   cloud:
     name: Supabase SQL + qt-pulse + qt-ai (with the law library)
     runs-on: ubuntu-latest

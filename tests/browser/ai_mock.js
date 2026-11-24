@@ -38,6 +38,15 @@ function install(GEM, real) {
     const body = JSON.parse(o.body);
     GEM.push({ url: String(url), body });
     if (String(url).endsWith('/interactions')) return new Response(JSON.stringify(ixReply(body)), { status: 200 });
+    // v8.3: الباحث المجاني (Gemini 2.5 Flash-Lite بأداة البحث): بنود مؤرخة ومصادرها واقتراحات بحث Google
+    if (/\/models\/gemini-2\.5[^:]*:generateContent$/.test(String(url))) {
+      const u = (body.contents || []).flatMap(c => c.parts || []).map(p => p.text || '').join('\n'), web = (body.tools || []).some(t => t.google_search);
+      const text = /رادار المستجدات/.test(u) ? chatText(u, true) : '- 2026-10-20: مرسوم تطبيقي جديد لمدونة الشغل منشور في الجريدة الرسمية (نافذ) — الأمانة العامة للحكومة.';
+      return new Response(JSON.stringify({ candidates: [{ content: { role: 'model', parts: [{ text }] }, finishReason: 'STOP',
+        ...(web ? { groundingMetadata: { webSearchQueries: ['مدونة الشغل آخر تعديل'], searchEntryPoint: { renderedContent: SUGG },
+                                         groundingChunks: [{ web: { uri: 'https://www.sgg.gov.ma/BO/AR/2026-7480.pdf', title: 'sgg.gov.ma' } }] } } : {}) }],
+        usageMetadata: { promptTokenCount: 400, candidatesTokenCount: 120 } }), { status: 200 });
+    }
     const sc = body.generationConfig.responseFormat?.text?.schema ?? body.generationConfig.responseJsonSchema ?? {};
     const u = body.contents[0].parts.filter(p => typeof p.text === 'string').map(p => p.text).join('\n'), props = Object.keys(sc.properties ?? {});
     const keys = [...new Set([...u.matchAll(/\[([a-z_]+:[^\]\s][^\]]*)\]/g)].map(m => m[1]))], art = keys[0] || '';

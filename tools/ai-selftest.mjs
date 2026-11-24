@@ -194,13 +194,17 @@ if (q0.cfg) {
   if (d.spent && d.spent.length) console.log(`    مستنفد الآن (حتى تتجدد حصته): ${d.spent.map((x) => `${x.m} (${x.min} د)`).join('، ')}`);
   if (d.cool && d.cool.length) console.log(`    مؤخَّر الآن لضغط عند Google: ${d.cool.map((x) => `${x.m} (${x.s} ث)`).join('، ')}`);
   console.log(`    الصمامات اليومية: أجوبة ${d.budget || '∞'} · بحث ${d.web || '∞'} · صوت ${d.ttsDaily || '∞'} — النافذتان: ${d.rate?.join('/')} (صوت ${d.rateTts?.join('/')})`);
+  const WP = { paid: 'بحث Google بالنموذج نفسه (المستوى المدفوع)', tavily: 'Tavily (مفتاح مجاني)', gfree: `بحث Google المجاني بالنموذج ${d.webModel || 'gemini-2.5-flash-lite'}`, none: 'غير متاح الآن' };
+  if (d.webPlan) console.log(`    البحث في الإنترنت: ${WP[d.webPlan] || d.webPlan}${d.tavily && d.webPlan !== 'tavily' ? ' (مفتاح Tavily مضبوط لكنه معطل مؤقتاً)' : ''}`);
+  if (d.tavilyOff) console.log(`    Tavily معطل ${d.tavilyOff.min} د: ${d.tavilyOff.why}`);
+  if (d.webFreeOff) console.log(`    بحث Google المجاني معطل ${d.webFreeOff.min} د: ${d.webFreeOff.why}`);
   const on = Object.entries(d.flags || {}).filter(([k, v]) => v && !['TTS_IX', 'TTS_MP3', 'TTS_STYLE_ON'].includes(k)).map(([k]) => k);
   if (on.length) console.log(`    أعلام الرجوع المفعّلة في هذه النسخة: ${on.join('، ')}`);
 }
 const FREE = q0.tier !== 'paid';
 PACE = Math.max(ADM ? 0 : GAP, FREE ? GAP_FREE : 0);
 if (q0.ok) console.log(FREE
-  ? '    المستوى: مجاني (مفتاح دون فوترة) — لا كلفة، لكن لكل نموذج حصة يومية صغيرة، ولا بحث في الإنترنت في هذا المستوى.\n'
+  ? `    المستوى: مجاني (مفتاح دون فوترة) — لا كلفة، لكن لكل نموذج حصة يومية صغيرة؛ والبحث في الإنترنت ${q0.web ? 'متاح (Tavily أو بحث Google المجاني)' : 'غير متاح الآن (أضف مفتاح Tavily المجاني في النشر: docs/v8-guide.md)'}.\n`
     + `    هذا الفحص يستهلك نحو 25 طلباً من حصة اليوم${ALLV ? ' و10 مقاطع صوتية' : ''}؛ فشغّله مرة واحدة لا أكثر في اليوم.\n`
     + `    ينتظر ${Math.round(PACE / 1000)} ثوانٍ بين الطلبات كي لا يتجاوز حصة الدقيقة؛ فيستغرق الفحص نحو ${QUICK ? 'دقيقة' : '6 دقائق'}.`
   : '    المستوى: مدفوع — البحث في الإنترنت مفعّل.');
@@ -212,13 +216,14 @@ if (!q0.ok || !q0.ready) {
 // ---------- 1) الدردشة ----------
 const CHQ = 'ما مدة فترة الاختبار بالنسبة للأطر في عقد الشغل غير المحدد المدة؟';
 const c1 = await ai({ kind: 'chat', q: CHQ });
-line(FREE ? 'دردشة' : 'دردشة + بحث', c1, (r) => {
+line(FREE && !q0.web ? 'دردشة' : 'دردشة + بحث', c1, (r) => {
   const d = r.data, ks = (d.blocks || []).map((b) => b.k);
   const s = JSON.stringify(d), cites14 = /labour:14\b|المادة 14\b/.test(s);
   return {
     pass: has(d.blocks),
-    note: `أقسام: ${ks.join('+') || '—'} · مواد: ${d.articles?.length || 0} · مصادر: ${d.sources?.length || 0} · بحث: ${d.searched ? 'نعم' : d.web === 'budget' ? 'الصمام' : d.web === 'tier' ? 'غير متاح في المجاني' : 'لا'}`,
-    warn: !ks.includes('lib') ? 'لا قسم «من مكتبة التطبيق» في الجواب' : !cites14 ? 'لم يذكر المادة 14 من مدونة الشغل (مرجع الجواب الصحيح)' : '',
+    note: `أقسام: ${ks.join('+') || '—'} · مواد: ${d.articles?.length || 0} · مصادر: ${d.sources?.length || 0} · بحث: ${d.searched ? 'نعم' : d.web === 'budget' ? 'الصمام' : d.web === 'tier' ? 'غير متاح الآن' : d.web === 'down' ? 'تعذّر هذه المرة' : 'لا'}`,
+    warn: !ks.includes('lib') ? 'لا قسم «من مكتبة التطبيق» في الجواب' : !cites14 ? 'لم يذكر المادة 14 من مدونة الشغل (مرجع الجواب الصحيح)'
+      : q0.web && !d.searched ? 'لم يُجرِ بحثاً في الإنترنت هذه المرة (الصمام أو الشبكة أو حصة البحث)' : '',
   };
 });
 const c1t = (c1.data?.blocks || []).map((b) => b.t).join('\n').slice(0, 1400);
@@ -233,7 +238,7 @@ if (!QUICK) {
   line('رادار المستجدات', nw, (r) => ({
     pass: r.data.mode === 'news' && has(r.data.blocks),
     note: `أقسام: ${(r.data.blocks || []).map((b) => b.k).join('+')} · مصادر: ${r.data.sources?.length || 0}${r.data.sources?.length ? ` (${[...new Set(r.data.sources.map((s) => s.host))].slice(0, 3).join('، ')})` : ''}`,
-    warn: r.data.searched || FREE ? '' : 'لم يُجرِ بحثاً في الإنترنت (الصمام أو الشبكة)',
+    warn: r.data.searched || !q0.web ? '' : 'لم يُجرِ بحثاً في الإنترنت (الصمام أو الشبكة)',
   }));
 }
 

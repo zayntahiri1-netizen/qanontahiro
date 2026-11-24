@@ -20,7 +20,7 @@ const CORE = path.join(ROOT, 'node_modules', '@capacitor', 'core', 'dist', 'capa
 const BRIDGE = path.join(ROOT, 'native', 'bridge.js');
 // مطابقة لـ SECRET_MARKERS في build.py
 const SECRET_MARKERS = [/sb_secret_/, /service_role/, /bjCE2A\.7YUitA/, /-----BEGIN [A-Z ]*PRIVATE KEY/,
-  /"type"\s*:\s*"service_account"/, /\bsbp_[0-9a-f]{20,}/, /\bAQ\.[A-Za-z0-9_-]{30,}/];
+  /"type"\s*:\s*"service_account"/, /\bsbp_[0-9a-f]{20,}/, /\bAQ\.[A-Za-z0-9_-]{30,}/, /\btvly-[A-Za-z0-9_-]{20,}/];
 
 const die = m => { console.error('✗ ' + m); process.exit(1); };
 if (!fs.existsSync(path.join(SRC, 'index.html')) || !fs.existsSync(path.join(SRC, 'questions.json')))

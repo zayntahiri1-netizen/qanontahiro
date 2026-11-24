@@ -80,7 +80,11 @@ async function run(live) {
       await page.screenshot({ path: `${OUT}/site-privacy.png`, fullPage: false });
       // الصفحات القانونية (v8.1): الخصوصية والبنود وحذف البيانات بأربع لغات، كل لغة وحدها بخطها واتجاهها
       const EXP = {
-        privacy: { ar: /09\.08/, en: /09-08/, fr: /09-08/, es: /09-08/ },
+        // v8.3: المستوى المجاني يبحث في الإنترنت أيضاً (بحث Google عبر Gemini أو Tavily)، والسياسة تقول ذلك وتسمي Tavily معالجاً
+        privacy: { ar: /^(?=[\s\S]*09\.08)(?=[\s\S]*بحث Google عبر خدمة Gemini المجانية، أو إلى خدمة البحث Tavily)(?=[\s\S]*\)، وTavily \(البحث في الإنترنت)/,
+                   en: /^(?=[\s\S]*09-08)(?=[\s\S]*Google Search through Gemini’s free tier, or to the Tavily search service)(?=[\s\S]*\) and Tavily \(web search)/,
+                   fr: /^(?=[\s\S]*09-08)(?=[\s\S]*recherche Google via le niveau gratuit de Gemini, ou au service de recherche Tavily)(?=[\s\S]*\) et Tavily \(recherche web)/,
+                   es: /^(?=[\s\S]*09-08)(?=[\s\S]*Búsqueda de Google a través del nivel gratuito de Gemini, o al servicio de búsqueda Tavily)(?=[\s\S]*\) y Tavily \(búsqueda web)/ },
         terms: { ar: /لا يتحمل التطبيق ولا مطوّره أي مسؤولية[\s\S]*ليس مستشاراً|ليس مستشاراً[\s\S]*لا يتحمل التطبيق ولا مطوّره أي مسؤولية/,
                  en: /Neither the app nor its developer accepts any liability for any legal advice/, fr: /Ni l’application ni son développeur n’assument de responsabilité pour un conseil juridique/,
                  es: /Ni la app ni su desarrollador asumen responsabilidad alguna por cualquier asesoramiento jurídico/ },

@@ -28,11 +28,11 @@ function ixReply(c) {
     return { id: 'ix-tts', status: 'completed', steps: [{ type: 'model_output', content: [{ type: 'audio', mime_type: mp3 ? 'audio/mp3' : 'audio/wav', data: mp3 ? ID3 : WAV }] }],
              usage: { total_input_tokens: 30, total_output_tokens: 900 } };
   }
-  const u = ixText(c), web = (b.tools || []).some(t => t.type === 'google_search');
+  const u = ixText(c), web = (b.tools || []).some(t => t.type === 'google_search'), hits = /نتائج البحث في الإنترنت الآن/.test(u);
   const steps = [{ type: 'thought', summary: [{ type: 'text', text: 'تفكير داخلي' }], signature: 'sig' }];
   if (web) steps.push({ type: 'google_search_call', id: 'g1', arguments: { queries: ['مدونة الشغل آخر تعديل'] } },
                       { type: 'google_search_result', call_id: 'g1', result: [{ search_suggestions: SUGG }] });
-  steps.push({ type: 'model_output', content: [{ type: 'text', text: chatText(u, web),
+  steps.push({ type: 'model_output', content: [{ type: 'text', text: chatText(u, web || hits),
     annotations: web ? [{ type: 'url_citation', url: 'https://www.sgg.gov.ma/BO/2026.pdf', title: 'sgg.gov.ma', start_index: 0, end_index: 10 }] : [] }] });
   return { id: 'ix-1', status: 'completed', steps,
            usage: { total_input_tokens: 3000, total_output_tokens: 700, total_thought_tokens: 300, ...(web ? { grounding_tool_count: [{ type: 'google_search', count: 1 }] } : {}) } };
@@ -43,8 +43,28 @@ const schemaOf = c => c.body.generationConfig.responseFormat?.text?.schema ?? c.
 const gem = (obj, extra = {}) => new Response(JSON.stringify({
   candidates: [{ content: { role: 'model', parts: [{ text: JSON.stringify(obj) }] }, finishReason: 'STOP', index: 0 }],
   usageMetadata: { promptTokenCount: 1000, candidatesTokenCount: 300, thoughtsTokenCount: 120, totalTokenCount: 1420 }, modelVersion: 'x', ...extra }), { status: 200 });
+// v8.3: Tavily (ردود مبرمجة في TVS وإلا ست نتائج)، وGemini 2.5 الباحث في المجاني (ردود مبرمجة في G25 وإلا جواب مؤسس على بحث)
+const TVS = [], G25 = [];
+const TV_RESULTS = [{ title: 'الجريدة الرسمية: مرسوم جديد يتعلق بمدونة الشغل', url: 'https://www.sgg.gov.ma/BO/2026/7480.pdf', content: 'نُشر مرسوم تطبيقي جديد لمدونة الشغل في أكتوبر 2026.', score: 0.9, published_date: '2026-10-20' },
+  { title: 'Code du travail : nouveautés', url: 'https://www.leseco.ma/code-travail', content: 'Les nouveautés du code du travail marocain.', score: 0.7 },
+  { title: 'نتيجة بلا رابط', url: 'javascript:alert(1)', content: 'x' }];
 globalThis.fetch = async (url, o) => {
   const body = JSON.parse(o.body); const c = { url, body, headers: o.headers }; CALLS.push(c);
+  if (/api\.tavily\.com/.test(String(url))) {
+    const x = TVS.length ? TVS.shift() : null;
+    if (x && x.$status) return new Response(JSON.stringify({ detail: { error: x.$msg || 'err' } }), { status: x.$status });
+    return new Response(JSON.stringify({ query: body.query, answer: null, images: [], results: x && x.results ? x.results : TV_RESULTS, response_time: 0.4 }), { status: 200 });
+  }
+  if (/\/models\/gemini-2\.5[^:]*:generateContent$/.test(String(url))) {
+    const x = G25.length ? G25.shift() : null;
+    if (x && x.$status) return new Response(JSON.stringify({ error: { code: x.$status, message: x.$msg || 'err', status: x.$s || 'X', ...(x.$details ? { details: x.$details } : {}) } }), { status: x.$status });
+    const u = txtAll(c), web = (body.tools || []).some(t => t.google_search) && !(x && x.$nosearch);
+    const text = /رادار المستجدات/.test(u) ? chatText(u, true) : '- 2026-10-20: مرسوم تطبيقي جديد لمدونة الشغل منشور في الجريدة الرسمية (نافذ) — الأمانة العامة للحكومة.';
+    return new Response(JSON.stringify({ candidates: [{ content: { parts: [{ text }] }, finishReason: 'STOP',
+      ...(web ? { groundingMetadata: { webSearchQueries: ['مستجدات مدونة الشغل المغرب'], searchEntryPoint: { renderedContent: SUGG },
+                                       groundingChunks: [{ web: { uri: 'https://www.sgg.gov.ma/BO/2026/7480.pdf', title: 'sgg.gov.ma' } }] } } : {}) }],
+      usageMetadata: { promptTokenCount: 400, candidatesTokenCount: 120 } }), { status: 200 });
+  }
   if (String(url).endsWith('/interactions')) {
     const x = IXS.length ? IXS.shift() : null;
     if (x && x.$status) return new Response(JSON.stringify({ error: { code: x.$status, message: x.$msg || 'err', status: 'X', ...(x.$details ? { details: x.$details } : {}) } }), { status: x.$status });
@@ -62,8 +82,8 @@ globalThis.fetch = async (url, o) => {
                                          usageMetadata: { promptTokenCount: 20, candidatesTokenCount: 600 } }), { status: 200 });
   // الدردشة عبر generateContent (الرجوع): نص بالأقسام، ومعه groundingMetadata إن طُلب البحث
   if (!obj && !props.length && /\[\[LIB\]\]/.test(txtAll(c))) {
-    const web = (body.tools || []).some(t => t.google_search);
-    return new Response(JSON.stringify({ candidates: [{ content: { parts: [{ text: 'تفكير', thought: true }, { text: chatText(txtAll(c), web) }] }, finishReason: 'STOP',
+    const web = (body.tools || []).some(t => t.google_search), hits = /نتائج البحث في الإنترنت الآن/.test(txtAll(c));
+    return new Response(JSON.stringify({ candidates: [{ content: { parts: [{ text: 'تفكير', thought: true }, { text: chatText(txtAll(c), web || hits) }] }, finishReason: 'STOP',
       ...(web ? { groundingMetadata: { webSearchQueries: ['مدونة الشغل'], searchEntryPoint: { renderedContent: SUGG },
                                      groundingChunks: [{ web: { uri: 'https://adala.justice.gov.ma/ar/x', title: 'adala.justice.gov.ma' } }] } } : {}) }],
       usageMetadata: { promptTokenCount: 2500, candidatesTokenCount: 600, thoughtsTokenCount: 200 } }), { status: 200 });
@@ -703,12 +723,12 @@ const QF = (model, day, secs = 41) => [{ '@type': 'type.googleapis.com/google.rp
   { '@type': 'type.googleapis.com/google.rpc.RetryInfo', retryDelay: secs + 's' }];
 const Q429 = (model, day) => ({ $status: 429, $s: 'RESOURCE_EXHAUSTED', $details: QF(model, day),
   $msg: `You exceeded your current quota, please check your plan and billing details. Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: ${day ? 20 : 5}, model: ${model}` });
-ENV.QT_AI_TIER = 'free';
+ENV.QT_AI_TIER = 'free'; ENV.QT_AI_WEB_FREE = 'off';   // البحث المجاني مطفأ بالإعداد (v8.3): السلوك القديم كما هو
 sql(`delete from qt_ai_day; delete from qt_ai_rate`);
 await callA(GOOG, { kind: 'quota', reset: true }, ADM);
 ok((await (await callA(GOOG, { kind: 'quota', reset: true })).json()).cfg === undefined, 'محو ذاكرة العامل للمؤلف وحده');
 let fq = (await call(GOOG, { kind: 'quota' })).b;
-ok(fq.tier === 'free' && fq.web === false, 'المستوى المجاني معلن للعميل: دون بحث في الإنترنت');
+ok(fq.tier === 'free' && fq.web === false, 'المستوى المجاني والبحث المجاني مطفأ: معلن للعميل دون بحث في الإنترنت');
 n0 = CALLS.length; r = await call(GOOG, { kind: 'chat', q: 'ما مدة فترة الاختبار للعمال في مدونة الشغل؟' });
 let fc = CALLS.slice(n0), fAns = fc.find(c => /\[\[LIB\]\]/.test(txtAll(c)) || /\[\[LIB\]\]/.test(ixText(c)));
 ok(r.b.ok && r.b.data.web === 'tier' && !r.b.data.searched && fAns && !(fAns.body.tools || []).length && !/\[\[WEB\]\] آخر المستجدات: ابحث/.test(txtAll(fAns) + ixText(fAns)),
@@ -716,6 +736,72 @@ ok(r.b.ok && r.b.data.web === 'tier' && !r.b.data.searched && fAns && !(fAns.bod
 ok(fc.some(c => mdl(c) === 'gemini-3.1-flash-lite' && 'terms' in (schemaOf(c).properties || {})), 'المجاني: تحضير البحث بالنموذج الخفيف الثاني (حصة مستقلة عن حصة الأجوبة)');
 a0 = dayN('web'); r = await call(GOOG, { kind: 'chat', q: 'وما مدتها للمستخدمين؟' });
 ok(dayN('web') === a0, 'المجاني: لا يُحتسب بحث في صمام الإنترنت');
+// ===== v8.3: البحث في الإنترنت في المستوى المجاني أيضاً =====
+delete ENV.QT_AI_WEB_FREE; await admReset();
+fq = (await call(GOOG, { kind: 'quota' })).b;
+ok(fq.tier === 'free' && fq.web === true, 'v8.3 المجاني: البحث في الإنترنت معلن للعميل');
+// (أ) دون مفتاح Tavily: Gemini 2.5 Flash-Lite يبحث بالتوازي، وقسمه يُضم إلى الجواب بمصادره واقتراحات Google
+a0 = dayN('web'); n0 = CALLS.length;
+r = await call(GOOG, { kind: 'chat', q: 'ما آخر تعديل في مدونة الشغل بشأن فترة الاختبار؟' });
+fc = CALLS.slice(n0);
+const g25 = fc.find(c => mdl(c) === 'gemini-2.5-flash-lite'), mainA = fc.find(c => /\[\[LIB\]\]/.test(txtAll(c) + ixText(c)));
+ok(r.b.ok && g25 && g25.body.tools[0].google_search && g25.body.store === false && !g25.body.generationConfig.thinkingConfig
+   && /<user>ما آخر تعديل في مدونة الشغل/.test(txtAll(g25)), 'المجاني دون Tavily: بحث مستقل بـ gemini-2.5-flash-lite وأداة google_search، دون حفظ ودون thinkingConfig');
+ok(mainA && !(mainA.body.tools || []).length && /لا تكتب قسم \[\[WEB\]\]/.test(txtAll(mainA) + ixText(mainA)), 'والجواب نفسه من النموذج الأقوى دون أداة البحث (قسم الإنترنت يكتبه الباحث)');
+ok(r.b.data.web === 'on' && r.b.data.searched === true && r.b.data.blocks.map(x => x.k).join() === 'lib,ai,web' && /2026-10-20/.test(r.b.data.blocks.find(x => x.k === 'web').t)
+   && r.b.data.sources[0].host === 'sgg.gov.ma' && r.b.data.suggest[0].includes('class="chip"') && !/<script/i.test(r.b.data.suggest[0]) && dayN('web') === a0 + 1,
+   'قسم «آخر المستجدات» ومصادره واقتراحات بحث Google في الجواب، ويُحتسب في صمام البحث');
+// (ب) نموذج 2.5 غير متاح لهذا المفتاح (Google قصرها على من استعملها من قبل): جواب دون بحث، ثم لا يُطلب حتى يحين أوانه
+G25.push({ $status: 404, $msg: 'models/gemini-2.5-flash-lite is not found for API version v1beta, or is not supported for generateContent.' });
+a0 = dayN('web'); r = await call(GOOG, { kind: 'chat', q: 'ما مدة فترة الاختبار للأطر؟' });
+ok(r.b.ok && r.b.data.web === 'tier' && !r.b.data.searched && !r.b.data.blocks.some(x => x.k === 'web') && dayN('web') === a0,
+   '2.5 غير متاح (404): الجواب من المكتبة والمعرفة («tier»)، ولا يُحتسب بحث');
+n0 = CALLS.length; r = await call(GOOG, { kind: 'chat', q: 'وما مدتها للعمال؟' });
+ok(r.b.ok && r.b.data.web === 'tier' && !CALLS.slice(n0).some(c => mdl(c).startsWith('gemini-2.5')) && (await call(GOOG, { kind: 'quota' })).b.web === false,
+   'ولا يُطلب بعدها، والعميل يرى أن البحث غير متاح الآن');
+fq = await callA(GOOG, { kind: 'quota' }, ADM).then(x => x.json());
+ok(fq.cfg.webPlan === 'none' && fq.cfg.webFreeOff && /404/.test(fq.cfg.webFreeOff.why), 'وضع المؤلف يرى سبب تعطل البحث المجاني ومدته');
+// (ج) مفتاح Tavily: نتائج البحث أولاً، ثم يكتب منها النموذج الأقوى قسم الإنترنت
+ENV.TAVILY_API_KEY = 'tvly-dev-test'; await admReset();   // مفتاح تجريبي قصير لا يطابق علامة الأسرار (tvly- و20 حرفاً)
+fq = await callA(GOOG, { kind: 'quota' }, ADM).then(x => x.json());
+ok(fq.web === true && fq.cfg.webPlan === 'tavily' && fq.cfg.web === 30 && fq.cfg.tavily === true, 'مفتاح Tavily: البحث متاح، وصمامه 30 يومياً (داخل رصيده المجاني)');
+a0 = dayN('web'); n0 = CALLS.length;
+r = await call(GOOG, { kind: 'chat', q: 'ما جديد مدونة الشغل في 2026؟' });
+fc = CALLS.slice(n0);
+const tv = fc.find(c => /api\.tavily\.com/.test(String(c.url))), tvA = fc.find(c => /\[\[LIB\]\]/.test(txtAll(c) + ixText(c)));
+ok(r.b.ok && tv && tv.headers.authorization === 'Bearer tvly-dev-test' && /ما جديد مدونة الشغل في 2026؟ المغرب$/.test(tv.body.query) && tv.body.country === 'morocco'
+   && tv.body.search_depth === 'basic' && tv.body.max_results === 6 && !fc.some(c => mdl(c).startsWith('gemini-2.5')), 'Tavily: بحث واحد عن السؤال مقيداً بالمغرب، بمفتاحه في الترويسة');
+ok(tvA && !(tvA.body.tools || []).length && /نتائج البحث في الإنترنت الآن/.test(txtAll(tvA) + ixText(tvA)) && /\(1\) الجريدة الرسمية: مرسوم جديد/.test(txtAll(tvA) + ixText(tvA))
+   && /من نتائج البحث المرفقة وحدها/.test(txtAll(tvA) + ixText(tvA)), 'والنتائج مرفقة بطلب الجواب، فيكتب منها قسم الإنترنت');
+ok(r.b.data.web === 'on' && r.b.data.searched === true && r.b.data.blocks.some(x => x.k === 'web') && r.b.data.sources.length === 2 && r.b.data.sources[0].host === 'sgg.gov.ma'
+   && !JSON.stringify(r.b.data.sources).includes('javascript:') && dayN('web') === a0 + 1, 'مصادر الجواب نتائج Tavily (روابط http وحدها)، ويُحتسب البحث');
+n0 = CALLS.length; r = await call(GOOG, { kind: 'chat', mode: 'news', slug: 'labour' });
+const tvn = CALLS.slice(n0).find(c => /api\.tavily\.com/.test(String(c.url)));
+ok(r.b.ok && r.b.data.mode === 'news' && tvn && tvn.body.topic === 'news' && tvn.body.time_range === 'year' && !('country' in tvn.body) && /مدونة الشغل/.test(tvn.body.query) && r.b.data.searched,
+   'رادار المستجدات بـ Tavily: بحث الأخبار في السنة الأخيرة');
+TVS.push({ results: [] });                                              // بحث تم بلا نتائج: يُقال إنه لا جديد، ولا مصادر مخترعة
+n0 = CALLS.length; r = await call(GOOG, { kind: 'chat', q: 'هل عُدّل الفصل 230 من قانون الالتزامات والعقود هذا الشهر؟' });
+const tvE = CALLS.slice(n0).find(c => /\[\[LIB\]\]/.test(txtAll(c) + ixText(c)));
+ok(r.b.ok && r.b.data.web === 'on' && r.b.data.searched && !r.b.data.sources.length && tvE && /لم يُعثر على نتائج لهذا البحث/.test(txtAll(tvE) + ixText(tvE)),
+   'بحث Tavily بلا نتائج: يُبلَّغ النموذج بذلك، فلا مصادر ولا مستجد مخترع');
+TVS.push({ $status: 401, $msg: 'Unauthorized: missing or invalid API key.' });
+r = await call(GOOG, { kind: 'chat', q: 'ما أجل الإخطار في مدونة الشغل؟' });
+ok(r.b.ok && r.b.data.web === 'down' && !r.b.data.searched && !r.b.data.blocks.some(x => x.k === 'web'), 'Tavily يرفض المفتاح (401): الجواب دون بحث هذه المرة («down»)');
+fq = await callA(GOOG, { kind: 'quota' }, ADM).then(x => x.json());
+ok(fq.cfg.tavilyOff && /401/.test(fq.cfg.tavilyOff.why) && fq.cfg.webPlan === 'gfree', 'ووضع المؤلف يرى السبب، والبحث ينتقل إلى بحث Google المجاني');
+n0 = CALLS.length; r = await call(GOOG, { kind: 'chat', q: 'ما مدة الإخطار في مدونة الشغل؟' });
+ok(r.b.ok && r.b.data.web === 'on' && r.b.data.searched && CALLS.slice(n0).some(c => mdl(c) === 'gemini-2.5-flash-lite') && !CALLS.slice(n0).some(c => /tavily/.test(String(c.url))),
+   'فيتولى بحث Google المجاني (2.5) حتى يعود Tavily');
+delete ENV.TAVILY_API_KEY; await admReset();
+n0 = CALLS.length; r = await call(GOOG, { kind: 'chat', mode: 'news', slug: 'labour' });
+const g25n = CALLS.slice(n0).find(c => mdl(c) === 'gemini-2.5-flash-lite');
+ok(r.b.ok && g25n && /رادار المستجدات/.test(txtAll(g25n)) && /ابحث في الإنترنت الآن/.test(txtAll(g25n)) && r.b.data.searched && r.b.data.blocks.some(x => x.k === 'web'),
+   'رادار المستجدات بـ 2.5: الباحث يكتب البطاقة بأقسامها من بحثه');
+G25.push({ $nosearch: true });
+r = await call(GOOG, { kind: 'chat', mode: 'news', slug: 'family' });
+ok(r.b.ok && !r.b.data.searched && r.b.data.web === 'down' && !r.b.data.blocks.some(x => x.k === 'web'),
+   'الباحث لم يبحث فعلاً: بطاقة المكتبة دون قسم الإنترنت، ولو كتبه النموذج مخالفاً التعليمات (لا مستجد غير مؤسس على بحث)');
+await admReset();
 // حصة يومية مستنفدة للنموذج الأقوى (20 طلباً): ينتقل الطلب نفسه إلى الخفيف، ولا يُطلب الأقوى بعدها حتى تتجدد الحصة
 SCRIPT.push(Q429('gemini-3.8-flash', true));
 n0 = CALLS.length; r = await call(GOOG, { kind: 'oral', id: cs.id, answer: 'جواب شفوي أول في المستوى المجاني بما يكفي ليُقبل.' });
@@ -745,12 +831,13 @@ const qm = /quota: gemini-3\.8-flash-lite-tts, gemini-3\.8-flash-tts until reset
 ok(qm && +qm[1] > 2, 'وسجل المؤلف يذكر متى تعود أقرب حصة (هنا منتصف الليل بتوقيت المحيط الهادئ، لا الدقيقة)');
 // المعرّفات الشخصية تُحذف قبل الإرسال، والأرقام القانونية تبقى
 n0 = CALLS.length;
-r = await call(GOOG, { kind: 'chat', q: 'أنا أحمد، هاتفي 0612345678 و+212 661-234-567 وبريدي ahmed.t@mail.ma وبطاقتي الوطنية AB123456 وحسابي 011 780 0000123456789012 34: هل تنطبق المادة 14 من القانون 65.99 على عقد مؤرخ في 2026-11-24 بأجر 15.000 درهم؟' });
-const sent = CALLS.slice(n0).map(c => txtAll(c) + ixText(c)).join('\n');
-ok(r.b.ok && !/0612345678|661-234-567|ahmed\.t@mail\.ma|AB123456|0000123456789012/.test(sent)
+r = await call(GOOG, { kind: 'chat', q: 'أنا أحمد، هاتفي 0612345678 و+212 661-234-567 وبريدي ahmed.t@mail.ma وبطاقتي الوطنية AB123456 وحسابي 011 780 0000123456789012 34: هل تنطبق المادة 14 من القانون 65.99 على عقد مؤرخ في 2026-11-24 بأجر 15.000 درهم؟',
+                        hist: [{ r: 'u', t: 'سؤالي السابق، واتصل بي على 0698765432' }, { r: 'a', t: 'جواب سابق.' }] });
+const sent = CALLS.slice(n0).map(c => txtAll(c) + ixText(c) + JSON.stringify(c.body)).join('\n');
+ok(r.b.ok && !/0612345678|661-234-567|ahmed\.t@mail\.ma|AB123456|0000123456789012|0698765432/.test(sent)
    && /\[هاتف محذوف\]/.test(sent) && /\[بريد محذوف\]/.test(sent) && /\[رقم بطاقة وطنية محذوف\]/.test(sent) && /\[رقم حساب محذوف\]/.test(sent)
    && /المادة 14/.test(sent) && /65\.99/.test(sent) && /2026-11-24/.test(sent) && /15\.000/.test(sent),
-   'الهاتف والبريد والبطاقة الوطنية والحساب تُحذف قبل الإرسال، وتبقى المادة ورقم القانون والتاريخ والمبلغ');
+   'الهاتف والبريد والبطاقة الوطنية والحساب تُحذف قبل الإرسال (من السؤال وسياق المحادثة، وإلى الباحث أيضاً)، وتبقى المادة ورقم القانون والتاريخ والمبلغ');
 // المستوى المدفوع: حصة البحث وحدها مستنفدة ← جواب دون بحث حتى تتجدد، لا خطأ
 ENV.QT_AI_TIER = 'paid';
 await callA(GOOG, { kind: 'quota', reset: true }, ADM);

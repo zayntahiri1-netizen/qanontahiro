@@ -24,7 +24,8 @@ CLOUDCFG = ROOT / "config" / "cloud.json"
 SITE = ROOT / "dist" / "site"
 # ما لا يجوز أن يصل إلى أي ملف يُشحن للعميل: أسرار الخوادم. مفتاح Ably الجذر يُعرف باسمه (لا بسره).
 SECRET_MARKERS = [r"sb_secret_", r"service_role", r"bjCE2A\.7YUitA", r"-----BEGIN [A-Z ]*PRIVATE KEY",
-                  r"\"type\"\s*:\s*\"service_account\"", r"\bsbp_[0-9a-f]{20,}", r"\bAQ\.[A-Za-z0-9_-]{30,}"]
+                  r"\"type\"\s*:\s*\"service_account\"", r"\bsbp_[0-9a-f]{20,}", r"\bAQ\.[A-Za-z0-9_-]{30,}",
+                  r"\btvly-[A-Za-z0-9_-]{20,}"]
 
 # الحصة المستهدفة لكل فرع من أصل 10.000
 TARGET = {
@@ -503,39 +504,57 @@ def star_points(c, R, r, n=8, rot=0.0):
     return [(c + (R if i % 2 == 0 else r) * math.cos(rot + i * math.pi / n),
              c + (R if i % 2 == 0 else r) * math.sin(rot + i * math.pi / n)) for i in range(2 * n)]
 
+FONTS_DIR = ROOT / "resources" / "fonts"
+FONT_FACES = (("Noto Naskh Arabic", "qt-naskh.woff"), ("El Messiri", "qt-messiri.woff"))
+
+
+def fonts_html(prefix="fonts/", inline=False):
+    """خطا التطبيق مضمَّنين (tools/make-fonts.py): روابط تحميل مسبق وقواعد @font-face، أو الخط نفسه داخل الصفحة (inline)
+    للنسخة ذات الملف الواحد. لا اتصال بـ Google Fonts، فيظهر الخط نفسه على كل جهاز ودون اتصال."""
+    import base64
+    faces, pre = [], []
+    for fam, name in FONT_FACES:
+        f = FONTS_DIR / name
+        if not f.exists():
+            continue
+        url = ("data:font/woff;base64," + base64.b64encode(f.read_bytes()).decode()) if inline else prefix + name
+        faces.append(f'@font-face{{font-family:"{fam}";src:url({url}) format("woff");font-weight:400 700;font-style:normal;font-display:swap}}')
+        if not inline:
+            pre.append(f'<link rel="preload" href="{prefix}{name}" as="font" type="font/woff" crossorigin>')
+    return "".join(pre) + (f"<style>{''.join(faces)}</style>" if faces else "")
+
+
+def write_fonts():
+    import shutil
+    (APP / "fonts").mkdir(parents=True, exist_ok=True)
+    for f in FONTS_DIR.glob("*"):
+        if f.suffix in (".woff", ".txt"):
+            shutil.copyfile(f, APP / "fonts" / f.name)
+
+
 def write_pwa(version):
-    pts = " ".join(f"{x:.1f},{y:.1f}" for x, y in star_points(256, 196, 112))
-    pts2 = " ".join(f"{x:.1f},{y:.1f}" for x, y in star_points(256, 138, 80, rot=3.14159 / 8))
-    (APP / "icon.svg").write_text(
-        '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">'
-        '<rect width="512" height="512" rx="112" fill="#12181F"/>'
-        f'<polygon points="{pts}" fill="none" stroke="#C89A3C" stroke-width="18" stroke-linejoin="round"/>'
-        f'<polygon points="{pts2}" fill="none" stroke="#C89A3C" stroke-width="11" stroke-linejoin="round" opacity=".65"/>'
-        '<circle cx="256" cy="256" r="40" fill="#C89A3C"/></svg>', encoding="utf-8")
-    icons = [{"src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any"}]
-    try:
-        from PIL import Image, ImageDraw
-        for size in (192, 512):
-            k = 4
-            im = Image.new("RGBA", (size * k, size * k), (0, 0, 0, 0))
-            d = ImageDraw.Draw(im)
-            s = size * k / 512
-            d.rounded_rectangle([0, 0, size * k - 1, size * k - 1], radius=int(112 * s), fill="#12181F")
-            for R, r, w, rot, a in ((196, 112, 18, 0.0, 255), (138, 80, 11, 3.14159 / 8, 170)):
-                poly = [(x * s, y * s) for x, y in star_points(256, R, r, rot=rot)]
-                d.line(poly + [poly[0]], fill=(200, 154, 60, a), width=max(1, int(w * s)), joint="curve")
-            d.ellipse([(256 - 40) * s, (256 - 40) * s, (256 + 40) * s, (256 + 40) * s], fill="#C89A3C")
-            im.resize((size, size), Image.LANCZOS).save(APP / f"icon-{size}.png")
-            icons.append({"src": f"icon-{size}.png", "sizes": f"{size}x{size}", "type": "image/png", "purpose": "any maskable"})
-    except Exception:
-        pass
+    """ملفات التثبيت: الأيقونات من resources/pwa (تولّدها tools/make-pwa-icons.py من شارة التطبيق، وتُلتزم في المستودع
+    فلا يحتاج البناء إلى مكتبة صور)، والبيان، وعامل الخدمة."""
+    import shutil
+    src = ROOT / "resources" / "pwa"
+    icons = []
+    for name, sizes, typ, purpose in (("icon.svg", "any", "image/svg+xml", "any"), ("icon-192.png", "192x192", "image/png", "any"),
+                                      ("icon-512.png", "512x512", "image/png", "any"),
+                                      ("icon-maskable-512.png", "512x512", "image/png", "maskable")):
+        if (src / name).exists():
+            shutil.copyfile(src / name, APP / name)
+            icons.append({"src": name, "sizes": sizes, "type": typ, "purpose": purpose})
+    for extra in ("icon-180.png", "icon-32.png"):
+        if (src / extra).exists():
+            shutil.copyfile(src / extra, APP / extra)
     manifest = {"name": "قانون تاهيرو", "short_name": "تاهيرو", "description": "بنك أسئلة القانون المغربي",
                 "lang": "ar", "dir": "rtl", "start_url": "./", "scope": "./", "display": "standalone",
                 "background_color": "#12181F", "theme_color": "#12181F", "icons": icons}
     (APP / "manifest.webmanifest").write_text(json.dumps(manifest, ensure_ascii=False, indent=1), encoding="utf-8")
     core = ["./", "./index.html", "./questions.json", "./manifest.webmanifest", "./icon.svg"] + \
+           [f"./fonts/{n}" for _, n in FONT_FACES if (APP / "fonts" / n).exists()] + \
            (["./lib/index.json"] if (APP / "lib" / "index.json").exists() else []) + \
-           [f"./{i['src']}" for i in icons if i["src"].endswith(".png")]
+           [f"./{i['src']}" for i in icons if i["src"] == "icon-192.png"]     # الأيقونات الكبيرة يجلبها المتصفح عند التثبيت وحده
     (APP / "sw.js").write_text(f"""// قانون تاهيرو — عامل الخدمة: يُخزّن القشرة والبنك فيعمل التطبيق دون اتصال.
 // الإصدار يتغير مع كل بناء، فيُجلب البنك الجديد مرة واحدة ثم يُقرأ من الذاكرة.
 const V = 'qt-{version}';
@@ -669,7 +688,7 @@ def write_site(out, cloud, version):
     # يُهرَّب «</» داخل JSON المحقون في <script> حتى لا يُغلق نص سؤالٍ الوسمَ قبل أوانه
     js = lambda o: json.dumps(o, ensure_ascii=False, separators=(",", ":")).replace("</", "<\\/")
     fill = lambda s: (s.replace("__SITE__", site_url).replace("__N__", f"{len(qs)}").replace("__V__", f"{len(verified)}")
-                       .replace("__AMD__", str(len(amends))))
+                       .replace("__AMD__", str(len(amends))).replace("<!--__FONTS__-->", fonts_html("app/fonts/")))
     tpl = (ROOT / "src" / "site.html").read_text(encoding="utf-8")
     (SITE / "index.html").write_text(fill(tpl).replace("__LDJSON__", js(ld)).replace("/*__DATA__*/null", js(data)), encoding="utf-8")
     # الصفحات القانونية (v8.1) بأربع لغات: الخصوصية، والبنود والشروط، وحذف البيانات (تفتحها أزرار التطبيق في المتصفح)
@@ -756,14 +775,18 @@ def main():
 
     # (1) بناء مستقل: البنك محقون كنص يُمرَّر لـ JSON.parse — أسرع تحليلاً من كائن JS
     literal = "JSON.parse(" + json.dumps(payload, ensure_ascii=False) + ")"
-    OUT.write_text(tpl.replace("<!--__PWA__-->", "").replace("/*__BANK__*/null", literal), encoding="utf-8")
+    OUT.write_text(tpl.replace("<!--__PWA__-->", "").replace("<!--__FONTS__-->", fonts_html(inline=True))
+                   .replace("/*__BANK__*/null", literal), encoding="utf-8")
 
     # (2) بناء مقسوم: قشرة خفيفة + بنك مستقل، لـ Capacitor والبنوك الكبيرة، ومعه ملفات التثبيت
     APP.mkdir(parents=True, exist_ok=True)
     pwa = ('<link rel="manifest" href="manifest.webmanifest">'
            '<link rel="icon" href="icon.svg" type="image/svg+xml">'
-           '<link rel="apple-touch-icon" href="icon-192.png">')
-    (APP / "index.html").write_text(tpl.replace("<!--__PWA__-->", pwa).replace("/*__BANK__*/null", "null"), encoding="utf-8")
+           '<link rel="icon" href="icon-32.png" sizes="32x32" type="image/png">'
+           '<link rel="apple-touch-icon" href="icon-180.png">')
+    write_fonts()
+    (APP / "index.html").write_text(tpl.replace("<!--__PWA__-->", pwa).replace("<!--__FONTS__-->", fonts_html("fonts/"))
+                                    .replace("/*__BANK__*/null", "null"), encoding="utf-8")
     (APP / "questions.json").write_text(payload, encoding="utf-8")
     lib_bytes = write_lib(lib_files) if lib_files else 0
     n_icons = write_pwa(version)
