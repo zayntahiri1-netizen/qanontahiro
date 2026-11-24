@@ -1,6 +1,6 @@
 // =========================================================================
 // قانون تاهيرو — «TAHIRO AI»: الذكاء الاصطناعي المؤسَّس على نصوص القوانين وبنك الأسئلة (Supabase Edge Function، Deno)
-// المزوّد (للمطوّر وحده): Gemini API من Google بالمستوى المدفوع، ودون حفظ الطلبات لدى Google (store: false).
+// المزوّد (للمطوّر وحده): Gemini API من Google، بالمستوى المجاني أو المدفوع (QT_AI_TIER)، ودون حفظ الطلبات لدى Google (store: false).
 // الاسم الظاهر للمستخدم «TAHIRO AI» وحده: لا تذكر الواجهةُ ولا الأجوبةُ اسم النموذج.
 //
 // المبدأ: مكتبة التطبيق أولاً. الأدوات التعليمية لا تجيب إلا من «المادة المرجعية» التي يجلبها الخادم نفسه: نصوص المواد
@@ -50,6 +50,7 @@ const TTS_MODEL = Deno.env.get("QT_AI_TTS") ?? "gemini-3.8-flash-lite-tts";
 // ويُذكر المستنفد في ذاكرة العامل حتى تتجدد حصته (منتصف الليل بتوقيت المحيط الهادئ، أو بعد المهلة التي يذكرها Google).
 const tierOf = () => ((Deno.env.get("QT_AI_TIER") ?? "free").trim().toLowerCase() === "paid" ? "paid" : "free");
 const webAllowed = () => tierOf() === "paid" || (Deno.env.get("QT_AI_WEB") ?? "") === "on";
+const SMART2 = Deno.env.get("QT_AI_SMART2") ?? "gemini-3.6-flash";        // نموذج قوي ثانٍ (الجيل السابق) بحصة مستقلة
 const LITE2 = Deno.env.get("QT_AI_LITE2") ?? "gemini-3.1-flash-lite";     // نموذج خفيف ثانٍ بحصة مستقلة
 const TTS2 = Deno.env.get("QT_AI_TTS2") ?? "gemini-3.8-flash-tts";        // نموذج صوت ثانٍ بالأصوات نفسها وحصة مستقلة
 const API = (Deno.env.get("QT_GEMINI_BASE") ?? "https://generativelanguage.googleapis.com/v1beta").replace(/\/+$/, "");
@@ -108,6 +109,17 @@ const L = ["أ", "ب", "ج", "د"];
 const today = () => new Date().toISOString().slice(0, 10);
 const clip = (v: unknown, n: number) => (typeof v === "string" ? v.trim().slice(0, n) : "");
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+// مهلة الطلب كله (v8.2.2): ما يتسع له انتظار العميل (70 ثانية، و110 للدردشة، و120 للتمارين) ناقصاً هامشاً. لا تتجاوزها
+// سلسلة النماذج ولا تحضير البحث ولا المحاولة الثانية للحارس، فيعود «مشغول» في وقته بدل أن ينقطع الطلب عند العميل.
+// تُحمل المهلة مع الطلب نفسه (AsyncLocalStorage) لأن العامل الواحد يخدم طلبات متزامنة؛ وإن لم يتوفر فلكل سلسلة مهلتها وحدها.
+type Ctx = { until: number; model?: string };          // model: النموذج الذي أجاب فعلاً (لسجل المؤلف)
+let REQ: { run<R>(s: Ctx, f: () => R): R; getStore(): Ctx | undefined } = { run: (_s, f) => f(), getStore: () => undefined };
+try { const { AsyncLocalStorage } = await import("node:async_hooks"); REQ = new AsyncLocalStorage<Ctx>(); } catch { /* دون مهلة عامة */ }
+const until = () => REQ.getStore()?.until ?? Infinity;
+const leftMs = () => until() - Date.now();
+const LIMIT_MS = (kind: string) => num("QT_AI_DEADLINE_MS", 0) || (kind === "gen" ? 110000 : kind === "chat" ? 100000 : 62000);
+// مهلة طلب واحد إلى Google داخل محاولة: الأقل من مهلته ومما بقي قبل نهاية المحاولة
+const tmo = (a: number, stop: number) => Math.max(1000, Math.min(a, stop - Date.now()));
 
 // ---------- القواعد الثابتة ----------
 const SYSTEM = `أنت «TAHIRO AI»، المساعد الذكي في تطبيق «قانون تاهيرو» لتعلم القانون المغربي والاستعداد للمباريات.
@@ -197,29 +209,53 @@ function markSpent(m: string, q?: Quota) {
   SPENT.set(m, q?.day ? pacificMidnight() : Date.now() + (q?.ms ?? 30000));
   if (q?.free) FREE_SEEN = true;
 }
-// السلاسل: الأقوى ثم الخفيفان؛ والسريع يبدأ في المجاني بالخفيف الثاني (حصته مستقلة عن حصة الأجوبة)
+// السلاسل: القويان ثم الخفيفان؛ والسريع يبدأ في المجاني بالخفيف الثاني (حصته مستقلة عن حصة الأجوبة)
 function chainOf(model: string): string[] {
-  const c = model === SMART ? [SMART, FAST, LITE2] : model === FAST ? (tierOf() === "free" ? [LITE2, FAST] : [FAST, LITE2])
+  const c = model === SMART ? [SMART, SMART2, FAST, LITE2] : model === FAST ? (tierOf() === "free" ? [LITE2, FAST] : [FAST, LITE2])
     : model === TTS_MODEL ? [TTS_MODEL, TTS2] : [model];
   return [...new Set(c)];
 }
-// ما يُنتقل عنده إلى النموذج التالي: حصة مستنفدة (429)، أو نموذج غير متاح لهذا المفتاح (404)، أو عطل عند Google (5xx)
+// ما يُنتقل عنده إلى النموذج التالي: حصة مستنفدة (429)، أو نموذج غير متاح لهذا المفتاح (404)، أو ضغط عند Google أو مهلة (5xx)
 const switchable = (e: unknown) => e instanceof AiErr && (e.status === 429 || e.status === 404 || e.status >= 500) && e.code !== "credits";
-async function onChain<T>(model: string, run: (m: string) => Promise<T>): Promise<T> {
-  const all = chainOf(model), live = all.filter((m) => !spentNow(m));
-  if (!live.length) throw new AiErr("busy", `quota: ${all.join(", ")} until reset`, 429);
-  let last: unknown = null;
-  for (const m of live) {
-    try { return await run(m); }
-    catch (e) {
-      if (!switchable(e)) throw e;
-      const ae = e as AiErr;
-      // يُذكر المستنفد إن بيّن Google حصته؛ وازدحام عابر دون بيان يُتجاوز في هذا الطلب وحده
-      if (ae.status === 429 && ae.q?.known) markSpent(m, ae.q); else if (ae.status === 404) SPENT.set(m, Date.now() + 3600e3);
-      last = e;
-    }
+// نموذج «مزدحم» (5xx أو مهلة): يؤخَّر في ترتيب السلسلة 20 ثانية، تتضاعف إن تكرر الضغط (حتى دقيقتين)، ويُمحى بأول نجاح
+const COOL = new Map<string, { until: number; n: number }>();
+const coolNow = (m: string) => (COOL.get(m)?.until ?? 0) > Date.now();
+function coolDown(m: string) {
+  const c = COOL.get(m), n = c && c.until > Date.now() - 300000 ? Math.min(4, c.n + 1) : 1;
+  COOL.set(m, { until: Date.now() + Math.min(120000, 20000 * 2 ** (n - 1)), n });
+}
+// مهلة المحاولة الواحدة: أقصر في المجاني (طوابيره أبطأ)، فإن انقضت انتقل الطلب إلى النموذج التالي بدل الانتظار
+const attemptMs = (paid: number, free: number) => { const t = num("QT_AI_ATTEMPT_MS", 0); return t > 0 ? t : tierOf() === "free" ? free : paid; };
+// run(m, stop): محاولة واحدة على النموذج m تنتهي قبل stop. لا إعادة على النموذج نفسه عند الضغط (5xx أو مهلة):
+// التالي في السلسلة فوراً، والمضغوط يُؤخَّر؛ ثم دورة ثانية بعد استراحة قصيرة إن كان الضغط عابراً وبقي وقت
+async function onChain<T>(model: string, run: (m: string, stop: number) => Promise<T>, budget = 60000): Promise<T> {
+  const t0 = Date.now(), end = Math.min(t0 + budget, until()), all = chainOf(model), avail = all.filter((m) => !spentNow(m));
+  if (!avail.length) {                                               // كلها مستنفدة: متى تعود أقربها (دقيقة أم منتصف الليل)
+    const soon = Math.min(...all.map((m) => SPENT.get(m) ?? 0)) - t0;
+    throw new AiErr("busy", `quota: ${all.join(", ")} until reset (${Math.max(1, Math.ceil(soon / 60000))} min)`, 429);
   }
-  throw last ?? new AiErr("busy", "quota");
+  const order = [...avail.filter((m) => !coolNow(m)), ...avail.filter((m) => coolNow(m))];
+  let last: unknown = null;
+  for (let pass = 0; pass < 2; pass++) {
+    for (const m of order) {
+      if (spentNow(m)) continue;
+      if (end - Date.now() < (last ? 8000 : 2500)) break;            // لا وقت لمحاولة (أخرى) تُتم الجواب
+      try { const v = await run(m, end - 250); COOL.delete(m); const c = REQ.getStore(); if (c) c.model = m; return v; }
+      catch (e) {
+        if (!switchable(e)) throw e;
+        const ae = e as AiErr;
+        // يُذكر المستنفد إن بيّن Google حصته؛ وازدحام عابر دون بيان يُتجاوز في هذا الطلب وحده
+        if (ae.status === 429 && ae.q?.known) markSpent(m, ae.q);
+        else if (ae.status === 404) SPENT.set(m, Date.now() + 3600e3);
+        else if (ae.status >= 500) coolDown(m);
+        last = e;
+      }
+    }
+    const le = last as AiErr | null;
+    if (!le || le.status < 500 || end - Date.now() < 20000) break;
+    await sleep(2000);
+  }
+  throw last ?? new AiErr("busy", `no time left (${all[0]})`, 504);
 }
 // المعرّفات الشخصية الظاهرة في نص المستخدم تُحذف قبل إرساله (شروط Google للخدمة المجانية تمنع إرسال المعطيات الشخصية إليها،
 // ولا أثر لها في الجواب القانوني): البريد، والهاتف، وأرقام الحسابات والبطاقات البنكية، ورقم البطاقة الوطنية.
@@ -232,15 +268,15 @@ const MASKS: [RegExp, string][] = [
 ];
 const mask = (s: unknown) => typeof s === "string" ? MASKS.reduce((t, [re, r]) => t.replace(re, r), s) : s;
 type Think = "MINIMAL" | "LOW" | "MEDIUM" | "HIGH" | null;
-type Opt = { system?: string; think?: Think; omit?: string[]; ms?: number };
+type Opt = { system?: string; think?: Think; omit?: string[]; ms?: number; budget?: number };   // ms: مهلة المحاولة، budget: مهلة السلسلة
 let LEGACY_FORMAT = false;                 // إن رفض الخادم responseFormat: responseMimeType + responseJsonSchema
 const NO_THINK = new Set<string>();         // نماذج رفضت thinkingConfig
 const HEADROOM: Record<string, number> = { MINIMAL: 300, LOW: 3000, MEDIUM: 6000, HIGH: 12000 };
-const errCode = (s: number) => s === 401 || s === 403 ? "key" : s === 402 ? "credits" : s === 429 ? "busy" : s === 404 ? "model" : "ai";
+const errCode = (s: number) => s === 401 || s === 403 ? "key" : s === 402 ? "credits" : s === 429 || s >= 500 ? "busy" : s === 404 ? "model" : "ai";
 async function gemini(model: string, input: string | Part[], schema: Json | null, maxTokens: number, opt: Opt = {}): Promise<Out> {
-  return await onChain(model, (m) => gemini1(m, input, schema, maxTokens, opt));
+  return await onChain(model, (m, stop) => gemini1(m, input, schema, maxTokens, opt, stop), opt.budget ?? 62000);
 }
-async function gemini1(model: string, input: string | Part[], schema: Json | null, maxTokens: number, opt: Opt = {}): Promise<Out> {
+async function gemini1(model: string, input: string | Part[], schema: Json | null, maxTokens: number, opt: Opt = {}, stop = Infinity): Promise<Out> {
   const parts: Part[] = typeof input === "string" ? [{ text: input }] : input;
   let retried = false;
   for (;;) {
@@ -258,7 +294,7 @@ async function gemini1(model: string, input: string | Part[], schema: Json | nul
       store: false,
     };
     const ctl = new AbortController();
-    const timer = setTimeout(() => ctl.abort(), opt.ms ?? 55000);
+    const timer = setTimeout(() => ctl.abort(), tmo(opt.ms ?? attemptMs(55000, 40000), stop));
     let r: Response | null = null, j: Json = {}, netErr = "";
     try {
       r = await fetch(`${API}/models/${encodeURIComponent(model)}:generateContent`, {
@@ -272,14 +308,16 @@ async function gemini1(model: string, input: string | Part[], schema: Json | nul
     } finally {
       clearTimeout(timer);
     }
+    // انقضت المهلة (ولو أثناء قراءة الجواب): النموذج التالي في السلسلة لا انتظار جديد؛ وانقطاع سريع: محاولة ثانية بعد لحظة
+    if (ctl.signal.aborted) throw new AiErr("busy", `gemini timeout (${model})`, 504);
     if (!r) {
-      if (!retried) { retried = true; await sleep(1200); continue; }
-      throw new AiErr("net", `gemini network: ${netErr}`.slice(0, 200));
+      if (!retried && stop - Date.now() > 4000) { retried = true; await sleep(1200); continue; }
+      throw new AiErr("net", `gemini network (${model}): ${netErr}`.slice(0, 200), 503);
     }
     const msg = String((j.error as Json | undefined)?.message ?? "");
     if (r.status === 400 && schema && !LEGACY_FORMAT && /response_?format/i.test(msg)) { LEGACY_FORMAT = true; continue; }
     if (r.status === 400 && think && /thinking/i.test(msg)) { NO_THINK.add(model); continue; }
-    if (r.status >= 500 && !retried) { retried = true; await sleep(1500); continue; }   // 429: لا انتظار، بل النموذج التالي في السلسلة
+    // 429 و5xx: لا انتظار ولا إعادة هنا، بل النموذج التالي في السلسلة (onChain)
     if (!r.ok) throw new AiErr(errCode(r.status), `gemini ${r.status} (${model}): ${msg}`.slice(0, 220), r.status, r.status === 429 ? quotaOf(j, msg) : undefined);
     const c = ((j.candidates as Json[] | undefined) ?? [])[0];
     const u = (j.usageMetadata ?? {}) as Json;
@@ -287,9 +325,9 @@ async function gemini1(model: string, input: string | Part[], schema: Json | nul
     if (!c) throw new AiErr("blocked", `gemini blocked: ${String((j.promptFeedback as Json | undefined)?.blockReason ?? "no candidate")}`);
     const text = (((c.content as Json | undefined)?.parts as Json[] | undefined) ?? [])
       .filter((p) => !p.thought && typeof p.text === "string").map((p) => p.text as string).join("");
-    const stop = String(c.finishReason ?? "");
-    if (!text.trim() && /SAFETY|PROHIBITED|BLOCKLIST|SPII|RECITATION|IMAGE_/.test(stop)) throw new AiErr("blocked", "gemini finish " + stop);
-    return { text: text.replace(/^\s*```(?:json)?\s*/i, "").replace(/\s*```\s*$/, ""), inTok, outTok, stop, model };
+    const fin = String(c.finishReason ?? "");
+    if (!text.trim() && /SAFETY|PROHIBITED|BLOCKLIST|SPII|RECITATION|IMAGE_/.test(fin)) throw new AiErr("blocked", "gemini finish " + fin);
+    return { text: text.replace(/^\s*```(?:json)?\s*/i, "").replace(/\s*```\s*$/, ""), inTok, outTok, stop: fin, model };
   }
 }
 const S = (props: Json, req?: string[]) => ({ type: "object", properties: props, required: req ?? Object.keys(props), additionalProperties: false });
@@ -302,11 +340,11 @@ const parse = (t: string): Json | null => { try { const o = JSON.parse(t); retur
 // وإن لم تتوفر الواجهة (404) أو رفضت الصيغة (400) يرجع الخادم إلى generateContent بالأداة نفسها (google_search)، ثم دون بحث:
 // فلا ينقطع الجواب بسبب البحث. والأعلام تبقى في ذاكرة العامل فلا تتكرر المحاولة الفاشلة.
 let IX_NO_STORE = false, IX_OFF = false, IX_NO_THINK = false, GC_NO_SEARCH = false;
-async function postG(url: string, body: Json, ms: number, extra: Record<string, string> = {}): Promise<{ r: Response; j: Json }> {
+async function postG(url: string, body: Json, ms: number, extra: Record<string, string> = {}, stop = Infinity): Promise<{ r: Response; j: Json }> {
   let retried = false;
   for (;;) {
     const ctl = new AbortController();
-    const timer = setTimeout(() => ctl.abort(), ms);
+    const timer = setTimeout(() => ctl.abort(), tmo(ms, stop));
     let r: Response | null = null, j: Json = {}, netErr = "";
     try {
       r = await fetch(url, {
@@ -320,21 +358,21 @@ async function postG(url: string, body: Json, ms: number, extra: Record<string, 
     } finally {
       clearTimeout(timer);
     }
+    if (ctl.signal.aborted) throw new AiErr("busy", `timeout: ${url.replace(/^.*\/(models\/)?/, "")}`.slice(0, 200), 504);
     if (!r) {
-      if (!retried) { retried = true; await sleep(1200); continue; }
-      throw new AiErr("net", `network: ${netErr}`.slice(0, 200));
+      if (!retried && stop - Date.now() > 4000) { retried = true; await sleep(1200); continue; }
+      throw new AiErr("net", `network: ${netErr}`.slice(0, 200), 503);
     }
-    if (r.status >= 500 && !retried) { retried = true; await sleep(1500); continue; }
-    return { r, j };
+    return { r, j };                                             // 5xx: يقرّر المستدعي (النموذج التالي في السلسلة)
   }
 }
 const gErr = (r: Response, j: Json, tag: string) => {
   const msg = String((j.error as Json | undefined)?.message ?? "");
   return new AiErr(errCode(r.status), `${tag} ${r.status}: ${msg}`.slice(0, 220), r.status, r.status === 429 ? quotaOf(j, msg) : undefined);
 };
-async function ixPost(body: Json, ms: number): Promise<Json> {
+async function ixPost(body: Json, ms: number, stop = Infinity): Promise<Json> {
   for (let k = 0; k < 4; k++) {
-    const { r, j } = await postG(IX_URL, IX_NO_STORE ? body : { ...body, store: false }, ms, IX_REV ? { "Api-Revision": IX_REV } : {});
+    const { r, j } = await postG(IX_URL, IX_NO_STORE ? body : { ...body, store: false }, ms, IX_REV ? { "Api-Revision": IX_REV } : {}, stop);
     if (r.ok) {
       if (String(j.status ?? "") === "failed") throw new AiErr("ai", `interactions failed: ${JSON.stringify(j.errors ?? j.error ?? "").slice(0, 160)}`, 500);
       return j;
@@ -391,7 +429,7 @@ function ixRead(j: Json): Grounded {
   };
 }
 // الرجوع: generateContent بأداة google_search (groundingMetadata)، ثم دونها إن رُفضت
-async function gcGround(model: string, system: string, turns: Turn[], web: boolean, maxTok: number): Promise<Grounded> {
+async function gcGround(model: string, system: string, turns: Turn[], web: boolean, maxTok: number, stop = Infinity): Promise<Grounded> {
   for (let k = 0; k < 3; k++) {
     const useWeb = web && !GC_NO_SEARCH && WEB_SPENT <= Date.now(), think = !NO_THINK.has(model);
     const body: Json = {
@@ -401,7 +439,7 @@ async function gcGround(model: string, system: string, turns: Turn[], web: boole
       store: false,
       ...(useWeb ? { tools: [{ google_search: {} }] } : {}),
     };
-    const { r, j } = await postG(`${API}/models/${encodeURIComponent(model)}:generateContent`, body, 90000);
+    const { r, j } = await postG(`${API}/models/${encodeURIComponent(model)}:generateContent`, body, attemptMs(60000, 50000), {}, stop);
     const msg = String((j.error as Json | undefined)?.message ?? "");
     if (r.status === 400 && think && /thinking/i.test(msg)) { NO_THINK.add(model); continue; }
     if (r.status === 400 && useWeb && /search|tool|grounding/i.test(msg)) { GC_NO_SEARCH = true; continue; }
@@ -432,9 +470,9 @@ async function gcGround(model: string, system: string, turns: Turn[], web: boole
 }
 // جواب الدردشة: Interactions أولاً (بالبحث إن طُلب)، ثم generateContent؛ على سلسلة النماذج الأقوى ثم الخفيفين
 async function grounded(system: string, turns: Turn[], web: boolean, maxTok: number): Promise<Grounded> {
-  return await onChain(SMART, (m) => grounded1(m, system, turns, web, maxTok));
+  return await onChain(SMART, (m, stop) => grounded1(m, system, turns, web, maxTok, stop), 95000);
 }
-async function grounded1(model: string, system: string, turns: Turn[], web0: boolean, maxTok: number): Promise<Grounded> {
+async function grounded1(model: string, system: string, turns: Turn[], web0: boolean, maxTok: number, stop = Infinity): Promise<Grounded> {
   let web = web0 && WEB_SPENT <= Date.now();
   for (let k = 0; k < 3 && !IX_OFF; k++) {
     const body: Json = {
@@ -444,7 +482,7 @@ async function grounded1(model: string, system: string, turns: Turn[], web0: boo
       ...(web ? { tools: [{ type: "google_search" }] } : {}),
     };
     try {
-      const g = ixRead(await ixPost(body, 90000));
+      const g = ixRead(await ixPost(body, attemptMs(60000, 50000), stop));
       if (g.text) return g;
       break;                                                    // نص فارغ: يُجرَّب generateContent
     } catch (e) {
@@ -457,7 +495,7 @@ async function grounded1(model: string, system: string, turns: Turn[], web0: boo
       throw e;                                                  // المفتاح أو الرصيد أو الحصة: لا معنى للرجوع إلى الواجهة الأخرى
     }
   }
-  return await gcGround(model, system, turns, web, maxTok);
+  return await gcGround(model, system, turns, web, maxTok, stop);
 }
 
 // ---------- الصوت (v8.2): تسعة أصوات من أصوات Google الجاهزة، واللغة تُكتشف من النص ----------
@@ -484,13 +522,13 @@ function audioOut(data: string, mime: string, rate: number): { bytes: Uint8Array
   const m = /rate=(\d+)/i.exec(mime);
   return { bytes: wavOf(raw, m ? +m[1] : rate || 24000), mime: "audio/wav" };
 }
-async function ttsIx(model: string, text: string, voice: string): Promise<Audio> {
+async function ttsIx(model: string, text: string, voice: string, stop = Infinity): Promise<Audio> {
   for (let k = 0; k < 4; k++) {
     const content: Json = { type: "text", text, ...(TTS_STYLE_ON ? { annotations: [{ type: "speech_metadata", style: TTS_STYLE }] } : {}) };
     const rf: Json = TTS_MP3 ? { type: "audio", mime_type: "audio/mp3", bit_rate: 48000 } : { type: "audio", mime_type: "audio/wav", sample_rate: 16000 };
     try {
       const j = await ixPost({ model, input: [{ type: "user_input", content: [content] }], response_format: rf,
-                               generation_config: { speech_config: [{ voice }] } }, 60000);
+                               generation_config: { speech_config: [{ voice }] } }, attemptMs(40000, 25000), stop);
       const blocks: Json[] = [];
       for (const s of (Array.isArray(j.steps) ? j.steps : []) as Json[]) {
         if (s?.type !== "model_output") continue;
@@ -512,11 +550,11 @@ async function ttsIx(model: string, text: string, voice: string): Promise<Audio>
   }
   throw new AiErr("ai", "tts: retries");
 }
-async function ttsGc(model: string, text: string, voice: string): Promise<Audio> {
+async function ttsGc(model: string, text: string, voice: string, stop = Infinity): Promise<Audio> {
   const { r, j } = await postG(`${API}/models/${encodeURIComponent(model)}:generateContent`, {
     contents: [{ role: "user", parts: [{ text }] }],
     generationConfig: { responseModalities: ["AUDIO"], speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: voice } } } },
-  }, 60000);
+  }, attemptMs(40000, 25000), {}, stop);
   if (!r.ok) throw gErr(r, j, `tts (${model})`);
   const parts = ((((j.candidates as Json[] | undefined) ?? [])[0]?.content as Json | undefined)?.parts ?? []) as Json[];
   const d = (parts.find((p) => (p?.inlineData as Json | undefined)?.data)?.inlineData ?? {}) as Json;
@@ -526,18 +564,18 @@ async function ttsGc(model: string, text: string, voice: string): Promise<Audio>
 }
 // على سلسلة نموذجي الصوت (الأصوات التسعة نفسها في كليهما): إن نفدت حصة الأول قرأ الثاني
 async function speak(text: string, voice: string): Promise<Audio> {
-  return await onChain(TTS_MODEL, (m) => speak1(m, text, voice));
+  return await onChain(TTS_MODEL, (m, stop) => speak1(m, text, voice, stop), 45000);
 }
-async function speak1(model: string, text: string, voice: string): Promise<Audio> {
+async function speak1(model: string, text: string, voice: string, stop = Infinity): Promise<Audio> {
   if (TTS_IX) {
-    try { return { ...(await ttsIx(model, text, voice)), model } as Audio; }
+    try { return { ...(await ttsIx(model, text, voice, stop)), model } as Audio; }
     catch (e) {
       if (!(e instanceof AiErr) || !(e.status === 404 || e.status === 400)) throw e;
       if (e.status === 404 && /model/i.test(e.message) && !/interactions? (api )?(is )?not/i.test(e.message)) throw e;
       TTS_IX = false;
     }
   }
-  return { ...(await ttsGc(model, text, voice)), model } as Audio;
+  return { ...(await ttsGc(model, text, voice, stop)), model } as Audio;
 }
 
 // ---------- الأدوات ----------
@@ -562,10 +600,14 @@ async function guarded(model: string, prompt: string | Part[], schema: Json, max
                        check?: ((o: Json) => string | null) | null, opt: Opt = {}) {
   let last: Json | null = null, tokIn = 0, tokOut = 0;
   const NOTE = "\n\nتنبيه صارم: جوابك السابق ذكر رقماً أو مفتاحاً لم يرد في المادة المرجعية أو خالف الشروط. لا تذكر إلا ما فيها حرفياً.";
-  let room = max;
+  let room = max, short = false;
   for (let k = 0; k < 2; k++) {
+    // المحاولة الثانية (بالتنبيه الصارم أو بهامش أوسع) لا تبدأ إلا إن بقي لها وقت، وإن تعذرت بقي الجواب الأول معلَّماً
+    if (k && leftMs() < 15000) { short = true; break; }
     const p: string | Part[] = !k ? prompt : typeof prompt === "string" ? prompt + NOTE : [...prompt, { text: NOTE }];
-    const out = await gemini(model, p, schema, room, opt);
+    let out: Out;
+    try { out = await gemini(model, p, schema, room, opt); }
+    catch (e) { if (k && last) break; throw e; }
     tokIn += out.inTok; tokOut += out.outTok;
     const obj = parse(out.text);
     if (!obj) { if (out.stop === "MAX_TOKENS") room = Math.round(max * 1.6); continue; }
@@ -574,7 +616,7 @@ async function guarded(model: string, prompt: string | Part[], schema: Json, max
     const bad = (check && check(obj)) || (guardOk(JSON.stringify(shown), texts) ? null : "ref");
     if (!bad) return { obj, guard: true, tokIn, tokOut };
   }
-  if (!last) throw new AiErr("ai", "bad json");
+  if (!last) throw new AiErr(short ? "busy" : "ai", short ? "bad json, no time to retry" : "bad json");
   return { obj: last, guard: false, tokIn, tokOut };
 }
 
@@ -659,7 +701,9 @@ async function retrieve(text: string, kind: "ask" | "case", cap0?: number) {
         `laws: معرّفات القوانين التي يرجح أن تحكم ${kind === "case" ? "هذه النازلة" : "هذا السؤال"}، من القائمة وحدها، ثلاثة على الأكثر، الأرجح أولاً. ` +
         `terms: من 4 إلى 12 عبارة بحث قصيرة بالمصطلحات القانونية المغربية كما ترد في نصوص القوانين (مثل «الفصل التعسفي»، «فترة الاختبار»، «سقوط الحضانة»)، لا بكلام المستخدم. ` +
         `refs: مواد تعرف يقيناً أنها تحكم المسألة، بصورة {slug, n} حيث n رقم المادة كما يُكتب ("41" أو "82-3")؛ وإن لم تكن متيقناً فاتركها فارغة.`;
-      const out = await gemini(FAST, prompt, S({ laws: ARR(STR), terms: ARR(STR), refs: ARR(S({ slug: STR, n: STR })) }), 600, { system: PREP });
+      // تحضير اختياري: مهلة قصيرة (12 ثانية للمحاولة و16 للسلسلة)، فإن تعذر كفى البحث بالجذور ولم يتأخر الجواب
+      const pm = num("QT_AI_PREP_MS", 12000);
+      const out = await gemini(FAST, prompt, S({ laws: ARR(STR), terms: ARR(STR), refs: ARR(S({ slug: STR, n: STR })) }), 600, { system: PREP, ms: pm, budget: pm + 4000 });
       tokIn += out.inTok; tokOut += out.outTok;
       const o = parse(out.text) ?? {};
       prep = {
@@ -1191,7 +1235,7 @@ async function doGen(b: Json, lang: string) {
     return out.slice(0, count);
   };
   const r = await guarded(SMART, prompt, schema, 700 * count + 400, texts, (o) => (valid(o).length >= 2 ? null : "few"),
-                          { think: "LOW", omit: ["items"], ms: 80000 });
+                          { think: "LOW", omit: ["items"], ms: attemptMs(80000, 60000), budget: 105000 });
   const items = valid(r.obj);
   if (items.length < 2) return { error: "ai", why: "gen-invalid", tokIn: r.tokIn, tokOut: r.tokOut, model: SMART };
   const byKey = new Map(arts.map((a) => [artKey(a), a]));
@@ -1551,15 +1595,16 @@ Deno.serve(async (req) => {
   if (kind === "quota") {
     // للمؤلف: «reset» يمحو ذاكرة هذا العامل (النماذج المستنفدة وأعلام الرجوع)، مثلاً بعد تفعيل الفوترة أو تغيير المفتاح
     if (dbg && b.reset === true) {
-      SPENT.clear(); WEB_SPENT = 0; FREE_SEEN = false; NO_THINK.clear(); LEGACY_FORMAT = false;
+      SPENT.clear(); COOL.clear(); WEB_SPENT = 0; FREE_SEEN = false; NO_THINK.clear(); LEGACY_FORMAT = false;
       IX_NO_STORE = false; IX_OFF = false; IX_NO_THINK = false; GC_NO_SEARCH = false;
       TTS_MP3 = (Deno.env.get("QT_AI_TTS_FMT") ?? "mp3") !== "wav"; TTS_STYLE_ON = true; TTS_IX = true; IX_REV = Deno.env.get("QT_AI_IX_REV") ?? "2026-05-20";
     }
     const now = Date.now(), spent = [...SPENT].filter(([, u]) => u > now).map(([m, u]) => ({ m, min: Math.ceil((u - now) / 60000) }));
+    const cool = [...COOL].filter(([, c]) => c.until > now).map(([m, c]) => ({ m, s: Math.ceil((c.until - now) / 1000) }));
     return reply({ ok: true, kind, unlimited: true, ready: !!GEMINI, google: !user.is_anonymous, kinds: KINDS, voices: VOICES,
       tier: tierOf(), web: webAllowed(),
-      ...(dbg ? { cfg: { tier: tierOf(), fast: FAST, smart: SMART, lite2: LITE2, tts: TTS_MODEL, tts2: TTS2, rev: IX_REV,
-                         budget: BUDGET, web: WEB_DAILY, ttsDaily: TTS_DAILY, rate: RATE_AI, rateTts: RATE_TTS, spent, freeSeen: FREE_SEEN,
+      ...(dbg ? { cfg: { tier: tierOf(), fast: FAST, smart: SMART, smart2: SMART2, lite2: LITE2, tts: TTS_MODEL, tts2: TTS2, rev: IX_REV,
+                         budget: BUDGET, web: WEB_DAILY, ttsDaily: TTS_DAILY, rate: RATE_AI, rateTts: RATE_TTS, spent, cool, freeSeen: FREE_SEEN,
                          webSpentMin: WEB_SPENT > now ? Math.ceil((WEB_SPENT - now) / 60000) : 0,
                          flags: { IX_OFF, IX_NO_STORE, IX_NO_THINK, GC_NO_SEARCH, TTS_IX, TTS_MP3, TTS_STYLE_ON } } } : {}) });
   }
@@ -1576,29 +1621,30 @@ Deno.serve(async (req) => {
   const [pm, ph] = dbg ? [0, 0] : lane === "tts" ? RATE_TTS : RATE_AI;
   const { data: gate } = await sb.rpc("qt_ai_gate", { p_uid: user.id, p_lane: lane, p_min: pm, p_hour: ph, p_budget: lane === "tts" ? TTS_DAILY : BUDGET });
   if (!gate?.ok) return reply({ ok: false, error: gate?.why === "budget" ? "budget" : "rate", ...(dbg ? { why: `gate: ${JSON.stringify(gate ?? null)}` } : {}) });
-  const t0 = Date.now();
+  const t0 = Date.now(), ctx: Ctx = { until: t0 + LIMIT_MS(kind) };
   let res: Json = {};
   try {
-    res = kind === "why" ? await doWhy(b, lang) : kind === "twin" ? await doTwin(b, lang) : kind === "ask" ? await doAsk(b, lang)
+    res = await REQ.run(ctx, async () => kind === "why" ? await doWhy(b, lang) : kind === "twin" ? await doTwin(b, lang) : kind === "ask" ? await doAsk(b, lang)
       : kind === "case" ? await doCase(b, lang) : kind === "scan" ? await doScan(b, lang) : kind === "explain" ? await doExplain(b, lang)
       : kind === "compare" ? await doCompare(b, lang) : kind === "essay" ? await doEssay(b, lang) : kind === "drill" ? await doDrill(b, lang, user.id)
       : kind === "cards" ? await doCards(b, lang) : kind === "oral" ? await doOral(b, lang) : kind === "gen" ? await doGen(b, lang)
       : kind === "chat" ? await doChat(b, lang, user.id) : kind === "stt" ? await doStt(b) : kind === "tts" ? await doTts(b)
       : kind === "map" ? await doMap(b, lang) : kind === "weak" ? await doWeak(b, lang, user.id)
-      : await doPlan(b, lang, user.id);
+      : await doPlan(b, lang, user.id));
   } catch (e) {
     const code = e instanceof AiErr ? e.code : "ai";
     // للعميل: «مشغول» أو «مرفوض» أو «تعذّر» دون تفاصيل؛ والتفاصيل في سجل المؤلف
-    res = { error: code === "busy" || code === "blocked" ? code : "ai", why: `${code}: ${String((e as Error)?.message ?? e)}`.slice(0, 220) };
+    res = { error: code === "busy" || code === "net" ? "busy" : code === "blocked" ? code : "ai", why: `${code}: ${String((e as Error)?.message ?? e)}`.slice(0, 220) };
   }
   const free = !!(res.cached || res.free || res.error);
+  if (ctx.model && !res.cached && !res.error) res.model = ctx.model;  // النموذج الذي أجاب فعلاً في السلسلة، لا أولها
   if (free) await sb.rpc("qt_ai_ungate", { p_uid: user.id, p_lane: lane });
   await sb.from("qt_ai_log").insert({
     uid: user.id, kind, model: (res.model as string) ?? null, cached: !!res.cached, in_tok: (res.tokIn as number) ?? 0,
     out_tok: (res.tokOut as number) ?? 0, ms: Date.now() - t0, ok: !res.error, err: res.error ? String(res.why ?? res.error) : null,
     web: Number(res.web) || 0, lane,
   });
-  const info = dbg ? { model: res.model ?? null, via: res.via ?? (res.cached ? "cache" : "gc"), ms: Date.now() - t0,
+  const info = dbg ? { model: res.model ?? null, via: res.error ? "" : res.via ?? (res.cached ? "cache" : "gc"), ms: Date.now() - t0,
                        tokIn: res.tokIn ?? 0, tokOut: res.tokOut ?? 0, web: Number(res.web) || 0 } : null;
   if (res.error) return reply({ ok: false, error: res.error, ...(info ? { why: String(res.why ?? res.error), dbg: info } : {}) });
   // الصوت ثنائياً (أخف من base64 بالثلث)؛ وفي الترويسة نوعه

@@ -11,7 +11,7 @@ const txtAll = c => (c.body.contents || []).flatMap(x => x.parts || []).filter(p
 // Interactions API (v8.2): الدردشة بالبحث، والصوت — ردود مبرمجة مسبقاً في IXS، وإلا ردّ افتراضي بحسب الطلب
 const IXS = [];
 const ixText = c => (c.body.input || []).map(st => (st.content || []).map(x => x.text || '').join('')).join('\n');
-const ID3 = Buffer.concat([Buffer.from('ID3'), Buffer.alloc(7), Buffer.from('mp3-frames'.repeat(40))]).toString('base64');
+const ID3 = Buffer.concat([Buffer.from('ID3'), Buffer.alloc(7), Buffer.from('mp3-frames'.repeat(400))]).toString('base64');
 const WAV = (() => { const b = Buffer.alloc(44 + 3200); b.write('RIFF', 0); b.writeUInt32LE(36 + 3200, 4); b.write('WAVE', 8); b.write('fmt ', 12);
   b.writeUInt32LE(16, 16); b.writeUInt16LE(1, 20); b.writeUInt16LE(1, 22); b.writeUInt32LE(16000, 24); b.writeUInt32LE(32000, 28);
   b.writeUInt16LE(2, 32); b.writeUInt16LE(16, 34); b.write('data', 36); b.writeUInt32LE(3200, 40); return b.toString('base64'); })();
@@ -53,6 +53,7 @@ globalThis.fetch = async (url, o) => {
   const u = txt(c), sc = schemaOf(c), props = Object.keys(sc.properties ?? {});
   const keys = [...new Set([...u.matchAll(/\[([a-z_]+:[^\]\s][^\]]*)\]/g)].map(m => m[1]))], art = keys[0] || '';
   let obj = SCRIPT.length ? SCRIPT.shift() : null;
+  if (obj && obj.$hang) return new Promise((_, rej) => o.signal && o.signal.addEventListener('abort', () => rej(new DOMException('The signal has been aborted', 'AbortError'))));
   if (obj && obj.$status) return new Response(JSON.stringify({ error: { code: obj.$status, message: obj.$msg || 'err', status: obj.$s || 'X', ...(obj.$details ? { details: obj.$details } : {}) } }), { status: obj.$status });
   if (obj && obj.$raw) return new Response(JSON.stringify(obj.$raw), { status: 200 });
   // الصوت عبر generateContent (الرجوع): PCM خام 24 كيلوهرتز
@@ -104,6 +105,9 @@ globalThis.fetch = async (url, o) => {
   return gem(obj);
 };
 await import('./fn-ai.mts');
+// محو ذاكرة العامل (النماذج المستنفدة والمبرَّدة وأعلام الرجوع) بسر المؤلف، كي لا يتأثر فحص بترتيب السلسلة الذي خلّفه فحص سابق
+const admReset = () => handler(new Request('https://x/functions/v1/qt-ai', { method: 'POST', headers: { 'content-type': 'application/json', authorization: 'Bearer ' + GOOG, 'x-qt-admin': ENV.QT_ADMIN_SECRET }, body: JSON.stringify({ kind: 'quota', reset: true }) }));
+const admCfg = async () => (await (await handler(new Request('https://x/functions/v1/qt-ai', { method: 'POST', headers: { 'content-type': 'application/json', authorization: 'Bearer ' + GOOG, 'x-qt-admin': ENV.QT_ADMIN_SECRET }, body: JSON.stringify({ kind: 'quota' }) }))).json()).cfg;
 const ANON = 't-anon', GOOG = 't-goog', OTHER = 't-other';
 const newUser = () => sqlRaw(`insert into auth.users(id) values (gen_random_uuid()) returning id`).split('\n').pop();
 const ida = newUser(), idg = newUser(), ido = newUser();
@@ -294,15 +298,67 @@ r = await call(GOOG, { kind: 'oral', id: cs.id, answer: 'جواب طويل بم�
 ok(r.b.ok === false && lastErr().startsWith('key: gemini 401'), 'مفتاح مرفوض (401): «key» في السجل');
 SCRIPT.push({ $status: 429, $msg: 'Resource exhausted', $s: 'RESOURCE_EXHAUSTED' });
 n0 = CALLS.length; r = await call(GOOG, { kind: 'oral', id: cs.id, answer: 'جواب طويل بما يكفي ليُقبل في الامتحان الشفوي.' });
-ok(r.b.ok === true && CALLS.length - n0 === 2 && mdl(CALLS.at(-2)) === 'gemini-3.8-flash' && mdl(CALLS.at(-1)) === 'gemini-3.5-flash-lite' && dayN() === a0 + 1,
-   'ازدحام عابر (429) على النموذج الأقوى: الطلب نفسه ينتقل فوراً إلى النموذج الخفيف وينجح');
-SCRIPT.push({ $status: 429, $msg: 'Resource exhausted', $s: 'RESOURCE_EXHAUSTED' }, { $status: 429, $msg: 'Resource exhausted', $s: 'RESOURCE_EXHAUSTED' }, { $status: 429, $msg: 'Resource exhausted', $s: 'RESOURCE_EXHAUSTED' });
+ok(r.b.ok === true && CALLS.length - n0 === 2 && mdl(CALLS.at(-2)) === 'gemini-3.8-flash' && mdl(CALLS.at(-1)) === 'gemini-3.6-flash' && dayN() === a0 + 1,
+   'ازدحام عابر (429) على النموذج الأقوى: الطلب نفسه ينتقل فوراً إلى النموذج القوي الثاني وينجح');
+ok(sql(`select model from qt_ai_log order by id desc limit 1`).split('\n').pop() === 'gemini-3.6-flash', 'وسجل المؤلف يذكر النموذج الذي أجاب فعلاً (لا أول السلسلة)');
+const R429 = { $status: 429, $msg: 'Resource exhausted', $s: 'RESOURCE_EXHAUSTED' };
+SCRIPT.push(R429, R429, R429, R429);
 a0 = dayN(); n0 = CALLS.length; r = await call(GOOG, { kind: 'oral', id: cs.id, answer: 'جواب طويل بما يكفي ليُقبل في الامتحان الشفوي.' });
-ok(r.b.ok === false && r.b.error === 'busy' && CALLS.length - n0 === 3 && dayN() === a0, 'ازدحام على النماذج الثلاثة: «مشغول» للطالب، ولا يُحتسب');
-ok(mdl(CALLS.at(-1)) === 'gemini-3.1-flash-lite', 'والثالث في السلسلة نموذج خفيف ثانٍ بحصة مستقلة');
+ok(r.b.ok === false && r.b.error === 'busy' && CALLS.length - n0 === 4 && dayN() === a0, 'ازدحام على النماذج الأربعة: «مشغول» للطالب، ولا يُحتسب');
+ok(CALLS.slice(n0).map(mdl).join() === 'gemini-3.8-flash,gemini-3.6-flash,gemini-3.5-flash-lite,gemini-3.1-flash-lite', 'السلسلة: القويان ثم الخفيفان، لكل منها حصته');
+// ضغط عند Google (503 «high demand»): لا إعادة على النموذج المضغوط، بل التالي فوراً؛ والمضغوط يؤخَّر في الطلبات التالية
+const R503 = { $status: 503, $msg: 'This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.', $s: 'UNAVAILABLE' };
+SCRIPT.push(R503, R503);
+a0 = dayN(); n0 = CALLS.length; r = await call(GOOG, { kind: 'oral', id: cs.id, answer: 'جواب طويل بما يكفي ليُقبل في الامتحان الشفوي، ثانٍ.' });
+ok(r.b.ok && CALLS.slice(n0).map(mdl).join() === 'gemini-3.8-flash,gemini-3.6-flash,gemini-3.5-flash-lite' && dayN() === a0 + 1,
+   'ضغط عند Google (503) على النموذجين القويين: الخفيف يجيب في الطلب نفسه، دون إعادة على النموذج المضغوط');
+ENV.QT_AI_ATTEMPT_MS = '700'; SCRIPT.push({ $hang: true });
+let tq0 = Date.now(); n0 = CALLS.length; r = await call(GOOG, { kind: 'oral', id: cs.id, answer: 'جواب طويل بما يكفي ليُقبل في الامتحان الشفوي، ثالث.' });
+ok(r.b.ok && Date.now() - tq0 < 6000 && CALLS.slice(n0).map(mdl).join() === 'gemini-3.5-flash-lite,gemini-3.1-flash-lite',
+   'مهلة منقضية دون رد: التالي فوراً دون إعادة؛ والنموذجان المضغوطان قبلها مؤخَّران في ترتيب الطلب التالي');
+delete ENV.QT_AI_ATTEMPT_MS;
+let cf = await admCfg();
+ok(['gemini-3.8-flash', 'gemini-3.6-flash', 'gemini-3.5-flash-lite'].every(m => cf.cool.some(x => x.m === m && x.s <= 20)) && !cf.cool.some(x => x.m === 'gemini-3.1-flash-lite'),
+   'المضغوط مبرَّد عشرين ثانية، والذي أجاب لا تبريد عليه (سجل المؤلف)');
+await admReset();
+// ضغط عام عابر: النماذج الأربعة 503 ← دورة ثانية بعد ثانيتين؛ ومع تكرر الضغط يتضاعف التبريد، والنجاح يمحوه
+SCRIPT.push(R503, R503, R503, R503);
+tq0 = Date.now(); n0 = CALLS.length; r = await call(GOOG, { kind: 'oral', id: cs.id, answer: 'جواب طويل بما يكفي ليُقبل في الامتحان الشفوي، رابع.' });
+ok(r.b.ok && CALLS.slice(n0).map(mdl).join() === 'gemini-3.8-flash,gemini-3.6-flash,gemini-3.5-flash-lite,gemini-3.1-flash-lite,gemini-3.8-flash' && Date.now() - tq0 >= 1900,
+   'ضغط عام عابر (503 على النماذج الأربعة): دورة ثانية بعد استراحة قصيرة تنجح في الطلب نفسه');
+cf = await admCfg();
+ok(!cf.cool.some(x => x.m === 'gemini-3.8-flash') && cf.cool.filter(x => x.s <= 20).length === 3, 'النجاح يمحو تبريد النموذج الذي أجاب');
+SCRIPT.push(...Array(8).fill(R503));
+a0 = dayN(); n0 = CALLS.length; r = await call(GOOG, { kind: 'oral', id: cs.id, answer: 'جواب طويل بما يكفي ليُقبل في الامتحان الشفوي، خامس.' });
+cf = await admCfg();
+const cl = m => (cf.cool.find(x => x.m === m) || {}).s || 0;
+ok(r.b.ok === false && r.b.error === 'busy' && CALLS.length - n0 === 8 && dayN() === a0 && cl('gemini-3.6-flash') > 60 && cl('gemini-3.6-flash') <= 80 && cl('gemini-3.8-flash') > 20 && cl('gemini-3.8-flash') <= 40,
+   'ضغط مستمر في الدورتين: «مشغول» دون احتساب، والتبريد يتضاعف مع تكرره (20 ← 40 ← 80 ثانية)');
+await admReset();
+// مهلة الطلب كله (ما يتسع له انتظار العميل): «مشغول» في وقته بدل أن ينقطع الطلب عند العميل
+ENV.QT_AI_DEADLINE_MS = '4000'; ENV.QT_AI_ATTEMPT_MS = '20000'; SCRIPT.push({ $hang: true });
+a0 = dayN(); tq0 = Date.now(); n0 = CALLS.length; r = await call(GOOG, { kind: 'oral', id: cs.id, answer: 'جواب طويل بما يكفي ليُقبل في الامتحان الشفوي، سادس.' });
+ok(r.b.ok === false && r.b.error === 'busy' && Date.now() - tq0 >= 3500 && Date.now() - tq0 < 5500 && CALLS.length - n0 === 1 && dayN() === a0 && /timeout/.test(lastErr()),
+   'مهلة الطلب كله: المحاولة تُقطع قبل انقضاء انتظار العميل، و«مشغول» دون احتساب');
+SCRIPT.length = 0; await admReset();
+// المحاولة الثانية للحارس لا تبدأ إن لم يبق لها وقت: الجواب الأول يعود معلَّماً بدل الانتظار
+ENV.QT_AI_DEADLINE_MS = '9000'; delete ENV.QT_AI_ATTEMPT_MS;
+SCRIPT.push({ rule: 3, basis: 2, application: 2, verdict: 'تطبيق سليم للمادة 9876.', strengths: ['القاعدة'], gaps: [], model: 'الجواب وفق المادة 9876.' });
+n0 = CALLS.length; r = await call(GOOG, { kind: 'oral', id: cs.id, answer: 'جواب طويل بما يكفي ليُقبل في الامتحان الشفوي، سابع.' });
+ok(r.b.ok && CALLS.length - n0 === 1 && r.b.data.guard === false && r.b.data.score === 7, 'الحارس بلا وقت لمحاولة ثانية: الجواب الأول معلَّماً (guard=false) في وقته');
+SCRIPT.length = 0;
+delete ENV.QT_AI_DEADLINE_MS;
+// تحضير البحث اختياري: إن تعلّق تُرك بعد مهلته القصيرة، والجواب من البحث بالجذور في الطلب نفسه
+ENV.QT_AI_PREP_MS = '400'; SCRIPT.push({ $hang: true });
+tq0 = Date.now(); n0 = CALLS.length; r = await call(GOOG, { kind: 'ask', q: 'ما آجال فترة الاختبار للأجراء في عقد الشغل غير المحدد المدة؟ (فحص التحضير المعلَّق)' });
+ok(r.b.ok && Date.now() - tq0 < 4000 && CALLS.length - n0 === 2 && CALLS[n0].body.systemInstruction.parts[0].text.includes('محرك تحضير بحث') && (r.b.data.articles || []).length > 0,
+   'تحضير البحث معلَّق: يُترك بعد مهلته القصيرة، والجواب من البحث بالجذور في الطلب نفسه');
+delete ENV.QT_AI_PREP_MS; SCRIPT.length = 0;
+await admReset();
 SCRIPT.push({ $status: 503, $msg: 'overloaded' });
-r = await call(GOOG, { kind: 'oral', id: cs.id, answer: 'جواب طويل بما يكفي ليُقبل في الامتحان الشفوي.' });
-ok(r.b.ok === true && dayN() === a0 + 1, 'عطل عابر (503): المحاولة الثانية تنجح');
+a0 = dayN(); n0 = CALLS.length; r = await call(GOOG, { kind: 'oral', id: cs.id, answer: 'جواب طويل بما يكفي ليُقبل في الامتحان الشفوي.' });
+ok(r.b.ok === true && dayN() === a0 + 1 && CALLS.length - n0 === 2, 'عطل عابر (503): النموذج التالي يجيب في الطلب نفسه');
+await admReset();
 a0 = dayN();
 SCRIPT.push({ $raw: { promptFeedback: { blockReason: 'PROHIBITED_CONTENT' }, usageMetadata: { promptTokenCount: 50 } } });
 r = await call(GOOG, { kind: 'oral', id: cs.id, answer: 'جواب طويل بما يكفي ليُقبل في الامتحان الشفوي.' });
@@ -612,7 +668,7 @@ if (process.env.QT_REPO) {
   const marks = st.out.split('\n').filter((l) => /^[✓✗⚠–] /.test(l));
   ok(st.code === 0 && !marks.some((l) => l.startsWith('✗')) && marks.length >= 30, `أداة الفحص الذاتي: ${marks.length} فحصاً دون فشل (وضع المؤلف، والأصوات التسعة)`);
   if (st.code !== 0 || marks.some((l) => l.startsWith('✗')) || process.env.QT_ST_SHOW) console.log(st.out);
-  ok(/النماذج بالترتيب: gemini-3\.8-flash ← gemini-3\.5-flash-lite ← gemini-3\.1-flash-lite/.test(st.out) && /المستوى: مدفوع/.test(st.out) && /الصمامات اليومية: أجوبة 600 · بحث 150 · صوت 1500/.test(st.out), 'الفحص يعرض النماذج والصمامات في وضع المؤلف');
+  ok(/النماذج بالترتيب: gemini-3\.8-flash ← gemini-3\.6-flash ← gemini-3\.5-flash-lite ← gemini-3\.1-flash-lite/.test(st.out) && /المستوى: مدفوع/.test(st.out) && /الصمامات اليومية: أجوبة 600 · بحث 150 · صوت 1500/.test(st.out), 'الفحص يعرض النماذج والصمامات في وضع المؤلف');
   ok(/صوّر سؤالاً .*mcq · الصحيح عنده: أ/.test(st.out) && /الخريطة الذهنية/.test(st.out) && /دفتر الأخطاء الذكي/.test(st.out) && /اطلب تمارين/.test(st.out), 'الفحص يشمل الصورة والخريطة ودفتر الأخطاء والتمارين');
   const wavs = fs.readdirSync(path.join(home, 'tahiro-ai-test'));
   ok(wavs.length === 10 && wavs.some((f) => /^voice-9-Zephyr\.(mp3|wav)$/.test(f)), 'عينات الصوت محفوظة لتُسمع (صوت الفحص والأصوات التسعة)');
@@ -628,6 +684,16 @@ if (process.env.QT_REPO) {
   fs.writeFileSync(path.join(home, '.qanoun-tahiro-admin'), ADM);
   st = await runST(['--quick'], {});
   ok(st.code === 1 && /^✗ دردشة \+ بحث/m.test(st.out) && /credits: gemini 402/.test(st.out) && /Billing/.test(st.out), 'فشل حقيقي: ✗ مع سببه من Google وإرشاد الإصلاح، ورمز خروج 1');
+  ok(/اتبع الإرشاد تحت كل ✗/.test(st.out) && !/لا خلل في الإعداد: يرى الطالب/.test(st.out), 'والخلاصة تطلب الإصلاح (الفشل خلل في الإعداد لا ضغط)');
+  // المستوى المجاني: «high demand» على كل النماذج في الدورتين ← ✗ بإرشاد «ضغط مؤقت» وخلاصة مطمئنة، والفحص يتمهّل بين الطلبات
+  await admReset(); ENV.QT_AI_TIER = 'free'; SCRIPT.length = 0;
+  IXS.push(...Array(8).fill({ $status: 503, $msg: 'This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.' }));
+  st = await runST(['--quick'], { QT_SELFTEST_GAP_FREE: '300' });
+  ok(st.code === 1 && /^✗ دردشة /m.test(st.out) && /high demand/.test(st.out) && /← Google يبلّغ عن ضغط على النموذج/.test(st.out) && /لا خلل في الإعداد: يرى الطالب/.test(st.out)
+     && /المستوى: مجاني/.test(st.out) && /ينتظر 0 ثوانٍ بين الطلبات/.test(st.out) && /^[✓⚠] متابعة دون بحث/m.test(st.out) && /^✓ قراءة بصوت/m.test(st.out),
+     'المجاني تحت الضغط: ✗ بإرشاد «ضغط مؤقت» وخلاصة «لا خلل في الإعداد»، وبقية الفحوص تمر');
+  if (process.env.QT_ST_SHOW) console.log(st.out);
+  IXS.length = 0; ENV.QT_AI_TIER = 'paid'; await admReset();
   srv.close();
   fs.rmSync(home, { recursive: true, force: true });
 }
@@ -653,18 +719,18 @@ ok(dayN('web') === a0, 'المجاني: لا يُحتسب بحث في صمام �
 // حصة يومية مستنفدة للنموذج الأقوى (20 طلباً): ينتقل الطلب نفسه إلى الخفيف، ولا يُطلب الأقوى بعدها حتى تتجدد الحصة
 SCRIPT.push(Q429('gemini-3.8-flash', true));
 n0 = CALLS.length; r = await call(GOOG, { kind: 'oral', id: cs.id, answer: 'جواب شفوي أول في المستوى المجاني بما يكفي ليُقبل.' });
-ok(r.b.ok && mdl(CALLS[n0]) === 'gemini-3.8-flash' && mdl(CALLS.at(-1)) === 'gemini-3.5-flash-lite', 'حصة يومية مستنفدة (429 FreeTier PerDay): الطلب ينتقل فوراً إلى النموذج الخفيف وينجح');
+ok(r.b.ok && mdl(CALLS[n0]) === 'gemini-3.8-flash' && mdl(CALLS.at(-1)) === 'gemini-3.6-flash', 'حصة يومية مستنفدة (429 FreeTier PerDay): الطلب ينتقل فوراً إلى النموذج القوي الثاني وينجح');
 n0 = CALLS.length; r = await call(GOOG, { kind: 'oral', id: cs.id, answer: 'جواب شفوي ثانٍ في المستوى المجاني بما يكفي ليُقبل.' });
 ok(r.b.ok && CALLS.slice(n0).every(c => mdl(c) !== 'gemini-3.8-flash'), 'ولا يُطلب النموذج الأقوى بعدها (يُذكر مستنفداً حتى منتصف الليل بتوقيت المحيط الهادئ)');
 fq = (await callA(GOOG, { kind: 'quota' }, ADM).then(x => x.json()));
 const sp = (fq.cfg.spent || []).find(x => x.m === 'gemini-3.8-flash');
 ok(fq.cfg.tier === 'free' && sp && sp.min > 0 && sp.min <= 24 * 60 + 1 && fq.cfg.freeSeen === true && fq.cfg.lite2 === 'gemini-3.1-flash-lite', `وضع المؤلف يرى المستنفد ومدته (${sp && sp.min} دقيقة) وأن الحصة مجانية`);
 // حصة دقيقية: يُتجاوز النموذج دقيقةً تقريباً لا يوماً
-SCRIPT.push(Q429('gemini-3.5-flash-lite', false));
+SCRIPT.push(Q429('gemini-3.6-flash', false));
 n0 = CALLS.length; r = await call(GOOG, { kind: 'oral', id: cs.id, answer: 'جواب شفوي ثالث في المستوى المجاني بما يكفي ليُقبل.' });
 fq = (await callA(GOOG, { kind: 'quota' }, ADM).then(x => x.json()));
-const sp2 = (fq.cfg.spent || []).find(x => x.m === 'gemini-3.5-flash-lite');
-ok(r.b.ok && mdl(CALLS.at(-1)) === 'gemini-3.1-flash-lite' && sp2 && sp2.min <= 1, 'حصة الدقيقة (429 PerMinute): الثالث في السلسلة يجيب، والخفيف الأول يعود بعد المهلة التي ذكرها Google');
+const sp2 = (fq.cfg.spent || []).find(x => x.m === 'gemini-3.6-flash');
+ok(r.b.ok && mdl(CALLS.at(-1)) === 'gemini-3.5-flash-lite' && sp2 && sp2.min <= 1, 'حصة الدقيقة (429 PerMinute) على القوي الثاني: الخفيف يجيب، والقوي الثاني يعود بعد المهلة التي ذكرها Google');
 // الصوت: حصة نموذج الصوت الأول مستنفدة ← النموذج الثاني بالأصوات نفسها
 IXS.push(Q429('gemini-3.8-flash-lite-tts', true));
 const tq = await callA(GOOG, { kind: 'tts', text: 'جملة للصوت في المستوى المجاني.', voice: 'Kore' }, ADM);
@@ -675,6 +741,8 @@ IXS.push(Q429('gemini-3.8-flash-tts', true));
 const tq2 = await call(GOOG, { kind: 'tts', text: 'جملة ثانية للصوت بعد نفاد الحصتين.', voice: 'Kore' });
 n0 = CALLS.length; const tq3 = await call(GOOG, { kind: 'tts', text: 'جملة ثالثة لا تصل إلى Google.', voice: 'Kore' });
 ok(tq2.b.error === 'busy' && tq3.b.error === 'busy' && CALLS.length === n0, 'نفدت الحصتان: «مشغول» فوراً دون طلب جديد إلى Google (والعميل يقرأ بصوت الجهاز حيث يتوفر)');
+const qm = /quota: gemini-3\.8-flash-lite-tts, gemini-3\.8-flash-tts until reset \((\d+) min\)/.exec(lastErr());
+ok(qm && +qm[1] > 2, 'وسجل المؤلف يذكر متى تعود أقرب حصة (هنا منتصف الليل بتوقيت المحيط الهادئ، لا الدقيقة)');
 // المعرّفات الشخصية تُحذف قبل الإرسال، والأرقام القانونية تبقى
 n0 = CALLS.length;
 r = await call(GOOG, { kind: 'chat', q: 'أنا أحمد، هاتفي 0612345678 و+212 661-234-567 وبريدي ahmed.t@mail.ma وبطاقتي الوطنية AB123456 وحسابي 011 780 0000123456789012 34: هل تنطبق المادة 14 من القانون 65.99 على عقد مؤرخ في 2026-11-24 بأجر 15.000 درهم؟' });

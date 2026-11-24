@@ -21,6 +21,7 @@
 //   نافذتا الإغراق لكل مستخدم (اختيارية): QT_AI_PER_MIN (6) QT_AI_PER_HOUR (90) QT_AI_TTS_PER_MIN (40) QT_AI_TTS_PER_HOUR (600)
 //   النماذج (اختيارية، لتغييرها دون تعديل الشيفرة): QT_AI_FAST (gemini-3.5-flash-lite) QT_AI_SMART (gemini-3.8-flash)
 //     QT_AI_TTS (gemini-3.8-flash-lite-tts) QT_AI_TTS_FMT (mp3 أو wav) QT_AI_IX_REV (2026-05-20)
+//     واحتياط السلاسل: QT_AI_SMART2 (gemini-3.6-flash) QT_AI_LITE2 (gemini-3.1-flash-lite) QT_AI_TTS2 (gemini-3.8-flash-tts)
 //   مستوى خدمة Google: ai.tier في config/cloud.json (free أو paid)، أو المتغير QT_AI_TIER — يُضبط في كل نشر
 // =========================================================================
 import fs from 'node:fs';
@@ -32,6 +33,7 @@ import { fileURLToPath } from 'node:url';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const CFG = JSON.parse(fs.readFileSync(path.join(ROOT, 'config', 'cloud.json'), 'utf8'));
+const TIER0 = String(process.env.QT_AI_TIER || (CFG.ai && CFG.ai.tier) || 'free').trim().toLowerCase();   // لنصوص الإرشاد قبل التحقق أسفله
 const REF = (CFG.supabase.url.match(/^https:\/\/([a-z0-9]+)\.supabase\.co\/?$/) || [])[1];
 // QT_API و QT_SUPABASE_URL للاختبار المحلي فقط؛ القيم الافتراضية هي خوادم Supabase الحقيقية
 const URL0 = (process.env.QT_SUPABASE_URL || CFG.supabase.url).replace(/\/+$/, '');
@@ -120,7 +122,8 @@ const NATIVE_CB = 'com.qanontahiro.app://auth-callback';
   let gem = process.env.GEMINI_API_KEY || '';
   if (!gem) {
     say('\nمفتاح Gemini لـ TAHIRO AI: أنشئه من https://aistudio.google.com/apikey (يبدأ بـ AQ. أو AIza)،'
-      + '\nوفعّل الفوترة المدفوعة (Prepay) للمشروع نفسه في AI Studio: المستوى المجاني لا يصلح لتطبيق ينشر للعموم.'
+      + (TIER0 === 'paid' ? '\nوفعّل الفوترة المدفوعة (Prepay) للمشروع نفسه في AI Studio (المستوى المضبوط: مدفوع).'
+                          : '\n(المستوى المضبوط في config/cloud.json: مجاني — يكفي المفتاح دون فوترة؛ والفرق في docs/v8-guide.md القسم 1)')
       + (have.has('GEMINI_API_KEY') ? '\n(Enter وحده يُبقي المفتاح المحفوظ)' : '\n(Enter وحده يؤجل تفعيل TAHIRO AI)'));
     gem = await ask('GEMINI_API_KEY: ', true);
   }
@@ -135,7 +138,8 @@ const NATIVE_CB = 'com.qanontahiro.app://auth-callback';
       fail(`مفتاح Gemini مرفوض (${gc.status}): ${gm}\n  تحقق: أنشئ المفتاح من AI Studio ← API keys، وانسخه كاملاً، واتركه «مقيداً بـ Gemini API» (المفاتيح غير المقيدة تُرفض).`);
     else if (gc.status === 402) say('  ⚠ مفتاح Gemini صحيح لكن رصيد الدفع المسبق فارغ (402): AI Studio ← Billing ← Buy credits (5$ على الأقل). سيُحفظ المفتاح ويعمل TAHIRO AI حين يُشحن الرصيد.');
     else if (gc.status === 404) fail(`النموذج ${AI_FAST} غير متاح لهذا المفتاح (404): ${gm}\n  عيّن نموذجاً متاحاً بالمتغير QT_AI_FAST ثم أعد الأمر.`);
-    else if (gc.status === 429) say('  ⚠ مفتاح Gemini صحيح لكن الحصة مستنفدة الآن (429): تأكد أن الفوترة المدفوعة مفعّلة للمشروع في AI Studio.');
+    else if (gc.status === 429) say(TIER0 === 'paid' ? '  ⚠ مفتاح Gemini صحيح لكن الحصة مستنفدة الآن (429): تأكد أن الفوترة المدفوعة مفعّلة للمشروع في AI Studio.'
+      : '  ⚠ مفتاح Gemini صحيح، وحصة المستوى المجاني لهذا النموذج مستنفدة الآن (429): تتجدد وحدها، والخادم ينتقل إلى نماذج أخرى؛ لا خلل في الإعداد.');
     else say(`  ⚠ تعذّر فحص مفتاح Gemini الآن (${gc.status || 'الشبكة'}: ${gm || short(gc.data)}) — سيُحفظ ويُفحص TAHIRO AI في آخر النشر.`);
   }
 
@@ -223,7 +227,7 @@ const NATIVE_CB = 'com.qanontahiro.app://auth-callback';
   if (gem) secrets.push({ name: 'GEMINI_API_KEY', value: gem });
   if (process.env.QT_AI_FAST) secrets.push({ name: 'QT_AI_FAST', value: AI_FAST });
   if (process.env.QT_AI_SMART) secrets.push({ name: 'QT_AI_SMART', value: AI_SMART });
-  for (const n of ['QT_AI_TTS', 'QT_AI_TTS_FMT', 'QT_AI_IX_REV']) if (process.env[n]) secrets.push({ name: n, value: String(process.env[n]).trim() });
+  for (const n of ['QT_AI_TTS', 'QT_AI_TTS_FMT', 'QT_AI_IX_REV', 'QT_AI_SMART2', 'QT_AI_LITE2', 'QT_AI_TTS2']) if (process.env[n]) secrets.push({ name: n, value: String(process.env[n]).trim() });
   if (CFG.admob && CFG.admob.rewarded) secrets.push({ name: 'QT_ADS_REWARDED_UNITS', value: CFG.admob.rewarded });
   const se = await call('POST', API + '/secrets', { token, json: secrets });
   if (!se.ok) fail(`تعذّر ضبط الأسرار (${se.status}): ${short(se.data)}`);
@@ -343,7 +347,7 @@ const NATIVE_CB = 'com.qanontahiro.app://auth-callback';
     else if (!qa.data.ready) say('  · دالة TAHIRO AI تعمل، وتنتظر GEMINI_API_KEY (أعد الأمر وأدخله)');
     else {
       const cf = qa.data.cfg;
-      if (cf) say(`  · المستوى: ${cf.tier === 'paid' ? 'مدفوع' : 'مجاني'} — النماذج: ${cf.smart} ثم ${cf.fast} ثم ${cf.lite2 || '-'}، والصوت ${cf.tts} ثم ${cf.tts2 || '-'} — صمامات اليوم: ${cf.budget || '∞'} جواباً، ${cf.web || '∞'} بحثاً، ${cf.ttsDaily || '∞'} مقطعاً صوتياً`);
+      if (cf) say(`  · المستوى: ${cf.tier === 'paid' ? 'مدفوع' : 'مجاني'} — النماذج: ${[cf.smart, cf.smart2, cf.fast, cf.lite2].filter(Boolean).join(' ثم ')}، والصوت ${cf.tts} ثم ${cf.tts2 || '-'} — صمامات اليوم: ${cf.budget || '∞'} جواباً، ${cf.web || '∞'} بحثاً، ${cf.ttsDaily || '∞'} مقطعاً صوتياً`);
       const wy = await probe('POST', URL0 + '/functions/v1/qt-ai', { json: { kind: 'chat', q: 'ما هي فترة الاختبار بالنسبة للأطر في مدونة الشغل؟', web: false }, headers: ai });
       const d = wy.ok && wy.data && wy.data.ok && wy.data.data, arts = (d && d.articles) || [];
       if (d) say(arts.length ? `  ✓ TAHIRO AI أجاب من المكتبة، ومعه نص ${arts.map(a => a.label + ' من ' + a.title).slice(0, 2).join(' و')}`
@@ -354,7 +358,10 @@ const NATIVE_CB = 'com.qanontahiro.app://auth-callback';
         const hint = /^credits:/.test(err) ? 'رصيد Gemini المدفوع فارغ: AI Studio ← Billing ← Buy credits'
           : /^key:/.test(err) ? 'مفتاح Gemini مرفوض: أنشئ مفتاحاً جديداً من AI Studio وأعد الأمر'
           : /^model:/.test(err) ? 'النموذج غير متاح: عيّن QT_AI_SMART / QT_AI_FAST بنموذج متاح'
-          : /^busy:/.test(err) ? 'ضغط مؤقت أو حصة مستنفدة عند Google: أعد المحاولة بعد دقائق، وتحقق أن الفوترة مفعّلة' : '';
+          : /^busy:/.test(err) ? (cf && cf.tier !== 'paid'
+            ? 'ضغط مؤقت عند Google (high demand) أو حصة مستنفدة في المستوى المجاني: لا خلل في الإعداد، أعد الفحص بعد دقائق'
+            : 'ضغط مؤقت أو حصة مستنفدة عند Google: أعد المحاولة بعد دقائق، وتحقق أن الفوترة مفعّلة')
+          : /^net:/.test(err) ? 'انقطع اتصال خادم Supabase بـ Google لحظتها (عابر): أعد الفحص بعد دقيقة' : '';
         say(`  ✗ TAHIRO AI: ${short(wy.data)} ${err ? '— ' + err : ''}${hint ? '\n    ← ' + hint : ''}`);
       }
       // القراءة بالصوت (ثنائية: application/octet-stream ونوع الصوت في الترويسة X-QT-Audio)

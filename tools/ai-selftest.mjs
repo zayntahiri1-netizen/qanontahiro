@@ -10,6 +10,7 @@
 // يقرأ من config/cloud.json عنوان Supabase ومفتاحه العام وحدهما (ويرفض أي مفتاح سري).
 // سر المؤلف (QT_ADMIN_SECRET، في ~/.qanoun-tahiro-admin أو في متغير البيئة) اختياري: معه يعيد الخادم سبب كل خطأ
 // ومسار الطلب (الواجهة والنموذج والرموز)، ولا تُطبَّق عليه نافذتا الإغراق؛ ودونه ينتظر الفحص 11 ثانية بين الطلبات.
+// وفي المستوى المجاني ينتظر 10 ثوانٍ بين الطلبات ولو معه السر، كي لا يتجاوز حصة الدقيقة (5 طلبات للنموذج الأقوى).
 // الجلسة: مستخدم مجهول واحد يُحفظ رمز تجديده في ~/.qanoun-tahiro-selftest (أذونات 600) فلا يُنشأ مستخدم جديد كل مرة.
 // عينات الصوت تُحفظ في /sdcard/Download/tahiro-ai-test/ (أو ~/tahiro-ai-test/) لتسمعها.
 // لا يطبع الفحص أي سر ولا رمز جلسة. وكل طلب فيه يُحتسب من صمامات اليوم كأي طلب عادي (نحو 20 طلباً و2-4 عمليات بحث).
@@ -36,7 +37,8 @@ try { CFG = JSON.parse(fs.readFileSync(process.env.QT_SELFTEST_CFG || path.join(
 catch { die('لم أجد config/cloud.json — شغّل الفحص من جذر المستودع بعد النشر'); }
 const BASE = String(CFG?.supabase?.url || '').replace(/\/+$/, ''), KEY = String(CFG?.supabase?.key || '');
 if (!/^(https:\/\/\S+|http:\/\/127\.0\.0\.1:\d+)$/.test(BASE) || !KEY) die('config/cloud.json: عنوان Supabase أو مفتاحه العام ناقص');
-const GAP = Number(process.env.QT_SELFTEST_GAP || 11000);
+const GAP = Number(process.env.QT_SELFTEST_GAP || 11000), GAP_FREE = Number(process.env.QT_SELFTEST_GAP_FREE || 10000);
+let PACE = 0;                              // يُضبط بعد معرفة المستوى: دون السر GAP، وفي المجاني GAP_FREE على الأقل
 const jwtRole = (t) => { try { return JSON.parse(Buffer.from(t.split('.')[1], 'base64url').toString()).role || ''; } catch { return ''; } };
 if (KEY.startsWith('sb_secret_') || jwtRole(KEY) === 'service_role') die('المفتاح في config/cloud.json سري! ضع المفتاح العام (publishable) وحده');
 let ADM = String(process.env.QT_ADMIN_SECRET || '').trim();
@@ -80,7 +82,7 @@ if (!TOK) {
 const safeJson = (s) => { try { return s ? JSON.parse(s) : null; } catch { return null; } };
 let lastAi = 0;
 async function ai(body, { lane = 'ai', timeout = 150000 } = {}) {
-  if (!ADM && lane === 'ai' && lastAi) { const w = GAP - (Date.now() - lastAi); if (w > 0) await sleep(w); }   // نافذة 6 في الدقيقة
+  if (PACE && lane === 'ai' && lastAi) { const w = PACE - (Date.now() - lastAi); if (w > 0) await sleep(w); }   // نافذة 6 في الدقيقة، وحصة الدقيقة في المجاني
   if (lane === 'ai') lastAi = Date.now();
   const ctl = new AbortController(), t = setTimeout(() => ctl.abort(), timeout), t0 = Date.now();
   try {
@@ -104,18 +106,29 @@ const HINT = {
   config: 'مفتاح الذكاء الاصطناعي غير مضبوط في أسرار الدالة: أعد النشر وأدخل GEMINI_API_KEY حين يُطلب.',
   key: 'رفضت Google المفتاح: أنشئ مفتاحاً جديداً في aistudio.google.com/apikey ثم أعد النشر بإدخاله.',
   credits: 'رصيد الفوترة في Google AI Studio نفد أو لم تُفعَّل الفوترة: aistudio.google.com ← Billing.',
-  model: 'اسم النموذج غير متاح لمفتاحك: اضبط QT_AI_SMART وQT_AI_FAST وQT_AI_TTS بأسماء متاحة ثم أعد النشر.',
-  busy: 'ضغط مؤقت عند Google: أعد الفحص بعد دقائق.',
+  model: 'أسماء نماذج السلسلة كلها غير متاحة لمفتاحك: اضبط QT_AI_SMART وQT_AI_SMART2 وQT_AI_FAST وQT_AI_LITE2 وQT_AI_TTS بأسماء متاحة ثم أعد النشر.',
+  busy: 'ضغط مؤقت عند Google (أو حصة الدقيقة في المستوى المجاني) على كل نماذج السلسلة: لا خلل في الإعداد، أعد الفحص بعد دقائق.',
   blocked: 'رفضت فلاتر الأمان هذا الطلب بعينه (لا خلل في الإعداد).',
   budget: 'بلغ الصمام اليومي لهذا المسار حده: ارفعه (QT_AI_DAILY_BUDGET أو QT_AI_TTS_DAILY) في أسرار الدالة، أو انتظر الغد.',
   rate: 'نافذة الإغراق: ضع سر المؤلف في ~/.qanoun-tahiro-admin ليتجاوزها الفحص، أو أعد بعد دقيقة.',
   auth: 'الجلسة غير صالحة: احذف ~/.qanoun-tahiro-selftest وأعد الفحص.',
   timeout: 'لم يصل الجواب خلال دقيقتين ونصف: تحقق من الاتصال ثم أعد.',
-  net: 'تعذر الاتصال بـ Supabase: تحقق من الإنترنت.',
+  net: 'تعذر اتصال هاتفك بـ Supabase: تحقق من الإنترنت ثم أعد.',
   http: 'ردّ غير متوقع: هل نُشرت الدالة qt-ai؟ (node tools/deploy-cloud.mjs)',
   notfound: 'السؤال غير موجود في بنك السحابة: أعد النشر ليُرفع البنك (الخطوة 5).',
 };
-const hintOf = (r) => { const code = String(r.why || '').split(':')[0]; return HINT[code] || HINT[r.error] || ''; };
+const QUIET = ['busy'];                    // ما ليس خللاً في الإعداد: ضغط عند Google أو مهلته (يعيدهما الخادم «busy»)
+function hintOf(r) {
+  const why = String(r.why || ''), code = why.split(':')[0];
+  // «net» من الخادم (معه رمز HTTP): خادم Supabase هو الذي لم يصل إلى Google لحظتها، لا هاتفك
+  if (r.status && code === 'net') return 'انقطع اتصال خادم Supabase بـ Google لحظتها (عابر): لا خلل في الإعداد، أعد الفحص بعد دقيقة.';
+  const q = /quota: .* until reset(?: \((\d+) min\))?/.exec(why);
+  if (q && q[1] && +q[1] <= 2) return 'بلغت نماذج هذه الوظيفة حصة الدقيقة في المستوى المجاني: لا خلل في الإعداد، وتعود خلال دقيقة.';
+  if (q) return 'نفدت حصة اليوم المجانية لكل نماذج هذه الوظيفة: تتجدد عند منتصف الليل بتوقيت المحيط الهادئ (08:00 بتوقيت غرينتش شتاءً، و07:00 صيفاً). لا خلل في الإعداد.';
+  if (r.status && /timeout|no time left/.test(why)) return 'لم يرد Google في الوقت (طوابير مزدحمة، وأكثر ما تكون في المستوى المجاني): لا خلل في الإعداد، أعد الفحص بعد دقائق.';
+  if (/high demand|overloaded|UNAVAILABLE|\b503\b/i.test(why)) return 'Google يبلّغ عن ضغط على النموذج («high demand»): عابر ولا خلل في الإعداد؛ أعد الفحص بعد دقائق.';
+  return HINT[code] || HINT[r.error] || '';
+}
 
 // ---------- العرض ----------
 const results = [];
@@ -125,7 +138,7 @@ function line(name, r, check) {
   const fail = !r.ok ? (r.error || 'ai') : '';
   let v = { pass: false, warn: '', note: '' };
   if (!fail) { try { v = { warn: '', note: '', ...check(r) }; } catch (e) { v = { pass: false, note: `شكل غير متوقع: ${e.message}` }; } }
-  const route = r.dbg ? ` · ${r.cached ? 'من الذاكرة' : `${r.dbg.via}${r.dbg.model ? ' ' + r.dbg.model : ''}`}${r.dbg.web ? ` · بحث ×${r.dbg.web}` : ''}` : (r.cached ? ' · من الذاكرة' : '');
+  const route = r.dbg && (r.cached || r.dbg.via) ? ` · ${r.cached ? 'من الذاكرة' : `${r.dbg.via}${r.dbg.model ? ' ' + r.dbg.model : ''}`}${r.dbg.web ? ` · بحث ×${r.dbg.web}` : ''}` : (r.cached ? ' · من الذاكرة' : '');
   const mark = fail || !v.pass ? '✗' : v.warn ? '⚠' : '✓';
   console.log(`${mark} ${pad(name, 22)} ${pad(sec(r.ms || 0), 7)}${route}${v.note ? ' · ' + v.note : ''}`);
   if (fail) {
@@ -133,7 +146,7 @@ function line(name, r, check) {
     const h = hintOf(r); if (h) console.log(`    ← ${h}`);
   } else if (!v.pass) console.log('    ← الجواب وصل لكن شكله ناقص (انظر الملاحظة أعلاه).');
   if (v.warn && !fail && v.pass) console.log(`    تنبيه: ${v.warn}`);
-  results.push({ name, mark });
+  results.push({ name, mark, code: fail ? (r.status && String(r.why || '').startsWith('net:') ? 'busy' : fail) : '' });
   return !fail && v.pass;
 }
 const has = (x) => x !== undefined && x !== null && x !== '' && !(Array.isArray(x) && !x.length);
@@ -177,16 +190,19 @@ line('حالة الخدمة', q0, (r) => ({
 }));
 if (q0.cfg) {
   const d = q0.cfg;
-  console.log(`    النماذج بالترتيب: ${d.smart} ← ${d.fast} ← ${d.lite2 || '-'} · الصوت: ${d.tts} ← ${d.tts2 || '-'} · مراجعة ${d.rev}`);
+  console.log(`    النماذج بالترتيب: ${d.smart} ← ${d.smart2 || '-'} ← ${d.fast} ← ${d.lite2 || '-'} · الصوت: ${d.tts} ← ${d.tts2 || '-'} · مراجعة ${d.rev}`);
   if (d.spent && d.spent.length) console.log(`    مستنفد الآن (حتى تتجدد حصته): ${d.spent.map((x) => `${x.m} (${x.min} د)`).join('، ')}`);
+  if (d.cool && d.cool.length) console.log(`    مؤخَّر الآن لضغط عند Google: ${d.cool.map((x) => `${x.m} (${x.s} ث)`).join('، ')}`);
   console.log(`    الصمامات اليومية: أجوبة ${d.budget || '∞'} · بحث ${d.web || '∞'} · صوت ${d.ttsDaily || '∞'} — النافذتان: ${d.rate?.join('/')} (صوت ${d.rateTts?.join('/')})`);
   const on = Object.entries(d.flags || {}).filter(([k, v]) => v && !['TTS_IX', 'TTS_MP3', 'TTS_STYLE_ON'].includes(k)).map(([k]) => k);
   if (on.length) console.log(`    أعلام الرجوع المفعّلة في هذه النسخة: ${on.join('، ')}`);
 }
 const FREE = q0.tier !== 'paid';
+PACE = Math.max(ADM ? 0 : GAP, FREE ? GAP_FREE : 0);
 if (q0.ok) console.log(FREE
   ? '    المستوى: مجاني (مفتاح دون فوترة) — لا كلفة، لكن لكل نموذج حصة يومية صغيرة، ولا بحث في الإنترنت في هذا المستوى.\n'
-    + `    هذا الفحص يستهلك نحو 25 طلباً من حصة اليوم${ALLV ? ' و10 مقاطع صوتية' : ''}؛ فشغّله مرة واحدة لا أكثر في اليوم.`
+    + `    هذا الفحص يستهلك نحو 25 طلباً من حصة اليوم${ALLV ? ' و10 مقاطع صوتية' : ''}؛ فشغّله مرة واحدة لا أكثر في اليوم.\n`
+    + `    ينتظر ${Math.round(PACE / 1000)} ثوانٍ بين الطلبات كي لا يتجاوز حصة الدقيقة؛ فيستغرق الفحص نحو ${QUICK ? 'دقيقة' : '6 دقائق'}.`
   : '    المستوى: مدفوع — البحث في الإنترنت مفعّل.');
 if (!q0.ok || !q0.ready) {
   console.log('\nلا فائدة من بقية الفحوص قبل إصلاح ما سبق.');
@@ -318,5 +334,9 @@ const fail = results.filter((r) => r.mark === '✗').length;
 console.log('—'.repeat(60));
 console.log(`النتيجة: ${pass + warn}/${results.filter((r) => r.mark !== '–').length} نجحت${warn ? ` (منها ${warn} بتنبيه)` : ''}${fail ? ` · ${fail} فشلت` : ''}`);
 if (saved.length) console.log(`عينات الصوت (افتحها لتسمعها):\n  ${saved.join('\n  ')}`);
-if (fail) console.log('اتبع الإرشاد تحت كل ✗، ثم أعد: node tools/ai-selftest.mjs');
+const failed = results.filter((r) => r.mark === '✗');
+if (fail && failed.every((r) => QUIET.includes(r.code))) {
+  console.log('كل ما فشل «ضغط مؤقت» عند Google أو مهلة، لا خلل في الإعداد: يرى الطالب حينها «مشغول، أعد بعد لحظات»،\n'
+    + 'والخادم ينقل الطلب تلقائياً بين أربعة نماذج. أعد الفحص بعد ساعة أو في وقت أهدأ: node tools/ai-selftest.mjs --quick');
+} else if (fail) console.log('اتبع الإرشاد تحت كل ✗، ثم أعد: node tools/ai-selftest.mjs');
 process.exit(fail ? 1 : 0);

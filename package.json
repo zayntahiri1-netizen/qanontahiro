@@ -1,6 +1,6 @@
 {
   "name": "qanoun-tahiro",
-  "version": "8.2.1",
+  "version": "8.2.2",
   "private": true,
   "description": "قانون تاهيرو — بنك أسئلة القانون المغربي ونصوصه، وTAHIRO AI (تطبيق أندرويد وiPhone بـ Capacitor 8 + موقع + Supabase)",
   "license": "UNLICENSED",

@@ -148,9 +148,10 @@ Terms of use: https://qanon-47831.web.app/terms
 ما دام `config/cloud.json` على `"ai": {"tier": "free"}` (مفتاح دون فوترة)، فشروط Google تسمح لها باستعمال ما يُرسل إلى TAHIRO AI لتحسين منتجاتها،
 وتمنع إتاحة التطبيق بهذا المستوى في الاتحاد الأوروبي والمنطقة الاقتصادية الأوروبية والمملكة المتحدة وسويسرا. فقبل النشر:
 
-1. **البلدان** — Google Play Console: **Test and release** ← **Production** ← **Countries / regions** ← **Remove countries/regions** ←
-   اختر دول الاتحاد الأوروبي الـ27 وآيسلندا وليختنشتاين والنرويج والمملكة المتحدة وسويسرا ← **Save**.
-   App Store Connect: **Pricing and Availability** ← **App Availability** ← **Edit** ← ألغِ تحديد الدول نفسها ← **Done** ← **Save**.
+1. **البلدان** — Google Play Console: **Test and release** ← **Production** ← تبويب **Countries / regions** ← **Edit countries / regions** ← ألغِ تحديد
+   دول الاتحاد الأوروبي الـ27 وآيسلندا وليختنشتاين والنرويج والمملكة المتحدة وسويسرا (والأقاليم الفرنسية إن ظهرت: Réunion وGuadeloupe وMartinique
+   وFrench Guiana وMayotte) ← **Save**.
+   App Store Connect: **Pricing and Availability** ← قسم **App Availability** ← **Manage** ← **Manage Availability** ← ألغِ تحديد الدول نفسها ← **Next** ← **Confirm**.
 2. **Data safety** في Play: في الجدول أعلاه اجعل **Shared = Yes** (الغرض: **App functionality**) لثلاثة أنواع، لأن Google تستعملها لأغراضها في هذا المستوى
    فلا تكون «مقدّم خدمة» فقط: **Other user-generated content** (رسائل TAHIRO AI) و**Voice or sound recordings** و**Photos**.
 3. **App Privacy** في App Store: أضف تحت **Data Not Linked to You** (Purpose = **App Functionality**، Tracking = No): **Audio Data** و**Photos or Videos**؛
