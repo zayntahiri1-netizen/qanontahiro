@@ -8,7 +8,7 @@
 //        • رابط العودة من Google: com.qanontahiro.app://auth-callback (VIEW/BROWSABLE على MainActivity)
 //        • الإحصاءات موقوفة افتراضياً حتى موافقة المستخدم، ولا تجمع Firebase Analytics معرّف الإعلانات
 //        • AdMob: معرّف التطبيق (APPLICATION_ID) من config/cloud.json، وإذن AD_ID الذي تحتاجه الإعلانات
-//        • الميكروفون (RECORD_AUDIO وMODIFY_AUDIO_SETTINGS) للجواب الشفوي بالصوت (v8): يُطلب الإذن حين يضغط المستخدم «أجب بصوتك» فقط.
+//        • الميكروفون (RECORD_AUDIO وMODIFY_AUDIO_SETTINGS) للجواب الشفوي بالصوت (v8) والسؤال بالصوت لـ TAHIRO AI (v8.2): يُطلب الإذن حين يضغط المستخدم الميكروفون فقط
 //          ولا يُعلَن إذن الكاميرا: «التقط صورة» تفتح تطبيق الكاميرا في النظام، فلا يحتاج التطبيق إذناً بها
 //   4) styles.xml: خلفية النافذة وشاشة البدء (أندرويد 12+) بلون التطبيق بدل الأبيض
 //   5) app/build.gradle: رقم الإصدار والتوقيع من متغيرات البيئة (QT_VERSION_CODE…، QT_KEYSTORE…)

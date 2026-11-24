@@ -50,7 +50,7 @@ code{direction:ltr;unicode-bidi:embed}
 <div class="row"><button class="b2" id="rep">جلب آخر البلاغات</button><button class="b2" id="tsv">نسخها جدولاً (TSV)</button></div>
 <div id="o2"></div>
 
-<h2>أرقام عامة والمساعد والإعلانات</h2>
+<h2>أرقام عامة وTAHIRO AI والإعلانات</h2>
 <button class="b2" id="st">جلب الأرقام</button>
 <div id="o3"></div>
 
@@ -103,11 +103,14 @@ $('#st').onclick=async()=>{
     $('#o3').innerHTML=`<table><tr><td>الأسماء المستعارة المسجلة</td><td>${j.profiles}</td></tr><tr><td>الحسابات المزامَنة</td><td>${j.synced}</td></tr>
       <tr><td>البلاغات</td><td>${j.reports}</td></tr><tr><td>سؤال اليوم (أجاب / أصاب)</td><td>${j.daily?j.daily.n:0} / ${j.daily?j.daily.ok:0}</td></tr>
       <tr><td>مفتاح Ably على الخادم</td><td>${j.ably?'مضبوط':'غير مضبوط'}</td></tr>
-      ${j.ai?`<tr><td>المساعد اليوم: استدعاءات / من الذاكرة / فشل</td><td>${j.ai.calls} / ${j.ai.cached} / ${j.ai.failed}</td></tr>
-      <tr><td>مستخدمو المساعد اليوم</td><td>${j.ai.users}</td></tr>
+      ${j.ai?`<tr><td>TAHIRO AI اليوم: أجوبة / من الذاكرة / فشل</td><td>${j.ai.calls} / ${j.ai.cached} / ${j.ai.failed}</td></tr>
+      <tr><td>مستخدمو TAHIRO AI اليوم</td><td>${j.ai.users}</td></tr>
+      <tr><td>البحث في الإنترنت اليوم: عمليات بحث / أجوبة بحثت</td><td>${j.ai.web||0} / ${j.ai.web_calls||0}</td></tr>
+      <tr><td>القراءة بالصوت اليوم: مقاطع / رموز صوتية</td><td>${j.ai.tts||0} / ${j.ai.tts_out||0}</td></tr>
+      ${j.ai.valves && Object.keys(j.ai.valves).length?`<tr><td>الصمامات اليومية (ai / web / tts)</td><td>${j.ai.valves.ai||0} / ${j.ai.valves.web||0} / ${j.ai.valves.tts||0}</td></tr>`:''}
       <tr><td>الرموز اليوم (دخل / خرج)</td><td>${j.ai.in_tok} / ${j.ai.out_tok}</td></tr>
-      <tr><td>تقدير أعلى للكلفة اليوم (بسعر Gemini 3.8 Flash لكل الطلبات${new Date()<new Date('2027-01-01')?'، 0.75$ و3.75$ للمليون حتى 31 دجنبر 2026':'، 1.50$ و7.50$ للمليون'})</td><td>$${(new Date()<new Date('2027-01-01') ? j.ai.in_tok/1e6*0.75 + j.ai.out_tok/1e6*3.75 : j.ai.in_tok/1e6*1.5 + j.ai.out_tok/1e6*7.5).toFixed(2)}</td></tr>
-      ${j.ai.kinds && Object.keys(j.ai.kinds).length?`<tr><td>الطلبات حسب الأداة</td><td>${Object.entries(j.ai.kinds).sort((a,b)=>b[1]-a[1]).map(([k,n])=>({why:'لماذا أخطأت',twin:'توأم',ask:'اسأل',case:'نازلة',scan:'صورة',explain:'شرح مادة',compare:'قارن',essay:'موضوع',drill:'نازلة تدريبية',cards:'بطاقات',oral:'شفوي',plan:'خطة',gen:'مولّد التمارين'}[k]||k)+': '+n).join(' · ')}</td></tr>`:''}
+      <tr><td>تقدير أعلى للكلفة اليوم (أجوبة بسعر النموذج الأقوى 3.8 Flash${new Date()<new Date('2027-01-01')?'، 0.75$ و3.75$ للمليون حتى 31 دجنبر 2026':'، 1.50$ و7.50$ للمليون'}؛ وصوت بـ6$ للمليون؛ وبحث بـ14$ للألف بعد 5000 مجانية في الشهر، فلا يُحتسب هنا)</td><td>$${((new Date()<new Date('2027-01-01') ? j.ai.in_tok/1e6*0.75 + j.ai.out_tok/1e6*3.75 : j.ai.in_tok/1e6*1.5 + j.ai.out_tok/1e6*7.5) + (j.ai.tts_out||0)/1e6*6).toFixed(2)}</td></tr>
+      ${j.ai.kinds && Object.keys(j.ai.kinds).length?`<tr><td>الطلبات حسب الأداة</td><td>${Object.entries(j.ai.kinds).sort((a,b)=>b[1]-a[1]).map(([k,n])=>({why:'لماذا أخطأت',twin:'توأم',ask:'اسأل',case:'نازلة',scan:'صورة',explain:'شرح مادة',compare:'قارن',essay:'موضوع',drill:'نازلة تدريبية',cards:'بطاقات',oral:'شفوي',plan:'خطة',gen:'اطلب تمارين',chat:'دردشة',stt:'سؤال بالصوت',tts:'قراءة بالصوت',map:'خريطة ذهنية',weak:'دفتر أخطائي'}[k]||k)+': '+n).join(' · ')}</td></tr>`:''}
       <tr><td>أسئلة قاعدة المعرفة</td><td>${j.ai.kb}</td></tr>
       ${j.ai.laws!=null?`<tr><td>مكتبة القوانين: قوانين / مواد</td><td>${j.ai.laws} / ${j.ai.articles}</td></tr>
       <tr><td>نوازل حُلّلت اليوم</td><td>${j.ai.cases||0}</td></tr>`:''}`:''}

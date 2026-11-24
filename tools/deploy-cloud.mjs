@@ -4,18 +4,24 @@
 // يعمل بـ Node 18+ وحده عبر واجهة Supabase الإدارية:
 //   1) القاعدة: الهجرات بالترتيب، ولا يُعاد تطبيق ما سُجّل منها (supabase_migrations.schema_migrations، كما يفعل Supabase CLI)
 //   2) المصادقة: الدخول المجهول، والربط اليدوي للهويات، ومزوّد Google، وعناوين العودة للويب ولتطبيق أندرويد
-//   3) أسرار الخادم: ABLY_ROOT_KEY و QT_ADMIN_SECRET و GEMINI_API_KEY وحصص المساعد (لا تُكتب في أي ملف يصل إلى العميل)
+//   3) أسرار الخادم: ABLY_ROOT_KEY و QT_ADMIN_SECRET و GEMINI_API_KEY وصمامات TAHIRO AI اليومية (لا تُكتب في أي ملف يصل إلى العميل)
 //      ويُفحص مفتاح Gemini قبل حفظه بطلب صغير جداً: مفتاح مرفوض يوقف النشر، ورصيد مدفوع فارغ يُنبَّه إليه
-//   4) الدوال: qt-pulse (النبض) و qt-ai (المساعد) و qt-ads (التحقق من مكافآت AdMob من جهة الخادم)
-//   5) قاعدة معرفة المساعد: بنك الأسئلة المبني (dist/app/questions.json) يُحمَّل إلى qt_kb
+//   4) الدوال: qt-pulse (النبض) و qt-ai (TAHIRO AI) و qt-ads (التحقق من مكافآت AdMob من جهة الخادم)
+//   5) قاعدة معرفة TAHIRO AI: بنك الأسئلة المبني (dist/app/questions.json) يُحمَّل إلى qt_kb
 //   5ب) مكتبة القوانين: نصوص المواد (data/corpus/) تُحمَّل إلى qt_laws وqt_law_articles، ولا يُعاد التحميل إن لم تتغير
-//   6) فحوص حية: اللوحة، والدالتان، وAbly، وحضور PubNub، وجلسة مجهولة تسأل المساعد سؤالاً حقيقياً من المكتبة
+//   6) فحوص حية: اللوحة، والدوال، وAbly، وحضور PubNub، وجلسة مجهولة تحاور TAHIRO AI سؤالاً من المكتبة وتسمع جملة بالصوت
+//      (والفحص الشامل لكل الوظائف بعد النشر: node tools/ai-selftest.mjs)
 //
 //   node tools/deploy-cloud.mjs
 // المتغيرات (اختيارية، وإلا سُئلت عنها بإدخال مخفي؛ و«Enter» فارغاً يُبقي القيمة المحفوظة على الخادم):
 //   SUPABASE_ACCESS_TOKEN  ABLY_ROOT_KEY  GEMINI_API_KEY  GOOGLE_CLIENT_ID  GOOGLE_CLIENT_SECRET  QT_ADMIN_SECRET
-//   QT_AI_CAP_ANON (12)  QT_AI_CAP_GOOGLE (40)  QT_AI_DAILY_BUDGET (600 طلب في اليوم لكل التطبيق: حماية لرصيد Gemini المدفوع)
-//   QT_AI_FAST (gemini-3.5-flash-lite)  QT_AI_SMART (gemini-3.8-flash) — لتغيير نموذجي Gemini دون تعديل الشيفرة
+//   صمامات TAHIRO AI اليومية لكل التطبيق (لا رصيد للمستخدم منذ v8.2؛ 0 = دون سقف). تُضبط أول مرة بقيمها الافتراضية،
+//   ثم تبقى كما هي على الخادم (أو كما عدّلتها في اللوحة) إلا إن مرّرتها هنا:
+//     QT_AI_DAILY_BUDGET (600 جواب في اليوم)  QT_AI_WEB_DAILY (150 بحثاً في الإنترنت)  QT_AI_TTS_DAILY (1500 مقطع صوتي)
+//   نافذتا الإغراق لكل مستخدم (اختيارية): QT_AI_PER_MIN (6) QT_AI_PER_HOUR (90) QT_AI_TTS_PER_MIN (40) QT_AI_TTS_PER_HOUR (600)
+//   النماذج (اختيارية، لتغييرها دون تعديل الشيفرة): QT_AI_FAST (gemini-3.5-flash-lite) QT_AI_SMART (gemini-3.8-flash)
+//     QT_AI_TTS (gemini-3.8-flash-lite-tts) QT_AI_TTS_FMT (mp3 أو wav) QT_AI_IX_REV (2026-05-20)
+//   مستوى خدمة Google: ai.tier في config/cloud.json (free أو paid)، أو المتغير QT_AI_TIER — يُضبط في كل نشر
 // =========================================================================
 import fs from 'node:fs';
 import os from 'node:os';
@@ -113,9 +119,9 @@ const NATIVE_CB = 'com.qanontahiro.app://auth-callback';
 
   let gem = process.env.GEMINI_API_KEY || '';
   if (!gem) {
-    say('\nمفتاح Gemini لـ«المساعد»: أنشئه من https://aistudio.google.com/apikey (يبدأ بـ AQ. أو AIza)،'
+    say('\nمفتاح Gemini لـ TAHIRO AI: أنشئه من https://aistudio.google.com/apikey (يبدأ بـ AQ. أو AIza)،'
       + '\nوفعّل الفوترة المدفوعة (Prepay) للمشروع نفسه في AI Studio: المستوى المجاني لا يصلح لتطبيق ينشر للعموم.'
-      + (have.has('GEMINI_API_KEY') ? '\n(Enter وحده يُبقي المفتاح المحفوظ)' : '\n(Enter وحده يؤجل تفعيل المساعد)'));
+      + (have.has('GEMINI_API_KEY') ? '\n(Enter وحده يُبقي المفتاح المحفوظ)' : '\n(Enter وحده يؤجل تفعيل TAHIRO AI)'));
     gem = await ask('GEMINI_API_KEY: ', true);
   }
   if (gem && !/^(AQ\.|AIza)[\w.-]{20,}$/.test(gem)) fail('مفتاح Gemini يبدأ بـ AQ. أو AIza (انسخه كاملاً من AI Studio ← API keys)');
@@ -127,10 +133,10 @@ const NATIVE_CB = 'com.qanontahiro.app://auth-callback';
     if (gc.ok) say('  ✓ مفتاح Gemini يعمل (' + AI_FAST + ')');
     else if (gc.status === 400 && /api key|API_KEY/i.test(gm) || gc.status === 401 || gc.status === 403)
       fail(`مفتاح Gemini مرفوض (${gc.status}): ${gm}\n  تحقق: أنشئ المفتاح من AI Studio ← API keys، وانسخه كاملاً، واتركه «مقيداً بـ Gemini API» (المفاتيح غير المقيدة تُرفض).`);
-    else if (gc.status === 402) say('  ⚠ مفتاح Gemini صحيح لكن رصيد الدفع المسبق فارغ (402): AI Studio ← Billing ← Buy credits (5$ على الأقل). سيُحفظ المفتاح ويعمل المساعد حين يُشحن الرصيد.');
+    else if (gc.status === 402) say('  ⚠ مفتاح Gemini صحيح لكن رصيد الدفع المسبق فارغ (402): AI Studio ← Billing ← Buy credits (5$ على الأقل). سيُحفظ المفتاح ويعمل TAHIRO AI حين يُشحن الرصيد.');
     else if (gc.status === 404) fail(`النموذج ${AI_FAST} غير متاح لهذا المفتاح (404): ${gm}\n  عيّن نموذجاً متاحاً بالمتغير QT_AI_FAST ثم أعد الأمر.`);
     else if (gc.status === 429) say('  ⚠ مفتاح Gemini صحيح لكن الحصة مستنفدة الآن (429): تأكد أن الفوترة المدفوعة مفعّلة للمشروع في AI Studio.');
-    else say(`  ⚠ تعذّر فحص مفتاح Gemini الآن (${gc.status || 'الشبكة'}: ${gm || short(gc.data)}) — سيُحفظ ويُفحص المساعد في آخر النشر.`);
+    else say(`  ⚠ تعذّر فحص مفتاح Gemini الآن (${gc.status || 'الشبكة'}: ${gm || short(gc.data)}) — سيُحفظ ويُفحص TAHIRO AI في آخر النشر.`);
   }
 
   let gid = process.env.GOOGLE_CLIENT_ID || '', gsec = process.env.GOOGLE_CLIENT_SECRET || '';
@@ -194,20 +200,40 @@ const NATIVE_CB = 'com.qanontahiro.app://auth-callback';
 
   // ---------- 3) الأسرار ----------
   step(3, 'أسرار الخادم');
-  const secrets = [{ name: 'QT_ADMIN_SECRET', value: admin },
-    { name: 'QT_AI_CAP_ANON', value: String(process.env.QT_AI_CAP_ANON || 12) },
-    { name: 'QT_AI_CAP_GOOGLE', value: String(process.env.QT_AI_CAP_GOOGLE || 40) },
-    { name: 'QT_AI_DAILY_BUDGET', value: String(process.env.QT_AI_DAILY_BUDGET || 600) }];
+  const secrets = [{ name: 'QT_ADMIN_SECRET', value: admin }];
+  // صمامات اليوم لكل التطبيق: القيمة الممرَّرة هنا، وإلا القيمة الافتراضية أول مرة فقط (فلا يُمحى ما عدّلته في اللوحة)
+  const VALVES = { QT_AI_DAILY_BUDGET: 600, QT_AI_WEB_DAILY: 150, QT_AI_TTS_DAILY: 1500 }, valves = [];
+  for (const [n, d] of Object.entries(VALVES)) {
+    const v = String(process.env[n] ?? '').trim();
+    if (v && !/^\d{1,7}$/.test(v)) fail(`${n} عدد صحيح (0 = دون سقف)، لا «${v}»`);
+    if (v || !have.has(n)) { secrets.push({ name: n, value: v || String(d) }); valves.push(`${n}=${v || d}`); }
+  }
+  for (const n of ['QT_AI_PER_MIN', 'QT_AI_PER_HOUR', 'QT_AI_TTS_PER_MIN', 'QT_AI_TTS_PER_HOUR']) {
+    const v = String(process.env[n] ?? '').trim();
+    if (!v) continue;
+    if (!/^\d{1,6}$/.test(v)) fail(`${n} عدد صحيح (0 = دون حد)، لا «${v}»`);
+    secrets.push({ name: n, value: v }); valves.push(`${n}=${v}`);
+  }
+  if (process.env.QT_AI_TTS_FMT && !/^(mp3|wav)$/.test(process.env.QT_AI_TTS_FMT)) fail('QT_AI_TTS_FMT إما mp3 أو wav');
+  // مستوى خدمة Google (v8.2.1): من config/cloud.json ← ai.tier (أو المتغير QT_AI_TIER)؛ ويُضبط في كل نشر ليطابق صفحة الخصوصية المبنية
+  const tier = String(process.env.QT_AI_TIER || (CFG.ai && CFG.ai.tier) || 'free').trim().toLowerCase();
+  if (!/^(free|paid)$/.test(tier)) fail('ai.tier في config/cloud.json (أو QT_AI_TIER) إما free أو paid');
+  secrets.push({ name: 'QT_AI_TIER', value: tier });
   if (ably) secrets.push({ name: 'ABLY_ROOT_KEY', value: ably });
   if (gem) secrets.push({ name: 'GEMINI_API_KEY', value: gem });
   if (process.env.QT_AI_FAST) secrets.push({ name: 'QT_AI_FAST', value: AI_FAST });
   if (process.env.QT_AI_SMART) secrets.push({ name: 'QT_AI_SMART', value: AI_SMART });
+  for (const n of ['QT_AI_TTS', 'QT_AI_TTS_FMT', 'QT_AI_IX_REV']) if (process.env[n]) secrets.push({ name: n, value: String(process.env[n]).trim() });
   if (CFG.admob && CFG.admob.rewarded) secrets.push({ name: 'QT_ADS_REWARDED_UNITS', value: CFG.admob.rewarded });
   const se = await call('POST', API + '/secrets', { token, json: secrets });
   if (!se.ok) fail(`تعذّر ضبط الأسرار (${se.status}): ${short(se.data)}`);
   say('  ✓ ' + secrets.map(x => x.name).join('، ') + ' — على الخادم وحده');
-  // مفتاح Claude ونماذجه من الإصدارات السابقة لم تعد مستعملة: تُحذف من الخادم
-  const old = ['ANTHROPIC_API_KEY', 'QT_AI_MODEL_FAST', 'QT_AI_MODEL_SMART'].filter(n => have.has(n));
+  if (valves.length) say('  · صمامات TAHIRO AI: ' + valves.join('، '));
+  say(tier === 'free'
+    ? '  · TAHIRO AI على خدمة Google المجانية: نحو 20 جواباً في اليوم بالنموذج الأقوى ثم نحو 500 لكل نموذج خفيف، ودون بحث في الإنترنت،\n    وGoogle قد تستعمل ما يُرسل لتحسين منتجاتها (الخصوصية تقول ذلك). للانتقال إلى المدفوع: docs/v8-guide.md القسم 7'
+    : '  · TAHIRO AI على المستوى المدفوع: البحث في الإنترنت مفعّل، ولا تستعمل Google ما يُرسل لتحسين منتجاتها');
+  // ما لم يعد مستعملاً: مفتاح Claude ونماذجه (قبل v8)، وحصتا المستخدم اليوميتان (قبل v8.2: لا رصيد للمستخدم الآن)
+  const old = ['ANTHROPIC_API_KEY', 'QT_AI_MODEL_FAST', 'QT_AI_MODEL_SMART', 'QT_AI_CAP_ANON', 'QT_AI_CAP_GOOGLE'].filter(n => have.has(n));
   if (old.length) {
     const rm = await call('DELETE', API + '/secrets', { token, json: old });
     say(rm.ok ? '  ✓ حُذفت الأسرار القديمة: ' + old.join('، ') : `  ⚠ تعذّر حذف الأسرار القديمة (${rm.status}): احذفها من لوحة Supabase ← Edge Functions ← Secrets: ${old.join('، ')}`);
@@ -225,8 +251,8 @@ const NATIVE_CB = 'com.qanontahiro.app://auth-callback';
     say(`  ✓ ${slug} ${dp.data && dp.data.version ? 'الإصدار ' + dp.data.version : 'منشورة'}`);
   }
 
-  // ---------- 5) قاعدة معرفة المساعد ----------
-  step(5, 'قاعدة معرفة المساعد: بنك الأسئلة');
+  // ---------- 5) قاعدة معرفة TAHIRO AI ----------
+  step(5, 'قاعدة معرفة TAHIRO AI: بنك الأسئلة');
   const bankPath = path.join(ROOT, 'dist', 'app', 'questions.json');
   if (!fs.existsSync(bankPath)) fail('لا يوجد dist/app/questions.json: شغّل python3 build.py أولاً');
   const raw = fs.readFileSync(bankPath, 'utf8');
@@ -250,7 +276,7 @@ const NATIVE_CB = 'com.qanontahiro.app://auth-callback';
   }
 
   // ---------- 5ب) مكتبة القوانين ----------
-  step('5ب', 'مكتبة القوانين: نصوص المواد التي يجيب منها «المساعد»');
+  step('5ب', 'مكتبة القوانين: نصوص المواد التي يجيب منها TAHIRO AI أولاً');
   const cdir = path.join(ROOT, 'data', 'corpus');
   if (!fs.existsSync(path.join(cdir, 'index.json'))) fail('لا يوجد data/corpus/index.json: شغّل python3 tools/build_corpus.py --write');
   const idxRaw = fs.readFileSync(path.join(cdir, 'index.json'), 'utf8');
@@ -303,33 +329,49 @@ const NATIVE_CB = 'com.qanontahiro.app://auth-callback';
   const dl = await probe('POST', URL0 + '/functions/v1/qt-pulse', { json: { type: 'daily', day: today }, headers: pub });
   say(dl.ok ? '  ✓ البث عبر Ably بمفتاح الجذر من الخادم يعمل' : `  ✗ البث عبر Ably: ${dl.status} ${short(dl.data)} — تحقق من ABLY_ROOT_KEY`);
 
-  // جلسة مجهولة حقيقية تسأل المساعد سؤالاً واحداً من المكتبة، ثم تُحذف
-  const su = await probe('POST', URL0 + '/auth/v1/signup', { json: {}, headers: { apikey: CFG.supabase.key } });
+  // جلسة مجهولة حقيقية تحاور TAHIRO AI سؤالاً من المكتبة (دون بحث في الإنترنت) وتسمع جملة بالصوت، ثم تُحذف.
+  // ترويسة سر المؤلف تُظهر سبب أي خطأ ومسار الطلب (لا يراها إلا من يملك السر)
+  const su = await probe('POST', URL0 + '/auth/v1/signup', { json: { data: {} }, headers: { apikey: CFG.supabase.key } });
   const tok = su.ok && su.data && su.data.access_token, uid = tok && su.data.user && su.data.user.id;
   if (!tok) say(`  ✗ الدخول المجهول: ${su.status} ${short(su.data)}`);
   else {
     say('  ✓ الدخول المجهول يعمل');
-    const ai = { apikey: CFG.supabase.key, Authorization: 'Bearer ' + tok };
+    const ai = { apikey: CFG.supabase.key, Authorization: 'Bearer ' + tok, 'x-qt-admin': admin };
     let qa = null;
     for (let i = 0; i < 6; i++) { qa = await probe('POST', URL0 + '/functions/v1/qt-ai', { json: { kind: 'quota' }, headers: ai }); if (qa.ok) break; await wait(4000); }
-    if (!(qa && qa.ok && qa.data && qa.data.ok)) say(`  ✗ دالة المساعد: ${qa && qa.status} ${short(qa && qa.data)}`);
-    else if (!qa.data.ready) say(`  · دالة المساعد تعمل (رصيد ${qa.data.cap} يومياً)، والمساعد ينتظر GEMINI_API_KEY`);
+    if (!(qa && qa.ok && qa.data && qa.data.ok)) say(`  ✗ دالة TAHIRO AI: ${qa && qa.status} ${short(qa && qa.data)}`);
+    else if (!qa.data.ready) say('  · دالة TAHIRO AI تعمل، وتنتظر GEMINI_API_KEY (أعد الأمر وأدخله)');
     else {
-      const wy = await probe('POST', URL0 + '/functions/v1/qt-ai', { json: { kind: 'ask', q: 'ما هي فترة الاختبار في مدونة الشغل؟' }, headers: ai });
-      const arts = (wy.ok && wy.data && wy.data.ok && wy.data.data && wy.data.data.articles) || [];
-      if (wy.ok && wy.data && wy.data.ok) say(arts.length ? `  ✓ المساعد أجاب من المكتبة، ومعه نص ${arts.map(a => a.label + ' من ' + a.title).slice(0, 2).join(' و')}`
-                                                          : '  ⚠ المساعد أجاب دون نص من المكتبة: تحقق من تحميل المكتبة (الخطوة 5ب)');
+      const cf = qa.data.cfg;
+      if (cf) say(`  · المستوى: ${cf.tier === 'paid' ? 'مدفوع' : 'مجاني'} — النماذج: ${cf.smart} ثم ${cf.fast} ثم ${cf.lite2 || '-'}، والصوت ${cf.tts} ثم ${cf.tts2 || '-'} — صمامات اليوم: ${cf.budget || '∞'} جواباً، ${cf.web || '∞'} بحثاً، ${cf.ttsDaily || '∞'} مقطعاً صوتياً`);
+      const wy = await probe('POST', URL0 + '/functions/v1/qt-ai', { json: { kind: 'chat', q: 'ما هي فترة الاختبار بالنسبة للأطر في مدونة الشغل؟', web: false }, headers: ai });
+      const d = wy.ok && wy.data && wy.data.ok && wy.data.data, arts = (d && d.articles) || [];
+      if (d) say(arts.length ? `  ✓ TAHIRO AI أجاب من المكتبة، ومعه نص ${arts.map(a => a.label + ' من ' + a.title).slice(0, 2).join(' و')}`
+                             : '  ⚠ TAHIRO AI أجاب دون نص من المكتبة: تحقق من تحميل المكتبة (الخطوة 5ب)');
       else {
-        const lg = await sqlq(token, "select err from public.qt_ai_log order by id desc limit 1");
-        const err = String((lg.ok && Array.isArray(lg.data) && lg.data[0] && lg.data[0].err) || '');
+        let err = String((wy.data && wy.data.why) || '');
+        if (!err) { const lg = await sqlq(token, "select err from public.qt_ai_log order by id desc limit 1"); err = String((lg.ok && Array.isArray(lg.data) && lg.data[0] && lg.data[0].err) || ''); }
         const hint = /^credits:/.test(err) ? 'رصيد Gemini المدفوع فارغ: AI Studio ← Billing ← Buy credits'
           : /^key:/.test(err) ? 'مفتاح Gemini مرفوض: أنشئ مفتاحاً جديداً من AI Studio وأعد الأمر'
           : /^model:/.test(err) ? 'النموذج غير متاح: عيّن QT_AI_SMART / QT_AI_FAST بنموذج متاح'
-          : /^busy:/.test(err) ? 'Gemini مزدحم أو الحصة مستنفدة الآن: أعد المحاولة بعد دقائق، وتحقق أن الفوترة مفعّلة' : '';
-        say(`  ✗ المساعد: ${short(wy.data)} ${err ? '— ' + err : ''}${hint ? '\n    ← ' + hint : ''}`);
+          : /^busy:/.test(err) ? 'ضغط مؤقت أو حصة مستنفدة عند Google: أعد المحاولة بعد دقائق، وتحقق أن الفوترة مفعّلة' : '';
+        say(`  ✗ TAHIRO AI: ${short(wy.data)} ${err ? '— ' + err : ''}${hint ? '\n    ← ' + hint : ''}`);
       }
+      // القراءة بالصوت (ثنائية: application/octet-stream ونوع الصوت في الترويسة X-QT-Audio)
+      try {
+        const tr = await fetch(URL0 + '/functions/v1/qt-ai', { method: 'POST', headers: { ...ai, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ kind: 'tts', text: 'مرحباً بك في قانون تاهيرو.', voice: 'Charon' }) });
+        if ((tr.headers.get('content-type') || '').includes('octet-stream')) {
+          const n = (await tr.arrayBuffer()).byteLength, dg = (() => { try { return JSON.parse(tr.headers.get('x-qt-debug') || '{}'); } catch { return {}; } })();
+          say(`  ✓ القراءة بالصوت تعمل (${tr.headers.get('x-qt-audio') || '?'}، ${Math.round(n / 1024)} ك.ب${dg.via ? '، ' + dg.via : ''})`);
+        } else {
+          const j = await tr.json().catch(() => ({}));
+          say(`  ✗ القراءة بالصوت: ${j.error || tr.status}${j.why ? ' — ' + String(j.why).slice(0, 220) : ''}`);
+        }
+      } catch (e) { say(`  ⚠ تعذّر فحص القراءة بالصوت الآن: ${(e && e.message) || e}`); }
+      say('  · الفحص الشامل لكل وظائف TAHIRO AI (ومعه عينات الأصوات التسعة): node tools/ai-selftest.mjs --voices');
     }
-    if (uid && /^[0-9a-f-]{36}$/.test(uid)) await sqlq(token, `delete from public.qt_ai_usage where uid = '${uid}'; delete from auth.users where id = '${uid}';`);
+    if (uid && /^[0-9a-f-]{36}$/.test(uid)) await sqlq(token, `delete from public.qt_ai_usage where uid = '${uid}'; delete from public.qt_ai_rate where uid = '${uid}'; delete from auth.users where id = '${uid}';`);
   }
 
   // دالة التحقق من مكافآت AdMob: تُستدعى بلا مفتاح (verify_jwt=false)، وترفض التوقيع الباطل

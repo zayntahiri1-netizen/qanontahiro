@@ -1,5 +1,5 @@
 // v5 في متصفح حقيقي: الدخول بـ Google (ربط ثم دخول من جهاز جديد ثم هوية مرتبطة بحساب آخر)، والترتيب العالمي الكامل،
-// و«المساعد» بشيفرة دالته نفسها (qt-ai) تعمل في Node على Postgres حقيقي فيه البنك ومكتبة القوانين كاملين، وGemini بديل يردّ بحسب مخطط الطلب،
+// و«TAHIRO AI» بشيفرة دالته نفسها (qt-ai) تعمل في Node على Postgres حقيقي فيه البنك ومكتبة القوانين كاملين، وبديل Gemini API يردّ بحسب الطلب (ai_mock.js)،
 // وأدوات v8: النصوص القانونية، وتأكيد السن، والمحادثة المتصلة، وتصوير السؤال، والشرح، والمقارنة، والموضوع، والنازلة التدريبية، والبطاقات، والشفوي بالصوت.
 const { chromium } = require('playwright');
 const { execFileSync } = require('child_process');
@@ -42,48 +42,17 @@ function weekKey(d = new Date()) { const x = new Date(Date.UTC(d.getFullYear(), 
   x.setUTCDate(x.getUTCDate() + 4 - day); const y = x.getUTCFullYear(); return y + '-W' + z2(Math.ceil(((x - Date.UTC(y, 0, 1)) / 864e5 + 1) / 7)); }
 const monthKey = (d = new Date()) => d.getFullYear() + '-' + z2(d.getMonth() + 1);
 
-/* ---------- «المساعد»: الدالة الحقيقية في Node ---------- */
+/* ---------- «TAHIRO AI»: الدالة الحقيقية في Node ---------- */
 let AIH = null, USERS = null; const GEM = [];
 async function loadAI() {
   const T = fs.mkdtempSync(path.join(os.tmpdir(), 'qtai-'));
   fs.copyFileSync(path.join(ROOT, 'tests', 'fn', 'mock-sb-ai.mjs'), path.join(T, 'mock-sb-ai.mjs'));
   fs.writeFileSync(path.join(T, 'fn-ai.mts'), fs.readFileSync(path.join(ROOT, 'supabase', 'functions', 'qt-ai', 'index.ts'), 'utf8')
     .replace('import { createClient } from "npm:@supabase/supabase-js@2";', 'import { createClient } from "./mock-sb-ai.mjs";'));
-  const ENV = { GEMINI_API_KEY: 'AQ.e2e-test-key-0123456789', SUPABASE_URL: 'https://x.supabase.co', SUPABASE_SERVICE_ROLE_KEY: 'svc', QT_AI_CAP_ANON: '6', QT_AI_CAP_GOOGLE: '40' };
+  const ENV = { GEMINI_API_KEY: 'AQ.e2e-test-key-0123456789', SUPABASE_URL: 'https://x.supabase.co', SUPABASE_SERVICE_ROLE_KEY: 'svc', QT_AI_PER_MIN: '1000', QT_AI_PER_HOUR: '5000', QT_AI_TTS_PER_MIN: '1000' , QT_AI_TIER: 'paid' };
   globalThis.Deno = { env: { get: k => ENV[k] }, serve: h => { AIH = h; } };
   const real = globalThis.fetch;
-  globalThis.fetch = async (url, o) => {
-    if (!String(url).startsWith('https://generativelanguage.googleapis.com/')) return real(url, o);
-    const body = JSON.parse(o.body), sc = body.generationConfig.responseFormat?.text?.schema ?? body.generationConfig.responseJsonSchema ?? {};
-    const u = body.contents[0].parts.filter(p => typeof p.text === 'string').map(p => p.text).join('\n'), props = Object.keys(sc.properties ?? {});
-    const keys = [...new Set([...u.matchAll(/\[([a-z_]+:[^\]\s][^\]]*)\]/g)].map(m => m[1]))], art = keys[0] || '';
-    const id = (u.match(/\[([A-Z]+-\d+)\]/) || [])[1] || 'X', L = ['أ', 'ب', 'ج', 'د'];
-    GEM.push({ url: String(url), body });
-    const obj = props.includes('terms') ? { laws: ['labour'], terms: ['فترة الاختبار', 'الفصل التعسفي', 'التعويض عن الفصل'], refs: [{ slug: 'labour', n: '13' }, { slug: 'labour', n: '41' }] }
-      : props.includes('legal') ? { legal: true, type: 'mcq', text: 'ما المدة القصوى لفترة الاختبار بالنسبة للأطر وأشباههم في مدونة الشغل؟', options: ['ثلاثة أشهر', 'سنة كاملة', 'شهر ونصف', 'خمسة عشر يوماً'] }
-      : props.includes('verdicts') ? { verdicts: Array.from({ length: sc.properties.verdicts.minItems || 4 }, (_, i) => ({ letter: L[i], ok: i === 0, why: i === 0 ? `هذه مدة الأطر وأشباههم [${art}].` : 'لا تطابق المدة المحددة في النص.' })), rule: `**مدة الاختبار القصوى** محددة بحسب الفئة [${art}].`, covered: true, arts: [art] }
-      : props.includes('issues') ? { facts: `أجير فُصل دون سبب بعد أقدمية طويلة [${art}].`, issues: [{ point: 'هل الفصل تعسفي؟', rule: `للمتضرر من الإنهاء التعسفي التعويض [${art}].`, arts: [art], apply: 'الفصل دون سبب ودون إخطار تعسفي.' }], conclusion: 'يستحق التعويض.', missing: ['مدة الأقدمية بدقة', 'هل وقع إخطار كتابي؟'], covered: true, arts: [art], followups: ['كيف يُحسب التعويض؟', 'ما أجل رفع الدعوى؟'] }
-      : props.includes('rows') ? { intro: `فترة الاختبار مرحلة أولى من العقد [${art}]، وأجل الإخطار مهلة قبل الإنهاء.`, rows: [{ aspect: 'التوقيت', a: `في بداية العقد [${art}]`, b: 'عند إنهاء العقد' }, { aspect: 'الأثر', a: 'إنهاء دون تعويض', b: 'إنهاء بعد مهلة' }, { aspect: 'من يتمسك به', a: 'الطرفان', b: 'الطرفان' }], same: ['كلاهما يتعلق بإنهاء عقد الشغل'], summary: 'الأولى تجربة، والثاني مهلة.', trap: 'الخلط بين انقضاء الاختبار والإخطار.', covered: true, arts: [art] }
-      : props.includes('trap') ? { title: 'فخ الأجل', trap: 'خلطتَ بين الأجلين.', options: L.map((l, i) => ({ letter: l, ok: i === 0, why: 'كما في التعليل.' })), rule: '**القاعدة** كما في التعليل.', hook: 'الأول هو الصحيح.', check: { q: 'ما الحكم؟', a: 'كما في التعليل.' } }
-      : props.includes('items') ? (() => { const ip = sc.properties.items, tp = ip.items.properties.type.enum, cnt = ip.maxItems || 5;
-          const ks = [...new Set([...u.matchAll(/^\[([a-z_]+:[^\]\s][^\]]*)\]/gm)].map(m => m[1]))];
-          return { items: Array.from({ length: cnt }, (_, i) => { const t = tp[i % tp.length], k = ks[i % ks.length];
-            return { type: t, stem: t === 'riddle' ? `لغز ${i + 1}: أبدأ مع العقد وأنتهي قبل أن يستقر، ولا إخطار فيّ ولا تعويض. فمن أنا؟` : `تمرين ${i + 1}: ما حكم إنهاء العقد خلال فترة الاختبار؟`,
-              options: ['أجل الإخطار', 'فترة الاختبار', 'العطلة السنوية', 'الراحة الأسبوعية'].map(o => o + (i ? ' ' + (i + 1) : '')), correct: [1],
-              why: ['ليس هو: الإخطار يكون بعد انتهاء فترة الاختبار.', `هو المقصود: يجوز فيها الإنهاء دون إخطار ولا تعويض [${k}].`, 'لا علاقة لها بإنهاء العقد.', 'لا علاقة لها بإنهاء العقد أيضاً.'],
-              rule: `**فترة الاختبار** يجوز خلالها إنهاء العقد دون إخطار ولا تعويض [${k}].`, ref: k, difficulty: 3, hint: t === 'riddle' ? 'فكّر في بداية عقد الشغل.' : '' }; }) }; })()
-      : props.includes('stem') ? { stem: 'نازلة توأم بوقائع أخرى؟', options: ['خيار صحيح', 'خيار خاطئ أول', 'خيار خاطئ ثان', 'خيار خاطئ ثالث'], correct: [0], explain: 'التعليل من المرجع نفسه.', rule: 'القاعدة.' }
-      : props.includes('simple') ? { simple: `تحدد هذه المادة معنى فترة الاختبار: مدة يجرب فيها كل طرف الآخر وينهي العقد دون إخطار ولا تعويض [${art}].`, elements: ['عقد شغل قائم', 'إنهاء خلال الفترة نفسها'], effects: ['لا إخطار ولا تعويض في الأصل'], exceptions: ['بعد أسبوع شغل يلزم أجل إخطار'], example: { facts: 'شغّلت «شركة س» الأجير «أ» ثم أنهت عقده في اليوم الخامس.', solution: `الإنهاء صحيح دون تعويض [${art}].` }, traps: ['الخلط بين الاختبار والإخطار'], hook: 'الاختبار تجربة لا التزام.', related: keys[1] ? [{ key: keys[1], why: 'تحدد مدد الاختبار.' }] : [] }
-      : props.includes('parts') ? { intro: 'يحظى إنهاء عقد الشغل بأهمية بالغة.', problem: 'كيف وازن المشرع بين حرية الإنهاء وحماية الأجير؟', subq: ['ما شروط الإنهاء؟', 'ما جزاء الإنهاء التعسفي؟'], parts: [1, 2].map(p => ({ title: p === 1 ? 'شروط الإنهاء' : 'آثار الإنهاء', sections: [1, 2].map(x => ({ title: 'المطلب ' + x, points: [`فكرة مسندة [${art}]`, 'فكرة ثانية'] })) })), conclusion: 'خلاصة وأفق.', tips: ['ابدأ بتحديد المفاهيم'], covered: true, arts: [art] }
-      : props.includes('structure') ? { intro: 2, problem: 3, structure: 3, basis: 2, analysis: 2, verdict: 'تحرير متوسط يحتاج إسناداً أقوى.', strengths: ['تصميم واضح'], gaps: ['إسناد ضعيف'], fixes: [`استند إلى النص صراحة [${art}].`], better: ['القسم الأول: الشروط', 'القسم الثاني: الآثار'], arts: [art] }
-      : props.includes('questions') ? { title: 'الأجير والإنهاء المبكر', facts: 'اشتغل «أ» لدى «شركة س» عشرة أيام بعقد غير محدد المدة، ثم أخبرته الشركة شفوياً بانتهاء علاقة الشغل دون أي مهلة.', questions: ['ما حكم الإنهاء؟ وما حقوق «أ»؟'], model: [{ answer: `فترة الاختبار تجيز الإنهاء دون تعويض [${art}]، لكن بعد أسبوع يلزم أجل الإخطار؛ فالإنهاء دون مهلة مخالف.`, arts: [art] }] }
-      : props.includes('cards') ? { cards: ['ما فترة الاختبار؟', 'متى يلزم الإخطار خلالها؟', 'هل يُستحق تعويض؟', 'من يملك الإنهاء؟'].map((f, i) => ({ front: f, back: 'الجواب ' + (i + 1) + ' كما في النص.', key: art })) }
-      : props.includes('covered') ? { answer: `الحكم كذا${art ? ` [${art}]` : ''}${id !== 'X' ? ` [${id}]` : ''}.`, covered: true, arts: art ? [art] : [], cites: id !== 'X' ? [id] : [], followups: ['ما الاستثناء؟', 'ما الجزاء؟'] }
-      : props.includes('application') && props.includes('model') ? { ...(props.includes('transcript') ? { transcript: 'العقد صحيح لأن أركانه متوفرة.' } : {}), rule: 4, basis: 2, application: 3, verdict: 'جواب جيد.', strengths: ['حدد القاعدة'], gaps: ['لم يذكر المرجع'], model: 'الجواب النموذجي.' }
-      : props.includes('application') ? { rule: 6, basis: 4, application: 4, verdict: 'حل جيد ينقصه السند.', strengths: ['حدد القاعدة'], gaps: [`لم تذكر أجل الإخطار [${art}]`] }
-      : { headline: 'ابدأ بالأضعف.', days: Array.from({ length: 7 }, (_, i) => ({ day: i + 1, title: 'يوم ' + (i + 1), minutes: 30, steps: [{ kind: 'branch', ref: 'labour', n: 10, why: 'توازن' }, { kind: 'due', ref: '', n: 10, why: 'مراجعة' }] })) };
-    return new Response(JSON.stringify({ candidates: [{ content: { role: 'model', parts: [{ text: JSON.stringify(obj) }] }, finishReason: 'STOP' }], usageMetadata: { promptTokenCount: 900, candidatesTokenCount: 250, thoughtsTokenCount: 60 } }), { status: 200 });
-  };
+  require('./ai_mock.js').install(GEM, real);
   const mod = await import(pathToFileURL(path.join(T, 'mock-sb-ai.mjs')).href);
   USERS = mod.USERS;
   await import(pathToFileURL(path.join(T, 'fn-ai.mts')).href);
@@ -105,7 +74,10 @@ const MOCK_SB = `window.supabase={createClient(url,key,o){
       async signOut(){ await st.removeItem(K); return { error:null }; } },
     rpc(fn,args){ return (async()=>window.__sbRpc(await uid(), fn, args||{}))(); },
     functions:{ invoke:async(name,o)=>{ const r=await window.__sbFn(await uid(), name, o&&o.body);
-      if(r && r.error && r.error.json){ const j=r.error.json; return { data:null, error:{ context:{ json:async()=>j } } }; } return r; } } };
+      if(r && r.error && r.error.json){ const j=r.error.json; return { data:null, error:{ context:{ json:async()=>j } } }; }
+      if(r && r.data && r.data.__b64){ const bin=atob(r.data.__b64), u=new Uint8Array(bin.length); for(let i=0;i<bin.length;i++) u[i]=bin.charCodeAt(i);
+        return { data:new Blob([u], { type:'application/octet-stream' }), error:null }; }
+      return r; } } };
 }};`;
 const MOCK_PN = `(function(){ class PubNub{ constructor(c){ this.ls=[]; } addListener(l){ this.ls.push(l); }
   subscribe(){ setTimeout(()=>this.ls.forEach(l=>l.status&&l.status({category:'PNConnectedCategory'})),5); } unsubscribe(){} unsubscribeAll(){}
@@ -149,6 +121,7 @@ async function setup(ctx) {
   await ctx.exposeBinding('__sbFn', async (src, uid, name, body) => {
     if (name === 'qt-pulse') return { data: { ok: true }, error: null };
     const r = await AIH(new Request('https://x/functions/v1/qt-ai', { method: 'POST', headers: { 'content-type': 'application/json', ...(uid ? { authorization: 'Bearer t-' + uid } : {}) }, body: JSON.stringify(body) }));
+    if ((r.headers.get('content-type') || '').startsWith('application/octet-stream')) return { data: { __b64: Buffer.from(await r.arrayBuffer()).toString('base64') }, error: null };
     const j = await r.json();
     return r.status >= 400 ? { data: null, error: { json: j } } : { data: j, error: null };
   });
@@ -234,22 +207,22 @@ const answerN = async (page, n) => { for (let i = 0; i < n; i++) { await page.cl
   ok(brRows.length === 2 && /سامي/.test(brRows[0]) && /30/.test(brRows[0]), 'ترتيب فرع الشغل بالأجوبة الصحيحة (عشرة أجوبة على الأقل)');
   await B.keyboard.press('Escape');
 
-  // ===== المساعد تحت السؤال =====
+  // ===== TAHIRO AI تحت السؤال =====
   await B.evaluate(() => openQuiz('labour'));
   for (const i of [0, 1, 2, 3]) await B.click(`#opts .opt[data-i="${i}"]`);
   await B.click('#go');
   await B.waitForSelector('#aiw');
   ok(/لماذا أخطأت/.test(await B.textContent('#aiw')), 'زر «لماذا أخطأت؟» بعد جواب خاطئ');
   await B.click('#aiw');
-  // أول استعمال للمساعد: تأكيد السن (شروط Gemini API: 18 سنة فأكثر)، مرة واحدة
+  // أول استعمال لـ TAHIRO AI: تأكيد السن (شروط مزوّد الخدمة: 18 سنة فأكثر)، مرة واحدة، دون اسم النموذج
   await B.waitForSelector('.sheet [data-y]', { timeout: 5000 }).catch(() => null);
-  ok(/Gemini/.test(await B.textContent('.sheet').catch(() => '')) && /18/.test(await B.textContent('.sheet').catch(() => '')), 'تأكيد السن قبل أول استعمال للمساعد (Gemini، 18 سنة)');
+  ok(/TAHIRO AI/.test(await B.textContent('.sheet').catch(() => '')) && /18/.test(await B.textContent('.sheet').catch(() => '')) && !/Gemini/.test(await B.textContent('.sheet').catch(() => '')), 'تأكيد السن قبل أول استعمال لـ TAHIRO AI (18 سنة)، دون اسم النموذج');
   await sleep(200); await B.screenshot({ path: OUT + '/v8-age.png' });
   await B.click('.sheet [data-y]');
   await B.waitForSelector('#aiOut .aiCard .box', { timeout: 10000 }).catch(() => null);
   ok(await B.evaluate(() => S.cfg.age18 === true), 'التأكيد محفوظ فلا يُسأل ثانية');
   ok(/فخ الأجل/.test(await B.textContent('#aiOut').catch(() => '')) && await B.$$eval('#aiOut .ol', x => x.length) === 4, 'شرح الفخ بأحكام الخيارات الأربعة والقاعدة');
-  ok(/رصيدك اليوم: 39 من 40/.test(await B.textContent('#aiOut')), 'الرصيد يظهر (حساب Google: 40)');
+  ok(!/رصيد/.test(await B.textContent('#aiOut')), 'لا رصيد يُعرض (دون حد يومي للمستخدم)');
   await sleep(300); await B.screenshot({ path: OUT + '/v5-ai-why.png' });
   // البلاغ عن جواب مولَّد من داخل التطبيق (سياسة Google Play للمحتوى المولَّد بالذكاء الاصطناعي)
   await B.click('#aiOut [data-aiflag]');
@@ -258,7 +231,7 @@ const answerN = async (page, n) => { for (let i = 0; i < n; i++) { await page.cl
   await B.waitForFunction(() => !document.querySelector('.sheet #afs'), null, { timeout: 5000 }).catch(() => null);
   await sleep(400);
   const flag = sql(`select qid || ' | ' || why || ' | ' || left(note, 60) from qt_reports where qid like 'AI:%' order by id desc limit 1`);
-  ok(/^AI:why:[A-Z]+-\d+ \| المساعد: محتوى مسيء/.test(flag) && /اختبار — /.test(flag), 'زر «أبلغ عن هذا الجواب» يرسل البلاغ مع نص الجواب إلى لوحة المؤلف');
+  ok(/^AI:why:[A-Z]+-\d+ \| TAHIRO AI: محتوى مسيء/.test(flag) && /اختبار — /.test(flag), 'زر «أبلغ عن هذا الجواب» يرسل البلاغ مع نص الجواب إلى لوحة المؤلف');
   ok(await B.isVisible('#aiOut .aiCard'), 'والشرح باقٍ مكانه بعد البلاغ');
   await B.click('#ait');
   await B.waitForSelector('#aiOut .tq .opt', { timeout: 10000 }).catch(() => null);
@@ -267,19 +240,19 @@ const answerN = async (page, n) => { for (let i = 0; i < n; i++) { await page.cl
   ok(/صحيح/.test(await B.textContent('#aiOut [data-res]').catch(() => '')), 'التوأم يُصحَّح ويكشف تعليله');
   await B.click('#qx');
 
-  // ===== المساعد: اسأل، نازلة، الشفوي، خطتي =====
+  // ===== TAHIRO AI: اسأل (الدردشة)، نازلة، الشفوي، خطتي =====
   await B.evaluate(() => openAI('ask'));
-  await B.waitForSelector('#aqt');
-  await B.waitForFunction(() => /رصيدك اليوم/.test(document.querySelector('#aiq').textContent), null, { timeout: 6000 }).catch(() => null);
-  ok(/رصيدك اليوم/.test(await B.textContent('#aiq')) && /^المساعد$/.test((await B.textContent('.sheet h2')).trim()), 'اسمه «المساعد»، ورصيده في رأس لوحه');
-  await B.fill('#aqt', 'ما هي مدة فترة الاختبار بالنسبة للأجراء في مدونة الشغل؟'); await B.click('#aqs');
-  await B.waitForSelector('#aqa [data-cite]', { timeout: 10000 }).catch(() => null);
-  ok(await B.$$eval('#aqa [data-cite]', x => x.length) >= 2, 'جواب بإحالات قابلة للنقر على أسئلة البنك');
-  ok(await B.$$eval('#aqa details.art', x => x.length) >= 1 && /المادة 13/.test(await B.textContent('#aqa details.art')), 'ومعه بطاقة نص المادة من مكتبة القوانين');
-  await B.click('#aqa .aiCard p .ak');
-  ok(await B.$eval('#aqa details.art', d => d.open) && /فترة الاختبار، هي الفترة/.test(await B.textContent('#aqa details.art .at')), 'الإحالة على المادة تفتح نصها تحت الجواب');
+  await B.waitForSelector('.sheet.tai #taiQ');
+  ok(/TAHIRO AI/.test(await B.textContent('.sheet.tai h2')) && !/رصيد/.test(await B.textContent('.sheet.tai')), '«اسأل» يفتح دردشة TAHIRO AI، ولا رصيد');
+  await B.fill('#taiQ', 'ما هي مدة فترة الاختبار بالنسبة للأجراء في مدونة الشغل؟'); await B.click('[data-tsend]');
+  await B.waitForSelector('.tm.a[data-m] .tsec.lib', { timeout: 15000 }).catch(() => null);
+  ok(await B.$$eval('.tm.a[data-m] [data-cite]', x => x.length) >= 1, 'جواب بإحالات قابلة للنقر على أسئلة البنك');
+  ok(await B.$$eval('.tm.a[data-m] details.art', x => x.length) >= 1 && /المادة 13/.test(await B.textContent('.tm.a[data-m] details.art')), 'ومعه بطاقة نص المادة من مكتبة القوانين');
+  await B.click('.tm.a[data-m] .tsec.lib .ak');
+  ok(await B.$eval('.tm.a[data-m] details.art', d => d.open) && /فترة الاختبار، هي الفترة/.test(await B.textContent('.tm.a[data-m] details.art .at')), 'الإحالة على المادة تفتح نصها تحت الجواب');
+  ok(await B.$eval('.tm.a[data-m] details.art .at', e => getComputedStyle(e).textAlign) !== 'center', 'نص المادة بمحاذاة السطر لا في الوسط');
   await sleep(300); await B.screenshot({ path: OUT + '/v5-ai-ask.png' });
-  await B.click('#aqa .aiCard p [data-cite]');
+  await B.click('.tm.a[data-m] .tsec.lib [data-cite]');
   await B.waitForSelector('#quiz:not(.hidden)', { timeout: 6000 }).catch(() => null);
   ok(await B.isVisible('#quiz') && !(await B.$('#sheets .sheet')), 'الإحالة تفتح السؤال المرجعي للمذاكرة');
   await B.click('#qx');
@@ -312,7 +285,7 @@ const answerN = async (page, n) => { for (let i = 0; i < n; i++) { await page.cl
   await B.waitForSelector('#quiz:not(.hidden)', { timeout: 6000 }).catch(() => null);
   ok(await B.isVisible('#quiz') && await B.evaluate(() => !!(S.p.plan && S.p.plan.done && Object.keys(S.p.plan.done).length)), 'زر «ابدأ» يفتح الجلسة ويُعلَّم منجزاً');
   await B.click('#qx');
-  ok(+sql(`select count(*) from qt_ai_log where uid = '${uidA}'`) >= 6, 'استدعاءات المساعد مسجلة بهوية الحساب');
+  ok(+sql(`select count(*) from qt_ai_log where uid = '${uidA}'`) >= 6, 'استدعاءات TAHIRO AI مسجلة بهوية الحساب');
 
   // ===== v8: النصوص القانونية داخل التطبيق =====
   await B.click('#tools .tool[data-k="texts"]');
@@ -332,7 +305,7 @@ const answerN = async (page, n) => { for (let i = 0; i < n; i++) { await page.cl
   await B.click('#txv [data-nav="13"]');
   await B.click('#txv [data-fav]');
   ok(await B.evaluate(() => !!S.p.txFav['labour|13']), 'حفظ المادة في «محفوظاتي»');
-  ok(!!(await B.$('#txv [data-x="explain"]')) && !!(await B.$('#txv [data-x="cards"]')), 'أزرار المساعد على المادة');
+  ok(!!(await B.$('#txv [data-x="explain"]')) && !!(await B.$('#txv [data-x="cards"]')) && !!(await B.$('#txv [data-x="listen"]')), 'أزرار TAHIRO AI على المادة (ومعها «استمع»)');
   await sleep(200); await B.screenshot({ path: OUT + '/v8-texts-article.png' });
   await B.click('#txv [data-x="explain"]');
   await B.waitForSelector('#exo .aiCard', { timeout: 12000 }).catch(() => null);
@@ -378,25 +351,27 @@ const answerN = async (page, n) => { for (let i = 0; i < n; i++) { await page.cl
   await B.click('#aitabs .aitool[data-k="scan"]');
   await B.setInputFiles('#sc2', path.join(ROOT, 'dist', 'app', 'icon-512.png'));
   await B.waitForSelector('#sco .ol', { timeout: 15000 }).catch(() => null);
-  const scanReq = GEM.find(g => g.body.contents[0].parts.some(p => p.inlineData && /^image\//.test(p.inlineData.mimeType)));
+  const scanReq = GEM.find(g => g.body.contents && g.body.contents[0].parts.some(p => p.inlineData && /^image\//.test(p.inlineData.mimeType)));
   ok(await B.$$eval('#sco .ol', x => x.length) === 4 && !!(await B.$('#sco img.thumb')) && /قرأتُ من الصورة/.test(await B.textContent('#sco')), 'صوّر سؤالاً: نص السؤال المقروء وحكم كل خيار');
   ok(scanReq && scanReq.body.contents[0].parts.find(p => p.inlineData).inlineData.mimeType === 'image/jpeg', 'الصورة تُصغَّر وتُرسل JPEG');
   await sleep(200); await B.screenshot({ path: OUT + '/v8-scan.png' });
-  // المحادثة المتصلة
+  // المحادثة المتصلة: «اسأل» من لوح الأدوات يعيد فتح الدردشة بسياقها
   await B.click('#aitabs .aitool[data-k="ask"]');
-  const nMe = await B.$$eval('#aqa .me', x => x.length);
-  await B.fill('#aqt', 'وما مدتها بالنسبة للأطر وأشباههم؟'); await B.click('#aqs');
-  await B.waitForFunction(n => document.querySelectorAll('#aqa .me').length === n + 1 && !document.querySelector('#aqa .shim'), nMe, { timeout: 12000 }).catch(() => null);
-  const chatReq = GEM.filter(g => /السؤال الحالي/.test(g.body.contents[0].parts.map(p => p.text || '').join(''))).pop();
-  ok(nMe >= 1 && chatReq && /سياق المحادثة السابقة/.test(chatReq.body.contents[0].parts[0].text), 'المحادثة المتصلة: السؤال التابع يُرسل بسياق ما قبله');
+  await B.waitForSelector('.sheet.tai #taiQ');
+  const nMe = await B.$$eval('.sheet.tai .tm.u', x => x.length);
+  await B.fill('#taiQ', 'وما مدتها بالنسبة للأطر وأشباههم؟'); await B.click('[data-tsend]');
+  await B.waitForFunction(n => document.querySelectorAll('.sheet.tai .tm.a[data-m]').length === n + 1 && !document.querySelector('.tm.think'), nMe, { timeout: 15000 }).catch(() => null);
+  const chatReq = GEM.filter(g => g.url.endsWith('/interactions') && !g.body.response_format).pop();
+  ok(nMe >= 1 && chatReq && chatReq.body.input.length >= 3 && chatReq.body.input[0].type === 'user_input' && chatReq.body.input[1].type === 'model_output', 'المحادثة المتصلة: السؤال التابع يُرسل بسياق ما قبله');
   await sleep(200); await B.screenshot({ path: OUT + '/v8-chat.png' });
+  await B.click('[data-tclose]');
   // الشفوي بالصوت (ميكروفون صوري في المتصفح)
   await B.click('#aitabs .aitool[data-k="oral"]');
   await B.waitForSelector('#arb'); await B.click('#arb');
   await B.waitForSelector('#ars', { timeout: 5000 }).catch(() => null); await sleep(1800); await B.click('#ars');
   await B.waitForSelector('#arsend', { timeout: 5000 }).catch(() => null); await B.click('#arsend');
   await B.waitForSelector('#aor .ring', { timeout: 12000 }).catch(() => null);
-  const voiceReq = GEM.filter(g => g.body.contents[0].parts.some(p => p.inlineData && /^audio\//.test(p.inlineData.mimeType))).pop();
+  const voiceReq = GEM.filter(g => g.body.contents && g.body.contents[0].parts.some(p => p.inlineData && /^audio\//.test(p.inlineData.mimeType))).pop();
   ok(/ما سمعته منك/.test(await B.textContent('#aor').catch(() => '')) && voiceReq && voiceReq.body.contents[0].parts.find(p => p.inlineData).inlineData.mimeType === 'audio/webm',
     'الشفوي بالصوت: تسجيل webm يُنسخ ويُقيَّم');
   await sleep(200); await B.screenshot({ path: OUT + '/v8-oral-voice.png' });
@@ -409,11 +384,11 @@ const answerN = async (page, n) => { for (let i = 0; i < n; i++) { await page.cl
   ok(!!(await B.$('#txv .txt')), 'تحت السؤال: «نص المادة» يفتح المادة في النصوص القانونية');
   await B.evaluate(() => { document.querySelectorAll('.sheet').forEach(x => x.remove()); closeQuiz(); });
 
-  // ===== v8.1: مولّد التمارين — من مادة في النصوص، ثم جلسة في محرك الأسئلة لا تمس النقاط =====
+  // ===== v8.1: «اطلب تمارين» — من مادة في النصوص، ثم جلسة في محرك الأسئلة لا تمس النقاط =====
   const st0 = await B.evaluate(() => JSON.stringify([S.p.points, S.p.answered, S.p.correct, Object.keys(S.p.wrong), Object.keys(S.p.seen).length, Object.keys(S.p.srs).length, S.p.byType]));
   await B.evaluate(() => openTexts('labour', '13'));
   await B.waitForSelector('#txv [data-x="gen"]', { timeout: 8000 }).catch(() => null);
-  ok(!!(await B.$('#txv [data-x="gen"]')), 'زر «ولّد تمارين» على المادة في النصوص');
+  ok(/اطلب تمارين/.test(await B.textContent('#txv [data-x="gen"]').catch(() => '')), 'زر «اطلب تمارين» على المادة في النصوص');
   await B.click('#txv [data-x="gen"]');
   await B.waitForSelector('#gnk .chip'); await B.waitForFunction(() => document.querySelectorAll('#gnl option').length > 5);
   ok(await B.$eval('#gnl', e => e.value) === 'labour' && await B.$eval('#gnn', e => e.value) === '13' && await B.$eval('#aitabs .aitool:first-child', e => e.dataset.k === 'gen' && e.classList.contains('wide') && e.getAttribute('aria-pressed') === 'true'),
@@ -427,21 +402,21 @@ const answerN = async (page, n) => { for (let i = 0; i < n; i++) { await page.cl
   await sleep(200); await B.screenshot({ path: OUT + '/v81-gen.png' });
   await B.click('#gno [data-gstart]');
   await B.waitForSelector('#quiz:not(.hidden) #opts .opt');
-  ok(/لغز/.test(await B.textContent('#quiz .qtools')) && /مولّد/.test(await B.textContent('#quiz .qtools')) && !(await B.$('#qbm')) && !(await B.$('#qsh')) && !(await B.$('.sheet')),
-     'جلسة الألغاز في محرك الأسئلة: وسما «لغز» و«مولّد»، دون حفظ ولا مشاركة');
+  ok(/لغز/.test(await B.textContent('#quiz .qtools')) && /TAHIRO AI/.test(await B.textContent('#quiz .qtools')) && !(await B.$('#qbm')) && !(await B.$('#qsh')) && !(await B.$('.sheet')),
+     'جلسة الألغاز في محرك الأسئلة: وسما «لغز» و«TAHIRO AI»، دون حفظ ولا مشاركة');
   await B.click('#qhn');
   ok(/بداية عقد الشغل/.test(await B.textContent('#quiz .qhint').catch(() => '')) && !(await B.$('#qhn')), 'اللغز: التلميح يظهر عند طلبه');
   await B.click('#opts .opt[data-i="1"]'); await B.click('#go');
   await B.waitForSelector('#verdict .vhead');
   const gv = await B.textContent('#verdict');
-  ok(await B.$$eval('#opts .why', x => x.length) === 4 && await B.$$eval('#opts .opt.ok', x => x.length) === 1 && /مولّد بالمساعد/.test(gv) && !!(await B.$('#txb')) && !(await B.$('#aiw')) && !/\[labour:/.test(await B.textContent('#quiz')),
-     'التصحيح: تعليل لكل خيار، ووسم «مولّد بالمساعد»، و«نص المادة»، دون مفاتيح خام ودون أزرار المساعد');
+  ok(await B.$$eval('#opts .why', x => x.length) === 4 && await B.$$eval('#opts .opt.ok', x => x.length) === 1 && /من TAHIRO AI/.test(gv) && !!(await B.$('#txb')) && !(await B.$('#aiw')) && !/\[labour:/.test(await B.textContent('#quiz')),
+     'التصحيح: تعليل لكل خيار، ووسم «من TAHIRO AI»، و«نص المادة»، دون مفاتيح خام ودون أزرار TAHIRO AI');
   await sleep(200); await B.screenshot({ path: OUT + '/v81-gen-quiz.png' });
   await B.click('#go'); await B.waitForSelector('#opts .opt:not(.ok)');
   ok(await B.textContent('#go') === 'لا شيء منها صحيح', 'دون اختيار: «لا شيء منها صحيح» زرٌّ لا خيار، كما في البنك');
   await B.click('#opts .opt[data-i="0"]'); await B.click('#go'); await B.waitForSelector('#verdict .vhead');
   await B.click('#rep'); await B.waitForSelector('.sheet [data-r]', { timeout: 4000 }).catch(() => null);
-  ok(/الإبلاغ عن جواب المساعد/.test(await B.textContent('.sheet').catch(() => '')), 'الإبلاغ عن تمرين مولَّد يمر ببلاغات المساعد');
+  ok(/الإبلاغ عن جواب TAHIRO AI/.test(await B.textContent('.sheet').catch(() => '')), 'الإبلاغ عن تمرين من TAHIRO AI يمر ببلاغاته');
   await B.evaluate(() => document.querySelectorAll('.sheet').forEach(x => x.remove()));
   await B.click('#go'); await B.click('#opts .opt[data-i="1"]'); await B.click('#go'); await B.waitForSelector('#verdict .vhead'); await B.click('#go');
   await B.waitForFunction(() => !S.sess && document.getElementById('quiz').classList.contains('hidden'), null, { timeout: 5000 }).catch(() => null);
@@ -451,7 +426,7 @@ const answerN = async (page, n) => { for (let i = 0; i < n; i++) { await page.cl
   await B.evaluate(() => openTexts('labour'));
   await B.waitForSelector('#txv [data-xg]', { timeout: 8000 }).catch(() => null); await B.click('#txv [data-xg]');
   await B.waitForSelector('#gnk .chip'); await B.waitForFunction(() => document.querySelectorAll('#gnl option').length > 5);
-  ok(await B.$eval('#gnl', e => e.value) === 'labour' && await B.$eval('#gnn', e => e.value) === '', 'زر «ولّد تمارين من هذا القانون» يفتح المولّد بالقانون دون مادة');
+  ok(await B.$eval('#gnl', e => e.value) === 'labour' && await B.$eval('#gnn', e => e.value) === '', 'زر «اطلب تمارين من هذا القانون» يفتح الأداة بالقانون دون مادة');
   await B.click('#gnk .chip[data-v="mix"]'); await B.click('#gnc .chip[data-v="5"]'); await B.click('#gng');
   await B.waitForSelector('#gno [data-gstart]', { timeout: 15000 }).catch(() => null);
   ok(/5 تمارين جاهزة/.test(await B.textContent('#gno').catch(() => '')), 'مزيج من القانون: خمسة تمارين');
@@ -510,7 +485,7 @@ const answerN = async (page, n) => { for (let i = 0; i < n; i++) { await page.cl
 
   const html = await B.content();
   ok(!/sk-ant|ANTHROPIC|AQ\.e2e|GEMINI_API_KEY|7YUitA|sb_secret_/.test(html), 'لا مفتاح Gemini ولا سر خادم في الصفحة');
-  ok(GEM.length > 10 && GEM.every(g => g.body.store === false && !('temperature' in g.body.generationConfig)), 'كل طلبات Gemini دون حفظ لدى Google (store: false)');
+  ok(GEM.length > 10 && GEM.every(g => g.body.store === false && !('temperature' in (g.body.generationConfig || g.body.generation_config || {}))), 'كل الطلبات إلى Google دون حفظ لديها (store: false)');
   console.log('\n' + (errs.length ? errs.join('\n') : 'لا أخطاء في الصفحات ولا في وحدة التحكم'));
   await browser.close();
   process.exit(errs.length ? 1 : 0);

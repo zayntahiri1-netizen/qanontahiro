@@ -673,8 +673,19 @@ def write_site(out, cloud, version):
     tpl = (ROOT / "src" / "site.html").read_text(encoding="utf-8")
     (SITE / "index.html").write_text(fill(tpl).replace("__LDJSON__", js(ld)).replace("/*__DATA__*/null", js(data)), encoding="utf-8")
     # الصفحات القانونية (v8.1) بأربع لغات: الخصوصية، والبنود والشروط، وحذف البيانات (تفتحها أزرار التطبيق في المتصفح)
+    # v8.2.1: فقرات مستوى خدمة الذكاء الاصطناعي بحسب config/cloud.json ← "ai": {"tier": "free" أو "paid"}؛ وتُحذف فقرات المستوى الآخر
+    ai_tier = str(((cloud or {}).get("ai") or {}).get("tier") or "free").strip().lower()
+    if ai_tier not in ("free", "paid"):
+        sys.exit("✗ config/cloud.json: ai.tier إما free أو paid")
+    other = "paid" if ai_tier == "free" else "free"
+    def tiered(s):
+        s = re.sub(rf"<!--{other}-->.*?<!--/{other}-->", "", s, flags=re.S)
+        s = s.replace(f"<!--{ai_tier}-->", "").replace(f"<!--/{ai_tier}-->", "")
+        if re.search(r"<!--/?(free|paid)-->", s):
+            sys.exit("✗ وسم مستوى غير مغلق في صفحة قانونية")
+        return s
     for page in ("privacy", "terms", "delete-data"):
-        (SITE / f"{page}.html").write_text(fill((ROOT / "src" / f"{page}.html").read_text(encoding="utf-8")), encoding="utf-8")
+        (SITE / f"{page}.html").write_text(tiered(fill((ROOT / "src" / f"{page}.html").read_text(encoding="utf-8"))), encoding="utf-8")
     (SITE / "admin.html").write_text((ROOT / "src" / "admin.html").read_text(encoding="utf-8")
                                      .replace("/*__CLOUD__*/null", js(public)), encoding="utf-8")
     (SITE / "404.html").write_text(

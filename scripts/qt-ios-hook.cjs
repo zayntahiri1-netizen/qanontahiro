@@ -63,9 +63,9 @@ setKey('CFBundleLocalizations', `<array>\n\t\t<string>ar</string>\n\t\t<string>f
 setKey('CFBundleAllowMixedLocalizations', '<true/>');
 setKey('CFBundleURLTypes', `<array>\n\t\t<dict>\n\t\t\t<key>CFBundleURLName</key>\n\t\t\t<string>${SCHEME}</string>\n` +
   `\t\t\t<key>CFBundleURLSchemes</key>\n\t\t\t<array>\n\t\t\t\t<string>${SCHEME}</string>\n\t\t\t</array>\n\t\t</dict>\n\t</array>`);
-setKey('NSMicrophoneUsageDescription', str('يستعمل «قانون تاهيرو» الميكروفون فقط حين تضغط «أجب بصوتك» في الامتحان الشفوي، ليقيّم المساعد جوابك ثم يُنسى التسجيل. (Microphone: only when you tap “Answer by voice”.)'));
-setKey('NSCameraUsageDescription', str('تُستعمل الكاميرا فقط حين تضغط «التقط صورة» لتصوير سؤال قانوني يحله المساعد؛ ولا تُحفظ الصورة. (Camera: only to photograph a question you want solved.)'));
-setKey('NSPhotoLibraryUsageDescription', str('لاختيار صورة سؤال من معرضك ليحله المساعد؛ ولا تُحفظ الصورة. (Photos: only to pick a question image you choose.)'));
+setKey('NSMicrophoneUsageDescription', str('يستعمل «قانون تاهيرو» الميكروفون فقط حين تضغط الميكروفون لتسأل TAHIRO AI بصوتك، أو «أجب بصوتك» في الامتحان الشفوي؛ ثم يُنسى التسجيل. (Microphone: only when you tap the mic to ask TAHIRO AI or “Answer by voice”.)'));
+setKey('NSCameraUsageDescription', str('تُستعمل الكاميرا فقط حين تضغط «التقط صورة» لتصوير سؤال قانوني يحله TAHIRO AI؛ ولا تُحفظ الصورة. (Camera: only to photograph a question you want TAHIRO AI to solve.)'));
+setKey('NSPhotoLibraryUsageDescription', str('لاختيار صورة سؤال من معرضك ليحله TAHIRO AI؛ ولا تُحفظ الصورة. (Photos: only to pick a question image you choose.)'));
 setKey('ITSAppUsesNonExemptEncryption', '<false/>');
 for (const must of [`<string>${SCHEME}</string>`, 'NSMicrophoneUsageDescription', 'NSCameraUsageDescription', 'NSPhotoLibraryUsageDescription', 'ITSAppUsesNonExemptEncryption'])
   if (!pl.includes(must)) die('فحص Info.plist فشل: ' + must);
@@ -92,8 +92,9 @@ setSet(path.join(XC, 'Splash.imageset'), [['splash-2732.png', splash]],
 say('✓ الأيقونة (1024×1024) وشاشة البدء');
 
 // ---------- 3) PrivacyInfo.xcprivacy ----------
-// «جمع» بتعريف Apple: معطى يغادر الجهاز ويُحفظ أطول مما يلزم لخدمة الطلب. الصور والتسجيلات ونصوص المساعد تُعالَج لحظياً ولا تُحفظ،
-// فلا تُعدّ جمعاً. والمجموع فعلاً: معرّف الحساب، والبريد والاسم لمن دخل بـ Google، والتقدم (عند المزامنة)، والبلاغات.
+// «جمع» بتعريف Apple: معطى يغادر الجهاز ويُحفظ أطول مما يلزم لخدمة الطلب. الصور والتسجيلات تُعالَج لحظياً ولا تُحفظ،
+// فلا تُعدّ جمعاً. والمجموع فعلاً: معرّف الحساب، والبريد والاسم لمن دخل بـ Google، والتقدم (عند المزامنة)، والبلاغات؛ ورسائل TAHIRO AI
+// داخلة في «محتوى المستخدم الآخر» احتياطاً (Google تحفظ ما يُبحث به في الإنترنت ثلاثين يوماً، والدردشة نفسها في الجهاز وحده).
 const dt = (type, linked = true) => `\t\t<dict>\n\t\t\t<key>NSPrivacyCollectedDataType</key>\n\t\t\t<string>${type}</string>\n` +
   `\t\t\t<key>NSPrivacyCollectedDataTypeLinked</key>\n\t\t\t<${linked}/>\n\t\t\t<key>NSPrivacyCollectedDataTypeTracking</key>\n\t\t\t<false/>\n` +
   `\t\t\t<key>NSPrivacyCollectedDataTypePurposes</key>\n\t\t\t<array>\n\t\t\t\t<string>NSPrivacyCollectedDataTypePurposeAppFunctionality</string>\n\t\t\t</array>\n\t\t</dict>\n`;

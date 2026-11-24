@@ -4,7 +4,7 @@
 //   dist/store/iphone/01-….png   1290×2796  (iPhone 6.9 بوصة: المقاس الذي يطلبه App Store Connect)
 //   dist/store/android/01-….png  1080×1920  (هاتف أندرويد، نسبة 16:9 التي يقبلها Google Play)
 //   dist/store/play-feature-1024x500.png    (صورة العرض في Google Play)
-// كل لقطة: عنوان قصير فوق شاشة حقيقية من التطبيق. أجوبة «المساعد» في اللقطات محضَّرة يدوياً من نص المادتين 13 و14
+// كل لقطة: عنوان قصير فوق شاشة حقيقية من التطبيق. أجوبة TAHIRO AI في اللقطات محضَّرة يدوياً من نص المادتين 13 و14
 // و43 من مدونة الشغل كما في مكتبة التطبيق (لا اتصال بالخادم)، ونصوص المواد نفسها تُقرأ من data/corpus.
 //   python3 build.py && node tools/store-shots.mjs
 // =========================================================================
@@ -16,6 +16,9 @@ import { createRequire } from 'node:module';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const APP = path.join(ROOT, 'dist', 'app'), OUT = path.join(ROOT, 'dist', 'store');
+// مستوى خدمة Google (v8.2.1): في المجاني لا بحث في الإنترنت، فلا تَعِد به لقطة الدردشة
+let TIER = 'free';
+try { TIER = String((JSON.parse(fs.readFileSync(path.join(ROOT, 'config', 'cloud.json'), 'utf8')).ai || {}).tier || 'free').toLowerCase() === 'paid' ? 'paid' : 'free'; } catch { /* المجاني */ }
 const require = createRequire(import.meta.url);
 let chromium;
 try { ({ chromium } = require('playwright')); } catch { console.error('✗ يلزم Playwright (npm i -g playwright)'); process.exit(1); }
@@ -31,12 +34,18 @@ const srv = http.createServer((q, r) => {
 await new Promise(ok => srv.listen(0, '127.0.0.1', ok));
 const URL0 = `http://127.0.0.1:${srv.address().port}/index.html`;
 
-// ---------- أجوبة «المساعد» المحضَّرة (من نصوص المواد كما هي في المكتبة) ----------
+// ---------- أجوبة TAHIRO AI المحضَّرة (من نصوص المواد كما هي في المكتبة، ومصدر رسمي حقيقي) ----------
 const labour = JSON.parse(fs.readFileSync(path.join(ROOT, 'data', 'corpus', 'labour.json'), 'utf8'));
 const lawTitle = labour.title;
 const art = n => { const a = labour.items.find(x => x.n === n); return { key: 'labour:' + n, slug: 'labour', n, label: a.label, title: lawTitle, path: a.path || '', text: a.text, notes: [], stale: [] }; };
 const A13 = art('13'), A14 = art('14'), A43 = art('43');
 const CANNED = {
+  chat: { mode: 'chat', web: TIER === 'paid' ? 'on' : 'tier', searched: TIER === 'paid', guard: true, bank: [], suggest: '', queries: [], articles: [A14, A13],
+          blocks: [{ k: 'lib', t: 'تحدد فترة الاختبار في العقد غير المحدد المدة بـ**ثلاثة أشهر للأطر وأشباههم**، وشهر ونصف للمستخدمين، وخمسة عشر يوماً للعمال، ويمكن تجديدها مرة واحدة [labour:14].' },
+                   { k: 'ai', t: 'خلالها يجوز لكل طرف إنهاء العقد دون أجل إخطار ولا تعويض؛ غير أن الأجير إذا قضى أسبوعاً في الشغل على الأقل لا يُنهى اختباره إلا بعد أجل إخطار: يومان لمن يتقاضى أجره باليوم أو الأسبوع أو كل خمسة عشر يوماً، وثمانية أيام لمن يتقاضاه بالشهر، ما لم يرتكب خطأ جسيماً [labour:13].' },
+                   ...(TIER === 'paid' ? [{ k: 'web', t: 'المرجع الرسمي: «ظهير شريف رقم 1.03.194 بتنفيذ القانون رقم 65.99 المتعلق بمدونة الشغل» منشور في بوابة عدالة لوزارة العدل، ومعه صيغة المدونة المحيَّنة.' }] : [])],
+          next: ['هل يمكن تجديد فترة الاختبار؟', 'ما أجل الإخطار بعد انتهاء الاختبار؟'],
+          sources: TIER === 'paid' ? [{ url: 'https://adala.justice.gov.ma/', title: 'بوابة عدالة — وزارة العدل', host: 'adala.justice.gov.ma' }] : [] },
   ask: { answer: 'تحدد فترة الاختبار في العقد غير المحدد المدة بـ**ثلاثة أشهر للأطر وأشباههم**، وشهر ونصف للمستخدمين، وخمسة عشر يوماً للعمال، ويمكن تجديدها مرة واحدة [labour:14].\nوخلالها يجوز لكل طرف إنهاء العقد دون أجل إخطار ولا تعويض؛ غير أنه إذا قضى الأجير أسبوعاً في الشغل على الأقل لزم منحه أجل إخطار: يومين أو ثمانية أيام بحسب طريقة أداء أجره، ما لم يرتكب خطأ جسيماً [labour:13].',
          covered: true, arts: ['labour:14', 'labour:13'], cites: [], followups: ['هل يمكن تجديد فترة الاختبار؟', 'ما أجل الإخطار بعد انتهاء الاختبار؟'], guard: true, sources: [], articles: [A14, A13] },
   explain: { key: 'labour:13', simple: 'فترة الاختبار مرحلة أولى من عقد الشغل يجرّب فيها كل طرف الآخر، ويجوز خلالها لأي منهما إنهاء العقد دون أجل إخطار ولا تعويض. لكن هذا الإطلاق يتقيد متى قضى الأجير أسبوع شغل على الأقل، فيلزم حينها منحه أجل إخطار ما لم يرتكب خطأ جسيماً.',
@@ -69,7 +78,7 @@ const SHOTS = [
   ['01-home', '7408 أسئلة في 13 فرعاً من القانون المغربي'],
   ['02-question', 'كل خيار بشرحه ومرجعه في القانون'],
   ['03-texts', '27 قانوناً بنصوصها داخل التطبيق، حتى دون اتصال'],
-  ['04-ask', 'اسأل «المساعد»: جواب من نص المادة نفسها'],
+  ['04-tahiro', TIER === 'paid' ? 'اسأل TAHIRO AI: من نصوص القوانين أولاً، ثم آخر المستجدات' : 'اسأل TAHIRO AI: من نصوص القوانين أولاً، ثم الشرح والتوسّع'],
   ['05-explain', 'اشرح أي مادة: شروطها وآثارها وفخاخ الامتحان'],
   ['06-compare', 'قارن بين مفهومين يختلط أمرهما'],
   ['07-drill', 'نوازل تدريبية تُصحَّح على 20'],
@@ -109,11 +118,11 @@ async function rawShots(pf) {
     Object.assign(S.p, { answered: 1240, correct: 1003, points: 8640, streak: 12, best: 19 });
     const d0 = new Date(); for (let i = 0; i < 40; i++) { const d = new Date(d0 - i * 864e5); S.p.days[today(d)] = 25 + (i * 7) % 30; }
     BANK.branches.forEach((b, i) => { S.p.byBranch[b.id] = { a: 60 + i * 9, c: 45 + i * 7 }; });
-    AI.left = 37; AI.cap = 40; AI.google = true;
+    AI.google = true;
     window.aiCall = async (kind, payload) => {
       await new Promise(r => setTimeout(r, 30));
       const data = kind === 'drill' ? (payload && payload.answer ? canned.drillGrade : canned.drill) : canned[kind];
-      return { ok: true, kind, data, left: AI.left, cap: AI.cap, google: true };
+      return { ok: true, kind, data, google: true };
     };
     document.querySelectorAll('.sheet').forEach(x => x.remove()); paintLobby(); buildRail();
   }, CANNED);
@@ -129,11 +138,13 @@ async function rawShots(pf) {
   await snap('02-question'); await closeAll();
   // النصوص القانونية: المادة 14 من مدونة الشغل
   await p.evaluate(() => openTexts('labour', '14')); await p.waitForSelector('#txv .txt'); await snap('03-texts'); await closeAll();
-  // اسأل
-  await p.evaluate(() => openAI('ask')); await p.waitForSelector('#aqt');
-  await p.fill('#aqt', 'ما مدة فترة الاختبار للأطر في العقد غير المحدد المدة؟'); await p.click('#aqs');
-  await p.waitForSelector('#aqa .aiCard'); await p.evaluate(() => document.querySelector('#aqa .me').scrollIntoView({ block: 'start' }));
-  await snap('04-ask'); await closeAll();
+  // TAHIRO AI: الدردشة بأقسامها (المكتبة أولاً، ثم التوسع، ثم المصدر الرسمي من الإنترنت)
+  await p.evaluate(() => openAI('chat')); await p.waitForSelector('.sheet.tai #taiQ');
+  await p.fill('#taiQ', 'ما مدة فترة الاختبار للأطر في العقد غير المحدد المدة؟'); await p.click('[data-tsend]');
+  await p.waitForSelector('.tm.a[data-m] .tsec.lib', { timeout: 8000 });
+  await p.waitForTimeout(700);
+  await p.evaluate(() => { const u = document.querySelector('.sheet.tai .tm.u'); if (u) u.scrollIntoView({ block: 'start' }); });
+  await snap('04-tahiro'); await closeAll();
   // اشرح المادة
   await p.evaluate(() => openAI('explain', { slug: 'labour', n: '13' })); await p.waitForSelector('#exo .aiCard');
   await p.evaluate(() => document.querySelector('#exo .aiCard').scrollIntoView({ block: 'start' })); await snap('05-explain'); await closeAll();

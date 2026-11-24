@@ -1,5 +1,5 @@
 {
-  "_note": "مفاتيح عامة آمنة للعميل فقط. لا يوضع هنا أبداً مفتاح Ably Root ولا sb_secret ولا service_role: تلك أسرار خادم تُضبط بـ supabase secrets set.",
+  "_note": "مفاتيح عامة آمنة للعميل فقط. لا يوضع هنا أبداً مفتاح Ably Root ولا sb_secret ولا service_role: تلك أسرار خادم تُضبط بـ supabase secrets set. | ai.tier: مستوى خدمة TAHIRO AI لدى Google — free (مفتاح دون فوترة: حصص يومية صغيرة، ودون بحث في الإنترنت، وقد تستعمل Google ما يُرسل لتحسين منتجاتها) أو paid (بعد تفعيل الفوترة). غيّره ثم ابنِ وانشر (docs/v8-guide.md القسم 1).",
   "supabase": {
     "url": "https://zorbawbrcgmchvzdtekq.supabase.co",
     "key": "sb_publishable_UO9u0LzSb90jvY-WXrxD_g_C7pgW1AO"
@@ -32,5 +32,8 @@
     "native": "ca-app-pub-1725525147318224/3144566219",
     "appOpen": "ca-app-pub-1725525147318224/4221632131",
     "appAdsTxt": "google.com, pub-1725525147318224, DIRECT, f08c47fec0942fa0"
+  },
+  "ai": {
+    "tier": "free"
   }
 }

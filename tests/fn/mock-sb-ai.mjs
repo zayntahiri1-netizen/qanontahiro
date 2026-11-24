@@ -11,7 +11,7 @@ export const USERS = new Map();      // رمز الجلسة ← { id, is_anonymo
 function builder(table) {
   const st = { op: 'select', cols: '*', where: [], one: false, row: null };
   const run = async () => {
-    const w = st.where.length ? ' where ' + st.where.map(([c, v]) => `${c} = ${lit(v)}`).join(' and ') : '';
+    const w = st.where.length ? ' where ' + st.where.map(([c, v, op]) => op === 'in' ? `${c} in (${(v.length ? v : [null]).map(x => lit(x)).join(', ')})` : `${c} = ${lit(v)}`).join(' and ') : '';
     if (st.op === 'select') {
       const out = sql(`select coalesce(jsonb_agg(x), '[]') from (select ${st.cols} from public.${table}${w}) x`);
       const rows = JSON.parse(out.split('\n').pop());
@@ -24,7 +24,7 @@ function builder(table) {
     return { data: null, error: null };
   };
   const b = {
-    select(c) { st.cols = c || '*'; return b; }, eq(c, v) { st.where.push([c, v]); return b; },
+    select(c) { st.cols = c || '*'; return b; }, eq(c, v) { st.where.push([c, v]); return b; }, in(c, v) { st.where.push([c, v, 'in']); return b; },
     maybeSingle() { st.one = true; return run(); }, update(r) { st.op = 'update'; st.row = r; return b; },
     upsert(r) { st.op = 'upsert'; st.row = r; return run(); }, insert(r) { st.op = 'insert'; st.row = r; return run(); },
     then(res, rej) { return run().then(res, rej); },
@@ -38,7 +38,7 @@ export function createClient() {
     rpc: async (fn, args) => {
       const named = Object.entries(args).map(([k, v]) => `${k} => ${lit(v)}`).join(', ');
       const tbl = TABLE_FNS.has(fn);
-      const out = sql(tbl ? `select coalesce(jsonb_agg(t), '[]') from public.${fn}(${named}) t` : fn === 'qt_ai_refund' ? `select public.${fn}(${named}); select 'null'` : `select to_jsonb(public.${fn}(${named}))`);
+      const out = sql(tbl ? `select coalesce(jsonb_agg(t), '[]') from public.${fn}(${named}) t` : fn === 'qt_ai_refund' || fn === 'qt_ai_ungate' ? `select public.${fn}(${named}); select 'null'` : `select to_jsonb(public.${fn}(${named}))`);
       return { data: JSON.parse(out.split('\n').pop()), error: null };
     },
   };

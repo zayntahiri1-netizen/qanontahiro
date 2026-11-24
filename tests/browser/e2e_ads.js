@@ -3,7 +3,7 @@
 //   • النسخة غير الموقَّعة بإعلانات Google التجريبية، والموقَّعة بوحدات التطبيق الحقيقية
 //   • الشريط في الردهة وحدها ومكانه محجوز، ويختفي فوق النوافذ والجلسات؛ ولا يظهر أبداً فوق سؤال
 //   • الإعلان البيني بعد جلسة مكتملة فقط: لا في اليوم الأول ولا في الدقائق الأولى، وبحد أدنى للأجوبة وفاصل بين إعلانين
-//   • المكافأة: +3 طلبات لـ«المساعد» بتحقق الخادم (SSV) أو بمطالبة التطبيق قبل ضبطه، وساعة دون إعلانات
+//   • المكافأة: ساعة دون إعلانات وحدها (منذ v8.2 لا رصيد لـ TAHIRO AI فلا إعلان بمكافأة له)، والفقاعة العائمة فوق الشريط
 //   • شاشة الفتح لمن غاب ساعة فأكثر فقط، ولا تتكدس فوق إعلان آخر، ولا تظهر فوق جلسة قائمة
 //   • ونسخة الويب بلا أي إعلان
 // التشغيل كما في e2e_native.js (www/ على المنفذ 8771، والتطبيق على الويب على 8765 لفحص الويب).
@@ -43,12 +43,10 @@ function rpc(uid, fn, args) {
   try { const out = sql(who + body).split('\n').pop(); return { data: out === '' ? null : JSON.parse(out), error: null }; }
   catch (e) { return { data: null, error: { message: String(e.stderr || e.message).split('\n').find(l => /ERROR/.test(l)) || 'sql error' } }; }
 }
-// «المساعد» البديل: الرصيد من القاعدة نفسها (الحد 12 + مكافأة اليوم)
+// TAHIRO AI البديل (v8.2): دون رصيد للمستخدم
 function aiReply(uid, body) {
-  const left = +sql(`select public.qt_ai_left('${uid}', 12)`), ad = JSON.parse(sql(`select public.qt_ad_today('${uid}')`));
-  const base = { left, cap: 12 + ad.bonus, google: false, capGoogle: 40, ads: { left: ad.left, per: ad.per, max: ad.max, ssv: ad.ssv } };
-  if (body.kind === 'quota') return { ok: true, kind: 'quota', ready: true, ...base };
-  return left > 0 ? { ok: true, kind: body.kind, data: { title: 'شرح', options: [] }, ...base } : { ok: false, error: 'quota', ...base };
+  if (body.kind === 'quota') return { ok: true, kind: 'quota', unlimited: true, ready: true, google: false };
+  return { ok: true, kind: body.kind, data: { title: 'شرح', options: [] } };
 }
 
 /* ---------- حزم بديلة ---------- */
@@ -189,7 +187,8 @@ const until = (page, fn, arg, ms = 6000) => page.waitForFunction(fn, arg, { time
   ok(sb && sb[2].adId === DEMO.banner && sb[2].isTesting === true && sb[2].adSize === 'ADAPTIVE_BANNER' && sb[2].position === 'BOTTOM_CENTER',
     'الشريط في الردهة: متكيّف أسفل الشاشة، بوحدة Google التجريبية');
   await until(N, () => getComputedStyle(document.documentElement).getPropertyValue('--adh').trim() === '62px');
-  ok(await adh(N) === '62px' && await N.evaluate(() => getComputedStyle(document.getElementById('lobby')).paddingBottom) === '62px', 'مكان الشريط محجوز أسفل الردهة فلا يغطي محتوى');
+  const lpb = await N.evaluate(() => [getComputedStyle(document.getElementById('lobby')).paddingBottom, document.body.classList.contains('tfab-on')]);
+  ok(await adh(N) === '62px' && lpb[0] === (lpb[1] ? '150px' : '62px'), `مكان الشريط محجوز أسفل الردهة فلا يغطي محتوى (ومعه مكان فقاعة TAHIRO AI: ${lpb[0]})`);
   ok((await ad(N, 'prepareInterstitial'))[0][2].adId === DEMO.interstitial && (await ad(N, 'loadAppOpen'))[0][2].adId === DEMO.appOpen, 'البيني وشاشة الفتح يُحضَّران بوحدات تجريبية');
   await N.screenshot({ path: OUT + '/ads-lobby.png' });
   // أزرار الصفحات القانونية (v8.1) أسفل الردهة: فوق مكان الشريط المحجوز، فلا يغطيها في أي نهاية للتمرير
@@ -237,47 +236,27 @@ const until = (page, fn, arg, ms = 6000) => page.waitForFunction(fn, arg, { time
   ok(await N.evaluate(() => window.__ad.banner) === 'shown' && !(await ad(N, 'showAppOpen')).length, 'بعد إغلاقه: يعود الشريط، ولا إعلان فتح فوقه (لا تكديس)');
   ok(await N.evaluate(`adsBreak(${six})`) === false, 'فاصل أربع دقائق بين إعلانين');
 
-  // المكافأة: +3 طلبات لـ«المساعد» — أولاً بمطالبة التطبيق (قبل ضبط التحقق في AdMob)
-  const uidN = await N.evaluate(() => CS.uid);
-  sql(`insert into qt_ai_usage(day, uid, n) values (current_date, '${uidN}', 12) on conflict (day, uid) do update set n = 12`);
-  await N.evaluate(() => { S.cfg.age18 = true; });     // تأكيد السن (v8) مُختبَر في e2e_v5؛ هنا المكافأة وحدها
-  await N.evaluate(() => openAI('ask'));
-  await N.waitForSelector('#aiq [data-aiad]', { timeout: 6000 }).catch(() => null);
-  ok(await N.isVisible('#aiq [data-aiad]') && /0/.test(await N.textContent('#aiq')), 'نفد الرصيد: يظهر «شاهد إعلاناً: +3 طلبات»');
-  await sleep(500); await N.screenshot({ path: OUT + '/ads-ai.png' });
-  await N.click('#aiq [data-aiad]');
-  await until(N, () => window.__ad.full === 'reward');
-  const pr1 = (await ad(N, 'prepareRewardVideoAd')).pop();
-  ok(pr1 && pr1[2].adId === DEMO.rewarded && pr1[2].ssv && pr1[2].ssv.userId === uidN && pr1[2].ssv.customData === 'ai', 'إعلان المكافأة يحمل معرّف الحساب للتحقق من جهة الخادم (SSV)');
-  await N.evaluate(() => { window.__adReward(); window.__adDismiss(); });
-  await until(N, () => AI.cap === 15, null, 16000);
-  ok(await N.evaluate(() => AI.cap === 15 && AI.left === 3) && await N.evaluate(() => (window.__rpcs || []).includes('qt_ad_claim')),
-    'قبل ضبط التحقق في AdMob: مطالبة التطبيق تمنح 3 طلبات (12 + 3)');
-  ok(sql(`select via from qt_ad_rewards where uid = '${uidN}'`) === 'client', 'سُجّلت «بمطالبة التطبيق»');
-  await until(N, () => !document.querySelector('#aiq [data-aiad]'), null, 3000);
-  ok(/3/.test(await N.textContent('#aiq')), 'سطر الرصيد يتحدث فوراً');
-  await N.screenshot({ path: OUT + '/ads-ai-after.png' });
-
-  // ثم بتحقق AdMob نفسه (SSV): يصل الاستدعاء الموقَّع فيظهر الرصيد دون مطالبة
-  sql(`update qt_ai_usage set n = 15 where uid = '${uidN}' and day = current_date`);
-  await N.evaluate(() => { window.__rpcs = []; document.querySelectorAll('.sheet').forEach(s => s.remove()); ADS.lastFull = 0; });
-  await N.evaluate(() => openAI('ask'));
-  await N.waitForSelector('#aiq [data-aiad]', { timeout: 6000 }).catch(() => null);
-  await N.click('#aiq [data-aiad]');
-  await until(N, () => window.__ad.full === 'reward');
-  await N.evaluate(() => window.__adReward());
-  sql(`select public.qt_ad_grant('admob-tx-e2e', '${uidN}', 'ai', 'ssv')`);
-  await N.evaluate(() => window.__adDismiss());
-  await until(N, () => AI.cap === 18, null, 8000);
-  ok(await N.evaluate(() => AI.cap === 18 && !(window.__rpcs || []).includes('qt_ad_claim')), 'بالتحقق الموقَّع: يظهر الرصيد (18) ولا مطالبة من التطبيق');
-  ok(await N.evaluate(() => adsBreak({ answers: [{}, {}, {}, {}, {}, {}] })) === false, 'بعد إعلان مكافأة: لا إعلان بيني قريباً');
+  // TAHIRO AI (v8.2): لا رصيد ولا إعلان بمكافأة له؛ والفقاعة العائمة فوق الشريط الإعلاني لا تحته
+  await N.evaluate(() => { S.cfg.age18 = true; document.querySelectorAll('.sheet').forEach(s => s.remove()); });
+  await until(N, () => window.__ad.banner === 'shown', null, 4000);
+  const fab = await N.evaluate(() => { const f = document.querySelector('#tfab'), r = f.getBoundingClientRect();
+    return { shown: getComputedStyle(f).display !== 'none' && r.height > 0, bottom: r.bottom, left: r.left, vh: innerHeight,
+             adh: parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--adh')) || 0 }; });
+  ok(fab.shown && fab.adh > 0 && fab.bottom <= fab.vh - fab.adh + 1 && fab.left < 120, `الفقاعة أسفل اليسار فوق الشريط (${Math.round(fab.vh - fab.bottom)}px من الأسفل، والشريط ${fab.adh}px)`);
+  await N.screenshot({ path: OUT + '/ads-fab.png' });
+  await N.evaluate(() => openAI('chat'));
+  await N.waitForSelector('.sheet.tai', { timeout: 6000 }).catch(() => null);
+  ok(await N.evaluate(() => !document.querySelector('[data-aiad]') && !document.querySelector('#aiq') && !/\+3/.test(document.body.innerText)),
+    'لا رصيد ولا «شاهد إعلاناً: +3 طلبات» في TAHIRO AI');
+  ok(!(await ad(N, 'prepareRewardVideoAd')).some(c => c[2] && c[2].ssv), 'لا إعلان مكافأة يحمل معرّف الحساب (لا مكافآت للخادم بعد الآن)');
+  await N.evaluate(() => document.querySelectorAll('.sheet').forEach(s => s.remove()));
 
   // ساعة دون إعلانات
   await N.evaluate(() => { document.querySelectorAll('.sheet,.toast').forEach(s => s.remove()); openAds(); });
   await N.waitForSelector('.sheet #adfree'); await sleep(700);
   const icon = await N.evaluate(() => { const r = document.querySelector('#adfree svg').getBoundingClientRect(); return [Math.round(r.width), Math.round(r.height)]; });
   ok(icon[0] <= 20 && icon[1] <= 20, `أيقونة الزر بحجم السطر (${icon.join('×')})`);
-  ok(await N.isVisible('.sheet #adai') && /تجريبية/.test(await N.textContent('.sheet')), 'مركز الإعلانات: القواعد، وساعة دون إعلانات، ورصيد المساعد، ووسم النسخة التجريبية');
+  ok(!(await N.isVisible('.sheet #adai')) && !/رصيد|\+3|طلبات/.test(await N.textContent('.sheet')) && /تجريبية/.test(await N.textContent('.sheet')), 'مركز الإعلانات: القواعد، وساعة دون إعلانات، ووسم النسخة التجريبية — ولا رصيد لـ TAHIRO AI');
   await N.screenshot({ path: OUT + '/ads-center.png' });
   await N.click('.sheet #adfree');
   await until(N, () => window.__ad.full === 'reward');
