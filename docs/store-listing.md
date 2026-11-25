@@ -46,7 +46,7 @@
 تحدي الدقيقة (60 ثانية من العبارات: صحيحة أم خاطئة؟)، وموعد امتحاني بعدّ تنازلي وهدف يومي، وملاحظاتي وعلاماتي على كل مادة.
 
 ◆ خصوصيتك
-ادخل باسم مستعار دون بريد ولا هاتف، أو بحساب Google إن شئت. الصور والتسجيلات ووقائع النوازل تُعالَج ثم تُنسى ولا تُحفظ، ومحادثاتك مع TAHIRO AI تبقى على جهازك. TAHIRO AI لمن بلغ 18 سنة.
+ادخل باسم مستعار دون بريد ولا هاتف، أو بحساب Google إن شئت. لا يحفظ التطبيق الصور ولا التسجيلات ولا وقائع النوازل بعد معالجتها، وسجل محادثاتك مع TAHIRO AI محفوظ على جهازك وحده. TAHIRO AI لمن بلغ 18 سنة.
 
 تنبيه: التطبيق تعليمي وتدريبي فقط، وأجوبة TAHIRO AI تعليمية، وليست استشارة قانونية؛ والمرجع الرسمي هو الجريدة الرسمية.
 البنود والشروط: https://qanon-47831.web.app/terms
@@ -75,7 +75,7 @@ Une bulle flottante ouvre une conversation complète : TAHIRO AI répond d’abo
 Défi minute (60 secondes : vrai ou faux ?), compte à rebours de votre examen avec objectif quotidien, et vos notes sur chaque article.
 
 ◆ Vie privée
-Pseudonyme sans e-mail ni téléphone, ou compte Google si vous le souhaitez. Photos, enregistrements et faits des cas sont traités puis oubliés ; vos conversations avec TAHIRO AI restent sur votre appareil. TAHIRO AI est réservé aux 18 ans et plus.
+Pseudonyme sans e-mail ni téléphone, ou compte Google si vous le souhaitez. L’application ne conserve ni les photos, ni les enregistrements, ni les faits des cas après leur traitement, et l’historique de vos conversations avec TAHIRO AI reste sur votre appareil. TAHIRO AI est réservé aux 18 ans et plus.
 
 L’application est uniquement éducative ; les réponses de TAHIRO AI ne constituent pas un avis juridique ; la référence officielle est le Bulletin officiel.
 Conditions d’utilisation : https://qanon-47831.web.app/terms
@@ -104,7 +104,7 @@ A floating bubble opens a full chat: TAHIRO AI answers first from the library te
 Minute sprint (60 seconds: true or false?), an exam countdown with a daily goal, and your own notes on every article.
 
 ◆ Your privacy
-Use an alias with no e-mail or phone, or your Google account if you prefer. Photos, recordings and case facts are processed, then forgotten; your TAHIRO AI chats stay on your device. TAHIRO AI is for users aged 18+.
+Use an alias with no e-mail or phone, or your Google account if you prefer. The app does not keep photos, recordings or case facts after processing them, and your TAHIRO AI chat history stays on your device. TAHIRO AI is for users aged 18+.
 
 TAHIRO AI’s answers are educational, not legal advice; the official reference is the Official Bulletin.
 Terms of use: https://qanon-47831.web.app/terms
@@ -154,6 +154,7 @@ Terms of use: https://qanon-47831.web.app/terms
    App Store Connect: **Pricing and Availability** ← قسم **App Availability** ← **Manage** ← **Manage Availability** ← ألغِ تحديد الدول نفسها ← **Next** ← **Confirm**.
 2. **Data safety** في Play: في الجدول أعلاه اجعل **Shared = Yes** (الغرض: **App functionality**) لثلاثة أنواع، لأن Google تستعملها لأغراضها في هذا المستوى
    فلا تكون «مقدّم خدمة» فقط: **Other user-generated content** (رسائل TAHIRO AI) و**Voice or sound recordings** و**Photos**.
+   واجعل **Processed ephemerally = No** للصور والتسجيلات: التطبيق لا يحفظها، لكن Google قد تحتفظ بها في هذا المستوى، فلا تبقى «في الذاكرة وحدها».
 3. **App Privacy** في App Store: أضف تحت **Data Not Linked to You** (Purpose = **App Functionality**، Tracking = No): **Audio Data** و**Photos or Videos**؛
    و**Other User Content** معلن أصلاً.
 4. صفحة الخصوصية تُبنى تلقائياً بفقرة المجاني (استعمال Google للمحتوى، والمراجعة البشرية، وحذف المعرّفات الشخصية قبل الإرسال، والبحث في الإنترنت
